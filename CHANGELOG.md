@@ -5,6 +5,12 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+### forge and foreman
+- `commit.sh`: detects the repo's commit style (commitlint, history: conventional, gitmoji or plain), checks messages and commits exactly the given paths, one concern per commit.
+- `pr.sh`: finds the PR template and refuses a body that drops its headings; reuses an open PR instead of opening a second one.
+- `cleanup.sh`: removes a finished task's worktree and local branch every time, and refuses to drop unpushed work.
+- Shared scripts live in `shared/` and are copied into each skill by `scripts/sync-shared.sh`; CI checks they stay in sync.
+
 ### foreman
 - Workers turn on their harness's auto-archive when their PR closes, so sessions waiting on a manual merge end on their own.
 - A PR closed without merge marks the item `dropped` and ends its worker.

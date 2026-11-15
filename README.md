@@ -71,6 +71,12 @@ Nothing requires a hook; they only remove friction where a harness supports them
 | `start_session` auto-approve (`PermissionRequest`) | Claude Code desktop only | Skips the "Allow" click for each foreman worker. Other harnesses spawn workers with `agent.sh` and don't need it; `doctor` only checks it when `harness.sh` detects the desktop app. |
 | `skills/forge/scripts/guard-tests.sh` | any with a pre-edit hook | Blocks test-file edits while `.forge/green` exists. Reads Claude Code hook JSON on stdin, or takes the file path as an argument for other harnesses. |
 
+## Development
+
+Scripts used by more than one skill live in `shared/`; edit them there and run
+`scripts/sync-shared.sh` to copy them into each skill (each skill must install on its own). CI
+runs `scripts/sync-shared.sh --check`.
+
 ## Versions
 
 One version for the whole repo, tagged `vX.Y.Z` with a GitHub release; see

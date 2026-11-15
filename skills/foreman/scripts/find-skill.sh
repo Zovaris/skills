@@ -1,13 +1,22 @@
 #!/usr/bin/env bash
-# foreman: prints the absolute path of an installed skill's SKILL.md, so workers can read and
-# follow it directly. User-invoked skills (disable-model-invocation) can't be called by an agent
-# as a slash command, but any agent in any harness can read the file.
-#   find-skill.sh <name>     exit 1 when not installed
+# Finds installed skills, so a skill or a worker can read another skill's SKILL.md directly.
+# User-invoked skills can't be called by an agent as a slash command, but any agent in any
+# harness can read the file.
+#   find-skill.sh <name>     absolute path of <name>/SKILL.md; exit 1 when not installed
+#   find-skill.sh --list     `<name> <path>` for every skill of this repo that is installed
 set -euo pipefail
-[ $# -eq 1 ] || { echo 'usage: find-skill.sh <name>' >&2; exit 2; }
 here="$(cd "$(dirname "$0")/.." && pwd -P)"
-for f in "$here/../$1/SKILL.md" ~/.agents/skills/$1/SKILL.md ~/.claude/skills/$1/SKILL.md \
-         ~/.codex/skills/$1/SKILL.md ~/.config/opencode/skills/$1/SKILL.md; do
-  [ -f "$f" ] && { (cd "$(dirname "$f")" && echo "$(pwd -P)/SKILL.md"); exit 0; }
-done
-exit 1
+KNOWN="playbook forge foreman docs scout tend silent direct"
+find_one() {
+  local f
+  for f in "$here/../$1/SKILL.md" ~/.agents/skills/$1/SKILL.md ~/.claude/skills/$1/SKILL.md \
+           ~/.codex/skills/$1/SKILL.md ~/.config/opencode/skills/$1/SKILL.md; do
+    [ -f "$f" ] && { (cd "$(dirname "$f")" && echo "$(pwd -P)/SKILL.md"); return 0; }
+  done
+  return 1
+}
+case "${1:-}" in
+  --list) for s in $KNOWN; do p="$(find_one "$s")" && echo "$s $p"; done; exit 0 ;;
+  ""|-h|--help) sed -n '2,7p' "$0"; exit 2 ;;
+  *) find_one "$1" || exit 1 ;;
+esac

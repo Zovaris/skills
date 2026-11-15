@@ -5,6 +5,37 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+### playbook (new)
+- Loaded by the agent at the start of software work: lists the installed skills, routes work to them (forge, foreman, docs, scout, tend, silent, direct) and holds the shared rules and red flags.
+- `scripts/setup.sh`: status of installed skills and models, and an opt-in pointer block for the user's `AGENTS.md` / `CLAUDE.md`.
+
+### direct (new)
+- Short, direct replies with no filler or AI tells; `silent` wins while it runs; code, commits, PRs and docs are written normally.
+
+### docs (new)
+- ADRs, glossary, module READMEs, codebase map, doc drift checks, comment policy (API doc comments only) and search over docs and decisions.
+
+### scout (new)
+- Read-only investigation with sources on the user's cheap model; reports recommend, never authorize.
+
+### tend (new)
+- Keeps open PRs mergeable: CI fixes, rebases after sibling merges, review comments; launched by foreman for its batches.
+
+### forge
+- `build all`: every task here with one implementer subagent each, per-task review, capped fix loop and a rulings ledger.
+- Verify gate (no claim without fresh evidence) on build, test, review and ship; red-flag tables.
+- Receiving review, a builder check after the spec, a security reviewer, Files and Interfaces in tasks, baseline test run, a three-way close (PR, merge if asked, keep).
+- Delegates `adr`, `init`, context and the ship docs step to the docs skill when installed; fact-finding to scout.
+
+### foreman
+- Scout items follow the scout skill; a tend session keeps the batch's PRs green once workers end.
+- Models come from the user's choice per harness (`config.sh`), never hard-coded; `consult.sh` uses the strong one.
+- `doctor` checks the companion skills and model settings.
+
+### shared
+- `config.sh` (cheap and strong model per harness in `~/.agents/config.json`), `find-skill.sh --list`; `harness.sh`, `verify.sh` moved to `shared/`.
+- `tests/run.sh` (offline tests, skill lint) in CI, and `scripts/drill.sh` for live pressure tests against an agent CLI.
+
 ### forge and foreman
 - `commit.sh`: detects the repo's commit style (commitlint, history: conventional, gitmoji or plain), checks messages and commits exactly the given paths, one concern per commit.
 - `pr.sh`: finds the PR template and refuses a body that drops its headings; reuses an open PR instead of opening a second one.

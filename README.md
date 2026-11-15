@@ -1,81 +1,84 @@
 # skills
 
-Harness-agnostic skills (the open `SKILL.md` format): they work in Claude Code, Codex, OpenCode
-or anything that loads skills. Harness-specific bits live in adapters
-(`skills/foreman/references/harness.md`); everything else is files, git, bash and node.
-`scripts/agent.sh` runs any headless agent CLI (claude, codex, opencode, gemini, or `$AGENT_CMD`).
+Agent skills for planned, test-first, parallel software work. They use the open `SKILL.md`
+format and work in any harness that loads skills (Claude Code, Codex, OpenCode, Cursor, Gemini…):
+everything is files, git, bash and node, and harness-specific bits live in small adapters.
 
-| Skill | Run as | What |
+## Start with playbook
+
+**Install `playbook` with everything else.** It is the one skill your agent loads on its own at
+the start of any coding work, and it tells the agent which of the other skills are installed,
+when to use each one and the rules they share. Without it, the agent only knows the other
+skills by their one-line descriptions, and the user-invoked ones never come up unless you type
+them. For the strongest effect, let playbook add a short pointer to your agent instructions
+file (`AGENTS.md` / `CLAUDE.md`): ask your agent to "run playbook setup".
+
+## Skills
+
+| Skill | Started by | What it does |
 |---|---|---|
-| `silent` | `/silent <task>` | Does the task end to end with no talk; progress only in the to-do list; ends with one line: `done: <PR | commits | uncommitted changes | answer>`. Composes: `/silent /forge build`. |
-| `forge` | `/forge [brainstorm\|plan\|build [next]\|test\|review\|… \| from <phase>] [fast\|full] <task>` | Workflow: brainstorm (why, approaches) → grill → spec → task list → TDD → test agents → two-axis review → PR → retro, with ADRs, glossary and standards. Start at any phase; `fast` for small changes, `full` for risky ones. |
-| `foreman` | `/foreman <tasks \| task dir \| board ids \| idea>` · `status` · `doctor` | One or many tasks in parallel, one silent worker + worktree per task, each to a PR or report. Asks for a plan when given only an idea; workers use forge or plain mode. Sleeps on a zero-token watcher and reads compact status cards. |
+| `playbook` | the agent | Routes work to the installed skills and holds the shared rules. **Install it.** |
+| `forge` | you: `/forge [brainstorm\|plan\|build [next\|all]\|test\|review\|debug\|… \| from <phase>] [fast\|full] <task>` | One task, step by step: brainstorm → spec → task list → TDD → test agents (adversarial, regression, property, mutation, E2E, security) → review → PR → retro. Start at any phase; `fast` for small changes, `full` for risky ones. Through playbook, the agent can follow it too. |
+| `foreman` | you: `/foreman <tasks \| task dir \| board ids \| idea>` · `status` · `cleanup` · `doctor` | Many tasks at once: one silent worker and git worktree per task, each to its own PR or report, supervised from small status cards and a zero-token watcher. |
+| `docs` | the agent or you: `/docs init\|adr\|module\|map\|sync\|comments\|search` | ADRs, glossary, module READMEs, a codebase map, doc drift checks, and the comment policy: API doc comments only, the "why" lives in docs. |
+| `scout` | the agent or you | Read-only investigation with sources ("can we…", "why does…", "compare…"), on your cheap model. |
+| `tend` | you: `/tend <pr…> \| batch <batch>`, or foreman | Keeps open PRs mergeable: fixes CI, rebases after sibling merges, handles review comments. |
+| `silent` | you: `/silent <task>` | Does the task with no talk; ends with one line, `done: <where it landed>`. |
+| `direct` | the agent | Short, direct replies with no filler or AI tells. Off with "normal mode". |
 
-Each works alone; installed together they hand off through one **task list** (`NN-<slug>.md`
-files with `Status`, `Blocked by` and `PR`, read and updated by `tasks.js`), kept on your board,
-in the repo (`docs/specs/<slug>/`) or locally (`~/.agents/plans/<repo>/<slug>/`).
-
-```
-/forge plan <idea>        why → approaches → design → spec → task list → "how do we run it?"
-  ├─ /forge build next    one task at a time here, until all done
-  └─ /foreman <task dir>  the ready tasks in parallel; blocked ones start when their blockers merge
-/foreman <idea>           "have a plan? / plan it with forge / I split it / run as one task"
-/silent /forge build next one task, no talk, ends with `done: <where it landed>`
-```
-
-## How forge and foreman work together
-
-Each skill works alone. Installed together, they hand work to each other through the task list.
+## How they fit together
 
 ![forge and foreman share one task list](docs/flow.svg)
 
-- **Start with forge, finish with anything.** After `/forge plan`, run some tasks here with
-  `/forge build next` and hand the rest to `/foreman <task dir>`; both update the same statuses.
-- **Start with foreman.** Give it tasks, a task dir, board ids or just an idea; with only an idea
-  it asks whether you have a plan, offers `/forge plan`, or splits the idea itself.
-- **Blocked tasks wait.** `Blocked by` in each task decides what starts now; foreman launches
-  the rest as their blockers merge.
+- One **task list** (`NN-<slug>.md` files with `Status`, `Blocked by`, `PR`) on your board, in the
+  repo (`docs/specs/<slug>/`) or locally (`~/.agents/plans/<repo>/<slug>/`). forge writes and
+  builds it one task at a time (`build next`, `build all`); foreman runs the ready tasks in
+  parallel and tend keeps their PRs green.
+- Start with forge and hand the rest to foreman, or start with foreman and let it ask for a plan.
+- Commits are atomic in your repo's style, PRs follow your template, and finished worktrees and
+  local branches are removed every time.
 
 ## Install
 
-With the [skills CLI](https://github.com/vercel-labs/skills) (Node 22.20+). It picks the agents
-to install to (Claude Code, Codex, OpenCode, Cursor…):
+With the [skills CLI](https://github.com/vercel-labs/skills) (Node 22.20+):
 
 ```bash
 npx skills add Zovaris/skills -g
 ```
 
-All three, no prompts, only for some agents:
+Pick the skills and agents to install to; include `playbook`. Without prompts:
 
 ```bash
-npx skills add Zovaris/skills -g -y --skill silent --skill forge --skill foreman -a claude-code -a codex
+npx skills add Zovaris/skills -g -y --skill '*' -a claude-code -a codex
 ```
 
-Pin a release with `Zovaris/skills@v0.4.0`. Update later with `npx skills update -g`. Drop `-g`
-to install into the current project only.
+Pin a release with `Zovaris/skills@v0.4.0`; update with `npx skills update -g`; drop `-g` to
+install into the current project only.
 
-For development, link this checkout instead so edits apply at once:
+Then ask your agent to **run playbook setup**. It shows what is installed, asks once which cheap
+and strong models to use in this harness (saved in `~/.agents/config.json`, nothing is
+hard-coded), and offers to add the playbook pointer to your agent instructions file.
 
-```bash
-for s in silent forge foreman; do ln -sfn "$PWD/skills/$s" ~/.agents/skills/$s; ln -sfn ../../.agents/skills/$s ~/.claude/skills/$s; done
-```
+## Models
 
-Then `/foreman doctor`. Foreman state lives in `~/.agents/foreman` (`$FOREMAN_HOME`).
+Scouts, reviewers and simple workers use your **cheap** model; second opinions and the last fix
+round use your **strong** one. You pick both per harness (Haiku, a GPT mini, anything your CLI
+accepts); skills read them with `config.sh model cheap|strong`.
 
 ## Hooks (all optional)
 
-Nothing requires a hook; they only remove friction where a harness supports them.
-
 | Hook | Harness | Does |
 |---|---|---|
-| `start_session` auto-approve (`PermissionRequest`) | Claude Code desktop only | Skips the "Allow" click for each foreman worker. Other harnesses spawn workers with `agent.sh` and don't need it; `doctor` only checks it when `harness.sh` detects the desktop app. |
-| `skills/forge/scripts/guard-tests.sh` | any with a pre-edit hook | Blocks test-file edits while `.forge/green` exists. Reads Claude Code hook JSON on stdin, or takes the file path as an argument for other harnesses. |
+| `start_session` auto-approve (`PermissionRequest`) | Claude Code desktop | Skips the "Allow" click per foreman worker. `/foreman doctor` checks it only there. |
+| `skills/forge/scripts/guard-tests.sh` | any with a pre-edit hook | Blocks test-file edits during TDD's green phase. |
 
 ## Development
 
-Scripts used by more than one skill live in `shared/`; edit them there and run
-`scripts/sync-shared.sh` to copy them into each skill (each skill must install on its own). CI
-runs `scripts/sync-shared.sh --check`.
+- Scripts used by several skills live in `shared/`; edit them there and run
+  `scripts/sync-shared.sh`, which copies them into each skill (each skill installs on its own).
+- `tests/run.sh` runs every offline test (shared scripts, skill lint, per-skill tests); CI runs it.
+- `scripts/drill.sh` pressure-tests skills against a real agent CLI (`tests/drill/*.md`); it
+  costs tokens, so run it by hand per harness.
 
 ## Versions
 

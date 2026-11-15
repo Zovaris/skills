@@ -8,11 +8,20 @@ or anything that loads skills. Harness-specific bits live in adapters
 | Skill | Run as | What |
 |---|---|---|
 | `silent` | `/silent <task>` | Does the task end to end with no talk; progress only in the to-do list; ends with one line: `done: <PR | commits | uncommitted changes | answer>`. Composes: `/silent /forge build`. |
-| `forge` | `/forge [phase \| from <phase>] [fast\|full] <task>` | Workflow: grill → spec/tickets → TDD → test agents → two-axis review → PR → retro, with ADRs, glossary and standards. Start at any phase; `fast` for small changes, `full` for risky ones. |
-| `foreman` | `/foreman <tasks>` · `status` · `doctor` | Parallel tasks, one silent worker + worktree per task, each to a PR or report. The foreman sleeps on a zero-token watcher and reads compact status cards. |
+| `forge` | `/forge [brainstorm\|plan\|build [next]\|test\|review\|… \| from <phase>] [fast\|full] <task>` | Workflow: brainstorm (why, approaches) → grill → spec → task list → TDD → test agents → two-axis review → PR → retro, with ADRs, glossary and standards. Start at any phase; `fast` for small changes, `full` for risky ones. |
+| `foreman` | `/foreman <tasks \| task dir \| board ids \| idea>` · `status` · `doctor` | One or many tasks in parallel, one silent worker + worktree per task, each to a PR or report. Asks for a plan when given only an idea; workers use forge or plain mode. Sleeps on a zero-token watcher and reads compact status cards. |
 
-Typical flow: `/forge plan` a feature → tickets in `docs/specs/<slug>/` → `/foreman` the
-independent tickets (workers run `forge build fast`) → or `/silent /forge build` one ticket here.
+Each works alone; installed together they hand off through one **task list** (`NN-<slug>.md`
+files with `Status`, `Blocked by` and `PR`, read and updated by `tasks.js`), kept on your board,
+in the repo (`docs/specs/<slug>/`) or locally (`~/.agents/plans/<repo>/<slug>/`).
+
+```
+/forge plan <idea>        why → approaches → design → spec → task list → "how do we run it?"
+  ├─ /forge build next    one task at a time here, until all done
+  └─ /foreman <task dir>  the ready tasks in parallel; blocked ones start when their blockers merge
+/foreman <idea>           "have a plan? / plan it with forge / I split it / run as one task"
+/silent /forge build next one task, no talk, ends with `done: <where it landed>`
+```
 
 ## Install
 

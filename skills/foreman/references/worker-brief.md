@@ -1,6 +1,8 @@
 # Worker brief
 
-Fill the `<…>` slots and drop the lines that don't apply. `<intent>` is copied verbatim from
+Fill the `<…>` slots and drop the lines that don't apply. `<silent-skill>` and `<forge-skill>` are
+the absolute paths from `scripts/find-skill.sh silent|forge`: workers read those files; they can't
+run user-invoked skills as slash commands. `<intent>` is copied verbatim from
 `batch.json`: never summarize it or add requirements, plans or acceptance criteria to it.
 
 ```
@@ -16,13 +18,14 @@ PR target: <base>. Merge mode: <auto|manual>.<stack: " Stacked on <prereq>: merg
 requirements from the intent and the code"; out of scope if the user named it>
 
 ## How
-- Silent: follow the silent skill's rules. Never write to the user; no text between tool calls.
-  Your only outputs are your status card and one closing line.
-- Workflow: <mode forge: "use the forge skill in build mode at speed <fast|normal|full>
-  (`forge build <speed> <task file>`)." | mode plain: "work the way the repo's agent instructions
+- Silent: read <silent-skill> and follow its rules (skip the read if the path is empty). Never write to the user; no text
+  between tool calls. Your only outputs are your status card and one closing line.
+- Workflow: <mode forge: "read <forge-skill> and follow it yourself as `build <speed>` on this task: run
+  its phases in order; its references/, agents/ and scripts/ paths are relative to its folder.
+  Don't try to invoke it as a slash command." | mode plain: "work the way the repo's agent instructions
   (AGENTS.md / CLAUDE.md) say: tests for what you change, typecheck and lint green.">
-<repo task file: "- In your branch, set the task file's `Status: done` and `PR: <url>` (forge's
-  `scripts/tasks.js set`, or edit those two lines) so it lands with the PR.">
+<repo task file: "- In your branch, set the task file's `Status: done` and `PR: <url>`
+  (`<foreman-dir>/scripts/tasks.js set <file> status=done pr=<url>`) so it lands with the PR.">
 - First step: check `pwd -P` and `git rev-parse --show-toplevel` equal <worktree> and the branch
   is <branch>. If not: state=blocked note=wrong-worktree, stop.
 <relaunch: "- This is a relaunch. Read <batch-dir>/<id>.inbox.md first if it exists. Before any

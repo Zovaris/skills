@@ -4,7 +4,7 @@ description: Runs one or many tasks in parallel, one silent agent session per ta
 disable-model-invocation: true
 argument-hint: <tasks, one per line | task dir or .md | board ids | an idea> | status [batch] | doctor
 metadata:
-  version: 0.8.0
+  version: 0.9.0
 ---
 
 # foreman
@@ -28,6 +28,7 @@ Scripts are in `<skill-dir>/scripts/` (`<skill-dir>` is this file's folder):
 | `verify.sh <repo> <branch> [pr]` | Proof for a PR claim: pushed head matches, checks, mergeable |
 | `consult.sh "<question>" "<options>"` | One bare call to the strongest model, ~1k tokens |
 | `agent.sh [--bg] [--cwd d] [--readonly] <prompt-file>` | Runs any headless agent CLI (claude, codex, opencode, gemini, `$AGENT_CMD`) |
+| `find-skill.sh <name>` | Absolute path of an installed skill's SKILL.md (forge, silent) for the worker brief |
 | `tasks.js list\|ready\|set\|where` | The shared task list (same format as forge): what can start, status and PR per task |
 
 References: `references/worker-brief.md` (at every launch) and `references/harness.md` (how to
@@ -122,7 +123,8 @@ secrets or client data in it.
    `git -C <repo> fetch origin && git -C <repo> worktree add --no-track -b <branch> <worktree> origin/<from>`
    (`<worktree>` where the repo's agent instructions (CLAUDE.md / AGENTS.md) put worktrees, else
    `worktrees/<repo>-<id>`; `<from>` is the base, or the prereq's branch when stacked). Write the
-   brief from `references/worker-brief.md` to `<batch-dir>/<id>.brief.md`, then **spawn** every
+   brief from `references/worker-brief.md` (with the paths from `find-skill.sh forge` and
+   `find-skill.sh silent`, resolved once per batch) to `<batch-dir>/<id>.brief.md`, then **spawn** every
    ready item at once. Record each session id or pid and bump `launches`.
 3. **Watch.** End every turn that leaves workers running with **wake**: `watch.sh <batch>` in the
    background; it costs no tokens while it waits and its exit wakes you. Never sleep or poll inside a turn. On wake, read only the cards it printed; open a full
@@ -170,7 +172,9 @@ A wake with nothing for the user ends with no text at all, just the next `watch.
 
 ## Workers
 
-- Silent: they run the `silent` skill's rules. Their only output is the status card and one
+- Workers can't run `/forge` or `/silent` as commands (they're user-invoked skills); the brief
+  gives them each SKILL.md path to read and follow instead, which works in any harness.
+- Silent: they follow the `silent` skill's rules. Their only output is the status card and one
   closing line to you; they never address the user.
 - Mode `forge <speed>`: they run `forge build` at that speed (a `(full)` item overrides it).
   Mode `plain`: the repo's agent instructions, else just the brief. A trivial change (copy, a

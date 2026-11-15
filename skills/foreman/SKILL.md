@@ -18,7 +18,8 @@ Scripts are in `<skill-dir>/scripts/` (`<skill-dir>` is this file's folder):
 
 | Script | Does |
 |---|---|
-| `doctor.sh [--quiet]` | Readiness checks; `--quiet` prints only problems and the verdict |
+| `doctor.sh [--quiet]` | Readiness checks for this harness; `--quiet` prints only problems and the verdict |
+| `harness.sh` | Prints `<harness> <adapter>` (desktop, cli or any); `FOREMAN_HARNESS` overrides |
 | `status.js board [batch] [--json]` | The board: one card per item with a computed `stage` |
 | `status.js set <batch> <id> key=value…` | Writes a status card (workers use it) |
 | `status.js get <batch> <id>` | One full card (the "read more" pointer) |
@@ -38,8 +39,8 @@ the loop below uses only those five verbs).
   `docs/specs/<slug>/NN-*.md` ticket), else `task-<slug>`. "foreman these" after a planning chat:
   the tasks agreed.
 - `/foreman status [batch]`: `status.js board`, shown as is.
-- `/foreman doctor`: `doctor.sh`, shown as is, plus which harness adapter applies here; offer to
-  fix what lives in the user's own files.
+- `/foreman doctor`: `doctor.sh`, shown as is (it detects the harness and checks only what that
+  harness needs); offer to fix what lives in the user's own files.
 - Options in words: `max N` workers (default 3, a token-cost cap), `model <name>`, `stack`,
   `merge auto|manual`, `fast|full` (forge speed for workers, default `fast`), and
   `(auto)` / `(manual)` / `(scout)` / `(full)` after a task.

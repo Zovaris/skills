@@ -3,8 +3,6 @@ name: foreman
 description: Runs one or many tasks in parallel, one silent agent session per task in its own worktree, each to its own PR (or report), while this session supervises them from small status files and a zero-token watcher. Takes inline tasks, a task dir or MD file, board ids, or just an idea. Invoked as /foreman <tasks | dir | idea>, "status" or "doctor".
 disable-model-invocation: true
 argument-hint: <tasks, one per line | task dir or .md | board ids | an idea> | status [batch] | doctor
-metadata:
-  version: 0.9.0
 ---
 
 # foreman

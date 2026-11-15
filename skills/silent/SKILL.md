@@ -3,8 +3,6 @@ name: silent
 description: Silent mode for the task the user gives with it, run as /silent <task>. Does the work end to end without talking and ends with one line. Composes with other skills, e.g. /silent /forge build.
 disable-model-invocation: true
 argument-hint: <task, or empty to run what was just agreed>
-metadata:
-  version: 0.4.0
 ---
 
 # Silent mode

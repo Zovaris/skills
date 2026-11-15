@@ -3,8 +3,6 @@ name: forge
 description: Personal engineering workflow — brainstorm and grill the idea, spec and a shared task list, build with TDD, attack it with independent test agents (adversarial, regression, property, mutation, E2E), two-axis review, ship a PR, keep ADRs, glossary and standards. Start at any phase, pick a speed (fast, normal, full), work the task list one at a time or hand it to foreman. Run as /forge [phase|from <phase>] [fast|full] <task>.
 disable-model-invocation: true
 argument-hint: "[brainstorm|plan|spec|build [next]|test|review|ship|debug|adr|retro|init | from <phase>] [fast|full] <task or path>"
-metadata:
-  version: 0.4.0
 ---
 
 # forge

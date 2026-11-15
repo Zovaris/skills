@@ -5,8 +5,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Shared scripts in sync
-        run: scripts/sync-shared.sh --check
+      - name: Offline tests
+        run: tests/run.sh
       - name: Shell syntax
         run: for f in shared/*.sh skills/*/scripts/*.sh scripts/*.sh; do bash -n "$f"; done
       - name: Node syntax

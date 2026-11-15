@@ -26,6 +26,8 @@ Scripts are in `<skill-dir>/scripts/` (`<skill-dir>` is this file's folder):
 | `verify.sh <repo> <branch> [pr]` | Proof for a PR claim: pushed head matches, checks, mergeable |
 | `consult.sh "<question>" "<options>"` | One bare call to the strongest model, ~1k tokens |
 | `agent.sh [--bg] [--cwd d] [--readonly] <prompt-file>` | Runs any headless agent CLI (claude, codex, opencode, gemini, `$AGENT_CMD`) |
+| `cleanup.sh <repo> <branch> [<worktree>]` | Removes a finished item's worktree and local branch; refuses to drop unpushed work |
+| `commit.sh` · `pr.sh` | Atomic commits in the repo's style and PRs from its template (workers use them) |
 | `find-skill.sh <name>` | Absolute path of an installed skill's SKILL.md (forge, silent) for the worker brief |
 | `tasks.js list\|ready\|set\|where` | The shared task list (same format as forge): what can start, status and PR per task |
 
@@ -145,14 +147,16 @@ secrets or client data in it.
      Log low and medium ones in `decisions.md`.
    - `verify` (`pr_open`, `ready`): `verify.sh <repo> <branch> <pr>`. `unpushed` or `red` goes
      back to the worker in one line. `ready`: list it as waiting for the user's merge.
-     `closed` (closed without merge): `state=dropped note="PR closed without merge"`, remove the
-     worktree, keep the branch, **end** the worker, set the source to `dropped`, and name it in
+     `closed` (closed without merge): `state=dropped note="PR closed without merge"`,
+     `cleanup.sh <repo> <branch> <worktree>`, **end** the worker, set the source to `dropped`, and name it in
      the final message.
-   - `merged` (after `verify.sh` says `merged`): `git worktree remove` + `prune`,
-     `git branch -d`, **end** the worker, update the source, launch the dependents unblocked
+   - `merged` (after `verify.sh` says `merged`): `cleanup.sh <repo> <branch> <worktree>`,
+     **end** the worker, update the source, launch the dependents unblocked
      (`tasks.js ready` again for a task dir).
-   - `reported`: read the report's first lines, **end** the worker, remove the worktree.
-   - `dropped`: remove the worktree, keep the branch, **end** the worker.
+   - `reported`: read the report's first lines, **end** the worker, `cleanup.sh`.
+   - `dropped`: `cleanup.sh`, **end** the worker.
+   Every final item goes through `cleanup.sh`: worktree and local branch removed, unpushed work
+   refused with `kept <branch>: …`, which you put in the final message instead of forcing it.
    - `stuck` (`blocked` / `failed`, or no card update for 45 min): recovery ladder, one rung per
      wake: (1) answer from the intent if the note asks something it settles; (2) one corrective
      line to the worker (**tell**); (3) relaunch in the **same worktree** with the relaunch line of the

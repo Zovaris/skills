@@ -31,8 +31,10 @@ requirements from the intent and the code"; out of scope if the user named it>
 <relaunch: "- This is a relaunch. Read <batch-dir>/<id>.inbox.md first if it exists. Before any
   outside action, check git log, git status and `gh pr list --head <branch>`; continue from what
   exists, never open a second PR or rewrite pushed history.">
-- Commit and open the PR with the commit/pr skills when they exist, else plain git and `gh pr
-  create`; skip any preview, nobody answers.
+- Commits: `<foreman-dir>/scripts/commit.sh style` once, then one atomic commit per concern with
+  `commit.sh "<msg>" <paths>` in that style. PR: `<foreman-dir>/scripts/pr.sh template`; fill
+  every heading of the template if there is one, then `pr.sh create --base <base> --title "<t>"
+  --body-file <f>`. Never `git add -A` or `--no-verify`; skip any preview, nobody answers.
 - One rigor path: CI green; bot review comments at most 3 rounds total, counted in
   `review_rounds` (read it back after a restart). A bot review is not a completion gate.
 - Scope: stop only when the change would break callers, change what a module is responsible

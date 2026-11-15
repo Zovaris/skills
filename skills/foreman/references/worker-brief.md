@@ -12,13 +12,17 @@ PR target: <base>. Merge mode: <auto|manual>.<stack: " Stacked on <prereq>: merg
 <intent>
 
 ## Spec
-<ticket path, or "read requirements from the intent and the code"; out of scope if the user named it>
+<task file path or board key (read it first: its acceptance criteria are the spec), or "read
+requirements from the intent and the code"; out of scope if the user named it>
 
 ## How
 - Silent: follow the silent skill's rules. Never write to the user; no text between tool calls.
   Your only outputs are your status card and one closing line.
-- Workflow: use the forge skill in build mode at speed <fast|full> (`forge build <speed>`).
-  Without forge, work the way the repo's agent instructions (CLAUDE.md / AGENTS.md) say.
+- Workflow: <mode forge: "use the forge skill in build mode at speed <fast|normal|full>
+  (`forge build <speed> <task file>`)." | mode plain: "work the way the repo's agent instructions
+  (AGENTS.md / CLAUDE.md) say: tests for what you change, typecheck and lint green.">
+<repo task file: "- In your branch, set the task file's `Status: done` and `PR: <url>` (forge's
+  `scripts/tasks.js set`, or edit those two lines) so it lands with the PR.">
 - First step: check `pwd -P` and `git rev-parse --show-toplevel` equal <worktree> and the branch
   is <branch>. If not: state=blocked note=wrong-worktree, stop.
 <relaunch: "- This is a relaunch. Read <batch-dir>/<id>.inbox.md first if it exists. Before any

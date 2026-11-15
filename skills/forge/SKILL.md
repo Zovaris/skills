@@ -1,10 +1,10 @@
 ---
 name: forge
-description: Personal engineering workflow — grill the idea, spec and tickets, build with TDD, attack it with independent test agents (adversarial, regression, property, mutation, E2E), two-axis review, ship a PR, keep ADRs, glossary and standards. Start at any phase and pick a speed (fast, normal, full). Run as /forge [phase|from <phase>] [fast|full] <task>.
+description: Personal engineering workflow — brainstorm and grill the idea, spec and a shared task list, build with TDD, attack it with independent test agents (adversarial, regression, property, mutation, E2E), two-axis review, ship a PR, keep ADRs, glossary and standards. Start at any phase, pick a speed (fast, normal, full), work the task list one at a time or hand it to foreman. Run as /forge [phase|from <phase>] [fast|full] <task>.
 disable-model-invocation: true
-argument-hint: "[plan|spec|build|test|review|ship|debug|adr|retro|init | from <phase>] [fast|full] <task or path>"
+argument-hint: "[brainstorm|plan|spec|build [next]|test|review|ship|debug|adr|retro|init | from <phase>] [fast|full] <task or path>"
 metadata:
-  version: 0.2.0
+  version: 0.3.0
 ---
 
 # forge
@@ -19,8 +19,11 @@ prompt to a file and run `scripts/agent.sh [--readonly] <prompt-file>` (any agen
 
 | Command | Runs |
 |---|---|
-| `/forge <task>` | infer: no agreed plan → `plan`; plan/spec/ticket exists → `build`; a bug → `debug` |
-| `/forge <phase> <task>` | that phase only: `plan`, `spec`, `build`, `test`, `review`, `ship`, `retro` |
+| `/forge <task>` | infer: no agreed plan → `plan`; plan/spec/task exists → `build`; a bug → `debug` |
+| `/forge brainstorm <idea>` | `references/BRAINSTORM.md` only: the why, approaches, a draft design |
+| `/forge plan <idea>` | brainstorm → grill → spec → task list → ask how to run it |
+| `/forge build next [dir]` | `scripts/tasks.js next`, mark it `doing`, build it to `ship`, mark it `done` |
+| `/forge <phase> <task>` | that phase only: `spec`, `build`, `test`, `review`, `ship`, `retro` |
 | `/forge from <phase> <task>` | that phase to the end, e.g. `from test` on code you already wrote |
 | `/forge debug <bug>` | `references/DEBUG.md` → build (fix) → test → review → ship |
 | `/forge adr <title>` · `/forge init` | `references/DOCS.md` |
@@ -35,7 +38,7 @@ Say the speed and the phases you'll run in one line before starting.
 | | fast | normal (default) | full |
 |---|---|---|---|
 | For | small or clear changes, foreman workers | most features and fixes | risky logic, money, data, auth, public APIs |
-| Plan / spec | skipped; criteria from the task | spec if none exists | grill + spec + tickets |
+| Plan / spec | skipped; criteria from the task | spec if none exists | brainstorm + grill + spec + tasks |
 | Build | TDD on the acceptance criteria only | TDD on every behaviour | TDD on every behaviour |
 | Test agents | regression (bugs) | + adversary; property or e2e when the change fits | + 2 adversaries, property, mutation, e2e when applicable |
 | Review | self-check against `agents/spec-check.md` | spec-check + standards agents | spec-check + standards agents |
@@ -49,17 +52,21 @@ Under `/silent`, never ask: pick the speed yourself and say which in the final m
 
 **0 · Context** (always). Read, if they exist: `docs/GLOSSARY.md`, titles of `docs/adr/*` (open
 the ones that touch the task), `docs/agents/STANDARDS.md`, the repo's agent instructions
-(AGENTS.md / CLAUDE.md), and the spec/ticket given. Run `scripts/stack.sh` once and use its
+(AGENTS.md / CLAUDE.md), and the spec/task given. Run `scripts/stack.sh` once and use its
 commands instead of guessing. **Done:** you can name the seams the change touches.
 
-**plan · Grill** — `references/GRILLING.md`. Interview down the design tree until no decision is
-open; facts you look up, decisions are the user's. **Done:** the user confirms the decisions.
+**plan · Brainstorm and grill** — `references/BRAINSTORM.md`, then `references/GRILLING.md`.
+The why first, then 2–3 approaches the user picks from, a short design, then the remaining
+decisions down the design tree. Facts you look up; decisions are the user's.
+**Done:** the user approved the design and confirmed the decisions.
 
-**spec · Spec and tickets** — `references/SPEC.md`. `docs/specs/<slug>/spec.md`, test seams
-agreed, tracer-bullet tickets. Many independent tickets → offer `/foreman`.
-**Done:** spec + tickets written, each fits one fresh context.
+**spec · Spec and tasks** — `references/SPEC.md`, then `references/TASKS.md`. Spec with agreed
+test seams, tracer-bullet tasks in the place the user picks (board, repo or local), then ask how
+to run them: here with `build next`, in parallel with foreman (if installed), or later.
+**Done:** spec + tasks written, each fits one fresh context; the user chose how to run them.
 
-**build · TDD** — `references/TDD.md`. One test at a time at the agreed seams; each fails for
+**build · TDD** — `references/TDD.md`. Working from a task file: `tasks.js set <file>
+status=doing` first, `status=done pr=<url>` after ship. One test at a time at the agreed seams; each fails for
 the right reason before any code; never edit a test to go green (if it contradicts the spec,
 stop and say so). Single test files while working, typecheck often, full suite at the end.
 **Done:** suite, typecheck and lint pass; every criterion has a test.

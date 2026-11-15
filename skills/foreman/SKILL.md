@@ -1,10 +1,10 @@
 ---
 name: foreman
-description: Runs a batch of tasks in parallel, one silent agent session per task in its own worktree, each to its own PR (or report), while this session supervises them from small status files and a zero-token watcher. Invoked as /foreman with a task list, "status" or "doctor".
+description: Runs one or many tasks in parallel, one silent agent session per task in its own worktree, each to its own PR (or report), while this session supervises them from small status files and a zero-token watcher. Takes inline tasks, a task dir or MD file, board ids, or just an idea. Invoked as /foreman <tasks | dir | idea>, "status" or "doctor".
 disable-model-invocation: true
-argument-hint: <tasks, one per line> | status [batch] | doctor
+argument-hint: <tasks, one per line | task dir or .md | board ids | an idea> | status [batch] | doctor
 metadata:
-  version: 0.7.0
+  version: 0.8.0
 ---
 
 # foreman
@@ -28,6 +28,7 @@ Scripts are in `<skill-dir>/scripts/` (`<skill-dir>` is this file's folder):
 | `verify.sh <repo> <branch> [pr]` | Proof for a PR claim: pushed head matches, checks, mergeable |
 | `consult.sh "<question>" "<options>"` | One bare call to the strongest model, ~1k tokens |
 | `agent.sh [--bg] [--cwd d] [--readonly] <prompt-file>` | Runs any headless agent CLI (claude, codex, opencode, gemini, `$AGENT_CMD`) |
+| `tasks.js list\|ready\|set\|where` | The shared task list (same format as forge): what can start, status and PR per task |
 
 References: `references/worker-brief.md` (at every launch) and `references/harness.md` (how to
 **spawn**, **tell**, **wake**, **end** and run a **subagent** in this harness: read it once per batch;
@@ -35,15 +36,48 @@ the loop below uses only those five verbs).
 
 ## Usage
 
-- `/foreman <list>`: one task per line. Id: the tracker id the line names (Linear, GitHub issue,
-  `docs/specs/<slug>/NN-*.md` ticket), else `task-<slug>`. "foreman these" after a planning chat:
-  the tasks agreed.
+- `/foreman <input>`: see Intake. One task is fine: you still get a worktree, a silent worker
+  and verification, and this session stays free.
 - `/foreman status [batch]`: `status.js board`, shown as is.
 - `/foreman doctor`: `doctor.sh`, shown as is (it detects the harness and checks only what that
   harness needs); offer to fix what lives in the user's own files.
 - Options in words: `max N` workers (default 3, a token-cost cap), `model <name>`, `stack`,
-  `merge auto|manual`, `fast|full` (forge speed for workers, default `fast`), and
+  `merge auto|manual`, `forge fast|normal|full` or `plain` (worker mode), and
   `(auto)` / `(manual)` / `(scout)` / `(full)` after a task.
+
+## Intake
+
+Work out what you were given, in this order, and say in the plan line which it was:
+
+1. **A task dir or task file** (`docs/specs/<slug>/`, `~/.agents/plans/<repo>/<slug>/`, an
+   `NN-*.md`, or "the tasks we just planned"): `tasks.js ready <dir>` gives what can start;
+   blocked ones wait for their blockers. Id = `<slug>-NN`. Source = the file.
+2. **Board ids** (GitHub issues, Linear, Jira keys): read each with `gh` or the harness's tracker
+   tools. Id = the key. Source = the board.
+3. **Tasks inline**, one per line: id `task-<slug>`. Source = none (only `batch.json`).
+4. **Just an idea** (one goal, no split): ask once, recommendation first, only offering what is
+   installed:
+   - "Do you have a plan or task file? Give me the path or the board."
+   - "Plan it with forge" (when forge is installed): the user runs `/forge plan <idea>` here; when
+     its task list exists, continue at 1.
+   - "I split it quickly": read the code, propose 2–6 tasks in the task-file format (vertical
+     slices, real blockers only) in one message, write them to `~/.agents/plans/<repo>/<slug>/`
+     (or the repo if the user prefers) once approved, continue at 1.
+   - "Run it as one task": continue at 3 with the idea as the only line.
+   Under `/silent`, don't ask: split quickly when the idea clearly has independent parts, else run
+   it as one task.
+
+**Worker mode**, once per batch: with forge installed, ask "forge (fast / normal / full) or
+plain?" unless the user already said; default `forge fast`. Without forge: `plain` (silent rules
+plus the repo's agent instructions), no question. Store it as `mode` in `batch.json`.
+
+**Status back to the source**, so forge and the board stay in sync:
+- Local task dir: `tasks.js set <file> status=doing` at launch, `status=done pr=<url>` when
+  merged, `status=dropped` when dropped.
+- Repo task dir: the worker sets `Status: done` and `PR:` in its own branch, so the change lands
+  with the PR; you don't commit to the base branch.
+- Board: one comment with the PR when it opens; close or move the issue when merged (only what the
+  tracker's tools allow; never delete).
 
 **Kinds.** `ship` (default) ends in a PR. `scout` ("investigate", "compare", "find out why")
 ends in `report.md` in the batch dir and no PR.
@@ -61,10 +95,11 @@ production branch is `manual` unless the user said in this conversation to merge
 Batch dir `~/.agents/foreman/<batch>/` (`$FOREMAN_HOME`) (`<batch>` = `YYYYMMDD-HHMM` or the feature slug); no
 secrets or client data in it.
 
-- `batch.json`, yours: `{"batch","repo","max","stack","items":[{"id","title","kind","intent",
-  "speed","base","prereqs","merge","branch","worktree","session","hold","launches"}]}`.
-  `intent` is the user's own words for the task, verbatim, never rewritten or enriched; later
-  asks are appended verbatim. `hold` is set when the user says wait/stop for an item and cleared
+- `batch.json`, yours: `{"batch","repo","max","stack","mode","tasks_dir","items":[{"id","title",
+  "kind","intent","source","speed","base","prereqs","merge","branch","worktree","session","hold",
+  "launches"}]}`.
+  `intent` is the user's own words for the task, verbatim, never rewritten or enriched (for a task
+  file or board item: its path or key, which the worker reads); later asks are appended verbatim. `hold` is set when the user says wait/stop for an item and cleared
   only by the user; a held item is never launched, relaunched or nudged.
 - `<id>.json`, the worker's card, through `status.js set`: `state` (`working`, `needs_decision`,
   `blocked`, `failed`, `pr_open`, `ready` = green and waiting for a manual merge, `merged`,
@@ -78,9 +113,10 @@ secrets or client data in it.
 
 1. **Preflight and plan.** `doctor.sh --quiet`; on `not ready` show the FAIL lines and stop.
    For each item check for duplicates: a card with that id in another batch, or a branch or open
-   PR already covering it (`gh pr list --search "<id>"`). Someone else's PR for it → `dropped`
-   with a pointer. Write `batch.json` (prereqs only when the tickets or the user say so) and tell
-   the user in one line: what starts now, what waits on what, each item's base, kind and merge.
+   PR already covering it (`gh pr list --search "<id>"`), or a task file already `done`. Someone
+   else's PR for it → `dropped` with a pointer. Write `batch.json` (prereqs from the task files'
+   `Blocked by`, the board's links or the user's words) and tell the user in one line: the input
+   type, the worker mode, what starts now, what waits on what, each item's base, kind and merge.
 2. **Launch** items whose prereqs are `merged` (with `stack`: `pr_open`) and that have no `hold`,
    up to `max`. First, from the workspace root, per item:
    `git -C <repo> fetch origin && git -C <repo> worktree add --no-track -b <branch> <worktree> origin/<from>`
@@ -108,7 +144,8 @@ secrets or client data in it.
    - `verify` (`pr_open`, `ready`): `verify.sh <repo> <branch> <pr>`. `unpushed` or `red` goes
      back to the worker in one line. `ready`: list it as waiting for the user's merge.
    - `merged` (after `verify.sh` says `merged`): `git worktree remove` + `prune`,
-     `git branch -d`, **end** the worker, launch the dependents unblocked.
+     `git branch -d`, **end** the worker, update the source, launch the dependents unblocked
+     (`tasks.js ready` again for a task dir).
    - `reported`: read the report's first lines, **end** the worker, remove the worktree.
    - `dropped`: remove the worktree, keep the branch, **end** the worker.
    - `stuck` (`blocked` / `failed`, or no card update for 45 min): recovery ladder, one rung per
@@ -135,7 +172,7 @@ A wake with nothing for the user ends with no text at all, just the next `watch.
 
 - Silent: they run the `silent` skill's rules. Their only output is the status card and one
   closing line to you; they never address the user.
-- They run `forge build` at the item's speed (`fast` by default; `full` for risky items or when
-  asked), else the repo's agent instructions, else just the brief. A trivial change (copy, a button, a style
-  tweak) goes straight to a PR.
+- Mode `forge <speed>`: they run `forge build` at that speed (a `(full)` item overrides it).
+  Mode `plain`: the repo's agent instructions, else just the brief. A trivial change (copy, a
+  button, a style tweak) goes straight to a PR in either mode.
 - Effort: low for explicit, well-understood work; high for ambiguous investigation.

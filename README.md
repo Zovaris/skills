@@ -16,13 +16,38 @@ independent tickets (workers run `forge build fast`) → or `/silent /forge buil
 
 ## Install
 
-One copy in `~/.agents/skills`, linked into each harness:
+With the [skills CLI](https://github.com/vercel-labs/skills) (Node 22.20+). It picks the agents
+to install to (Claude Code, Codex, OpenCode, Cursor…) and uses your existing git/`gh` auth for
+this private repo:
+
+```bash
+npx skills add Zovaris/skills -g
+```
+
+All three, no prompts, only for some agents:
+
+```bash
+npx skills add Zovaris/skills -g -y --skill silent --skill forge --skill foreman -a claude-code -a codex
+```
+
+Update later with `npx skills update -g`. Drop `-g` to install into the current project only.
+
+For development, link this checkout instead so edits apply at once:
 
 ```bash
 for s in silent forge foreman; do ln -sfn "$PWD/skills/$s" ~/.agents/skills/$s; ln -sfn ../../.agents/skills/$s ~/.claude/skills/$s; done
 ```
 
 Then `/foreman doctor`. Foreman state lives in `~/.agents/foreman` (`$FOREMAN_HOME`).
+
+## Hooks (all optional)
+
+Nothing requires a hook; they only remove friction where a harness supports them.
+
+| Hook | Harness | Does |
+|---|---|---|
+| `start_session` auto-approve (`PermissionRequest`) | Claude Code desktop only | Skips the "Allow" click for each foreman worker. Other harnesses spawn workers with `agent.sh` and don't need it. |
+| `skills/forge/scripts/guard-tests.sh` | any with a pre-edit hook | Blocks test-file edits while `.forge/green` exists. Reads Claude Code hook JSON on stdin, or takes the file path as an argument for other harnesses. |
 
 ## Test agents (skills/forge/agents)
 

@@ -24,7 +24,8 @@ Scripts are in `<skill-dir>/scripts/` (`<skill-dir>` is this file's folder):
 | `status.js live [batch]` | Live board for the user in any terminal (each worker's `done` = its to-do progress) |
 | `watch.sh [batch] [max-min]` | Blocks without tokens until a card changes or goes stale |
 | `verify.sh <repo> <branch> [pr]` | Proof for a PR claim: pushed head matches, checks, mergeable |
-| `consult.sh "<question>" "<options>"` | One bare call to the strongest model, ~1k tokens |
+| `consult.sh "<question>" "<options>"` | One bare call to the user's strong model (`config.sh model strong`), ~1k tokens |
+| `config.sh model cheap\|strong` · `set-model` | The user's cheap and strong model for this harness (`~/.agents/config.json`) |
 | `agent.sh [--bg] [--cwd d] [--readonly] <prompt-file>` | Runs any headless agent CLI (claude, codex, opencode, gemini, `$AGENT_CMD`) |
 | `cleanup.sh <repo> <branch> [<worktree>]` | Removes a finished item's worktree and local branch; refuses to drop unpushed work |
 | `commit.sh` · `pr.sh` | Atomic commits in the repo's style and PRs from its template (workers use them) |
@@ -83,7 +84,13 @@ plus the repo's agent instructions), no question. Store it as `mode` in `batch.j
   tracker's tools allow; never delete).
 
 **Kinds.** `ship` (default) ends in a PR. `scout` ("investigate", "compare", "find out why")
-ends in `report.md` in the batch dir and no PR.
+ends in `report.md` in the batch dir and no PR; with the scout skill installed
+(`find-skill.sh scout`) its worker follows that SKILL.md and writes the report there.
+
+**Models.** No model is hard-coded. Scout items and `consult.sh` read the user's choice with
+`config.sh model cheap|strong`; exit 3 means unset, so ask once ("which cheap and which strong
+model in this harness?") and save it with `config.sh set-model`. Ship workers use the session
+default unless the user named a `model`.
 
 **Base branch** per task: the user's words, else inferred (a hotfix starts from and targets the
 production branch; anything else the integration branch, e.g. `develop`, else the default
@@ -167,6 +174,11 @@ secrets or client data in it.
    `blocked` / `failed` workers open for the user to inspect. Workers still `ready` end on their
    own when the PR closes (auto-archive, where the harness has it); otherwise the final message
    says `/foreman cleanup` finishes them after the merges.
+6. **Tend** (when the tend skill is installed): once every ship item is `pr_open` or `ready` and
+   its worker has ended, **spawn** one tend session for the batch: brief = "Read <tend-skill> and
+   follow it for `batch <batch>`; report through the cards (`--card <status.js> <batch> <id>`)".
+   It keeps the PRs green, rebased after sibling merges and answered; you keep watching cards.
+   Without tend, list the open PRs in the final message.
 
 ## Talking to the user
 

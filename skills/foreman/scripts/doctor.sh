@@ -26,12 +26,17 @@ elif [ "$ADAPTER" = any ]; then bad "no headless agent CLI on PATH (needed to sp
 else warn "no headless agent CLI on PATH (only consult.sh needs it here)" "optional: install one or set AGENT_CMD"; fi
 have gh && { gh auth status >/dev/null 2>&1 && ok "gh signed in" || bad "gh not signed in" "gh auth login"; }
 
-# Skills the workers use: forge (workflow) and silent (no talk).
-SKILL_DIR="$(cd "$(dirname "$0")/.." && pwd -P)"
-for s in forge silent; do
-  found=""
-  for f in "$SKILL_DIR/../$s/SKILL.md" ~/.agents/skills/$s/SKILL.md ~/.claude/skills/$s/SKILL.md ~/.codex/skills/$s/SKILL.md ~/.config/opencode/skills/$s/SKILL.md; do [ -f "$f" ] && { found="$f"; break; }; done
-  [ -n "$found" ] && ok "$s skill: $found" || warn "$s skill not found" "npx skills add Zovaris/skills -g --skill $s"
+# Skills foreman works with. Required: none. forge/silent shape workers; scout/tend take
+# report items and open PRs; playbook tells every session how these fit together.
+for s in forge silent scout tend playbook; do
+  p="$("$(dirname "$0")/find-skill.sh" "$s" 2>/dev/null || true)"
+  [ -n "$p" ] && ok "$s skill: $p" || warn "$s skill not installed" "npx skills add Zovaris/skills -g --skill $s"
+done
+
+# The user's model choices (asked once, never hard-coded).
+for m in cheap strong; do
+  v="$("$(dirname "$0")/config.sh" model "$m" 2>/dev/null || true)"
+  [ -n "$v" ] && ok "model $m: $v" || warn "no $m model set for $HARNESS" "ask the user, then: config.sh set-model $m <name>"
 done
 
 # Claude Code desktop only: start_session auto-approved (no 'Allow' card per worker).

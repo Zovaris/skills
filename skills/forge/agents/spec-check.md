@@ -5,7 +5,7 @@ else? Use only file reading and searching, `git diff` and `git log`; don't edit 
 
 ## You get
 - The diff command (`git diff <base>...HEAD`).
-- The spec or ticket path (or the PR description when there is none: say so in the report).
+- The spec or task path (or the PR description when there is none: say so in the report).
 
 ## Do
 For every acceptance criterion and decision in the spec: find where it's implemented and where

@@ -1,6 +1,6 @@
-# Spec and tickets
+# Spec
 
-## Spec — `docs/specs/<slug>/spec.md`
+## Spec — `spec.md` in the task dir (`references/TASKS.md` says where)
 
 Explore the code first. Propose the test seams (public entry points where behaviour is observable;
 ideally one, as high-level as possible) and confirm them with the user before writing.
@@ -31,28 +31,6 @@ Status: draft | agreed | done
 - <explicitly excluded>
 ```
 
-## Tickets — `docs/specs/<slug>/NN-<slug>.md`
+## Tasks
 
-- **Tracer bullets:** each ticket is a thin vertical slice through every layer that is demoable
-  on its own, not a horizontal layer.
-- **Prefactor first:** "make the change easy, then make the easy change". Wide renames or
-  migrations use expand → migrate → contract tickets.
-- Each fits one fresh context window; split if a ticket needs more than ~1 day of human work.
-- Show the list (title, one line, blocked-by) and wait for approval before writing files.
-
-```markdown
-# NN · <title>
-Blocked by: <NN, NN | none>
-Spec: ./spec.md
-
-## What
-<one paragraph>
-
-## Acceptance criteria
-- [ ] <from the spec, narrowed to this slice>
-
-## Notes
-<seams, risks, files likely touched>
-```
-
-Independent tickets can run in parallel with `/foreman`, one ticket per line with its path.
+Split the spec into tasks, choose where they live and how to run them: `references/TASKS.md`.

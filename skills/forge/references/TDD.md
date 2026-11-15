@@ -10,7 +10,7 @@ For each behaviour in the acceptance criteria, in order of the tracer bullet:
 3. Next behaviour. Never write all tests up front: each test teaches you something.
 4. **Refactor** once the slice is green: behaviour unchanged, tests untouched and still green.
 
-Run typecheck every few cycles; the full suite at the end of the ticket.
+Run typecheck every few cycles; the full suite at the end of the task.
 
 ## Good tests
 

@@ -2,7 +2,7 @@
 
 1. Resolve the base: `git merge-base HEAD <base>` (base = PR target, else the default branch).
    Empty diff → say so and stop.
-2. Find the spec: the ticket/spec path you were given, commit messages, the PR body, or
+2. Find the spec: the task/spec path you were given, commit messages, the PR body, or
    `docs/specs/`. None → spec-check reviews against the PR description and says so.
 3. Launch two fresh **subagents** in parallel (read-only):
    - `agents/standards.md` with the diff command and the paths of the repo's rules

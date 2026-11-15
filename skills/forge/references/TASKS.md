@@ -26,6 +26,12 @@ spec stays in the repo or local dir and the issues link to it.
 - Each fits one fresh context window; split anything bigger than ~1 day of human work.
 - `Blocked by` only for real dependencies (one task needs another's code or schema). Tasks that
   merely touch nearby files are not blocked; tasks that would edit the same lines are.
+- **Self-review** before showing it:
+  1. Coverage: every acceptance criterion of the spec lands in exactly one task.
+  2. Interfaces line up: each `Consumes` is `Produces`d by a blocker or already exists.
+  3. Collisions: tasks without a `Blocked by` between them don't modify the same files.
+  4. Proportion: no task is a horizontal layer, none is bigger than a day, none is trivial
+     enough to merge into its neighbour.
 - Show the list (number, title, one line, blocked by) and wait for approval before writing.
 
 ## Task file — `NN-<slug>.md`
@@ -43,9 +49,19 @@ Spec: ./spec.md
 ## Acceptance criteria
 - [ ] <from the spec, narrowed to this slice>
 
+## Files
+- create: <path> · modify: <path> · test: <path>
+
+## Interfaces
+- Consumes: <functions, types, endpoints, tables it relies on, with signatures>
+- Produces: <what it adds or changes for later tasks, with signatures>
+
 ## Notes
-<seams, risks, files likely touched>
+<seams, risks>
 ```
+
+Files and Interfaces are what lets a fresh implementer (or a foreman worker) start without
+reading the whole plan, and what tells you two tasks would collide.
 
 Status moves `todo → doing → done` (or `dropped` with a line saying why). Whoever starts a task
 sets `doing`; whoever lands it sets `done` and `PR`. In a repo task dir the `done` + `PR` change is

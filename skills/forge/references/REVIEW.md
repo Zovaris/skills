@@ -8,10 +8,13 @@
    - `agents/standards.md` with the diff command and the paths of the repo's rules
      (AGENTS.md / CLAUDE.md, `docs/agents/STANDARDS.md`, lint config).
    - `agents/spec-check.md` with the diff command and the spec path.
-4. Show both reports separately, as returned. Don't merge, dedupe or rerank them: they answer
+   - `agents/security.md` at `full` speed, and at any speed when the diff touches auth, money,
+     personal data, input parsing, file or shell access, or secrets. Its high findings are the
+     user's to see before merge.
+4. Show the reports separately, as returned. Don't merge, dedupe or rerank them: they answer
    different questions.
-5. Fix what you agree with (bug findings: failing test first). For each rejected finding, one
-   line of reason in the PR body or the final message.
+5. Handle each finding per `references/RECEIVING.md`: verify, then fix (bug findings: failing
+   test first) or decline with one line of reason in the PR body or the final message.
 
 Reviewing someone else's PR (`/forge review <pr>`): same steps, report only; post comments only
 when the user asks.

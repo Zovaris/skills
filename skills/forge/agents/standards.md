@@ -15,7 +15,11 @@ Use only file reading and searching and `git diff`.
    its body), feature envy, primitive obsession on domain values (money, ids, dates), boolean
    flag parameters, hidden temporal coupling, swallowed errors, mutable shared state, dead code,
    leaking abstractions across a seam, comments that restate code.
-3. Tests too: tests that mirror the implementation, assertions on mocks, missing failure paths,
+3. Comment policy: only API doc comments, license headers and tool directives with a reason;
+   explanatory comments, commented-out code and TODOs are findings (the why belongs in the
+   module README or an ADR). With the docs skill installed, run its `scripts/comments.sh --diff
+   <base>` and report what it prints.
+4. Tests too: tests that mirror the implementation, assertions on mocks, missing failure paths,
    loosened assertions, skipped tests.
 
 Skip spec conformance entirely: another reviewer owns it.

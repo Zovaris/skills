@@ -30,6 +30,17 @@ Run typecheck every few cycles; the full suite at the end of the task.
 - Editing a test during green. If a test is wrong, stop, say why, fix it as its own red step.
 - `skip`, `only`, `xfail`, loosened assertions or snapshot updates to get green.
 
+## Red flags
+
+| Thought | Reality |
+|---|---|
+| "Too simple to need a test" | Simple code breaks too, and the test takes a minute. |
+| "I'll write the tests after" | Tests written after pass on the first run and prove nothing. |
+| "I already wrote the code, I'll keep it as reference" | Code before its test gets deleted; start from red. |
+| "The test is wrong, I'll adjust it to green" | Stop. Say why it's wrong; fix it as its own red step. |
+| "Mocking this makes it easier" | Mock only system boundaries; otherwise you test the mock. |
+| "Just this once, skip the failing test" | Skipped tests are deleted tests. Fix or report. |
+
 ## Optional hard guard
 
 `scripts/guard-tests.sh` is a PreToolUse hook that blocks edits to test files while

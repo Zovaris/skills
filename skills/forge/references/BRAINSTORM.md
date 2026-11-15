@@ -9,7 +9,9 @@ what they want is usually thinner than it feels.
 - **Something non-trivial is missing:** continue.
 
 Look before you ask: read what the user pointed at and the code it touches until you can say
-how it works today and what the change would touch. Never ask what the project already answers
+how it works today and what the change would touch. Questions about libraries, APIs or other
+systems go to the `scout` skill when installed (`scripts/find-skill.sh scout`), else a read-only
+subagent. Never ask what the project already answers
 or reopen what they already decided.
 
 ## 1 · The why

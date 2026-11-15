@@ -39,8 +39,7 @@ Each skill works alone. Installed together, they hand work to each other through
 ## Install
 
 With the [skills CLI](https://github.com/vercel-labs/skills) (Node 22.20+). It picks the agents
-to install to (Claude Code, Codex, OpenCode, Cursor…) and uses your existing git/`gh` auth for
-this private repo:
+to install to (Claude Code, Codex, OpenCode, Cursor…):
 
 ```bash
 npx skills add Zovaris/skills -g
@@ -52,7 +51,8 @@ All three, no prompts, only for some agents:
 npx skills add Zovaris/skills -g -y --skill silent --skill forge --skill foreman -a claude-code -a codex
 ```
 
-Update later with `npx skills update -g`. Drop `-g` to install into the current project only.
+Pin a release with `Zovaris/skills@v0.4.0`. Update later with `npx skills update -g`. Drop `-g`
+to install into the current project only.
 
 For development, link this checkout instead so edits apply at once:
 
@@ -71,11 +71,18 @@ Nothing requires a hook; they only remove friction where a harness supports them
 | `start_session` auto-approve (`PermissionRequest`) | Claude Code desktop only | Skips the "Allow" click for each foreman worker. Other harnesses spawn workers with `agent.sh` and don't need it; `doctor` only checks it when `harness.sh` detects the desktop app. |
 | `skills/forge/scripts/guard-tests.sh` | any with a pre-edit hook | Blocks test-file edits while `.forge/green` exists. Reads Claude Code hook JSON on stdin, or takes the file path as an argument for other harnesses. |
 
-## Test agents (skills/forge/agents)
+## Versions
 
-adversary (spec-blind break-it tests) · regression (fails before the fix, passes after) ·
-property (fast-check / Hypothesis invariants) · mutation (Stryker / mutmut on changed files) ·
-e2e (Playwright flows) · spec-check and standards (read-only reviewers, never merged).
+One version for the whole repo, tagged `vX.Y.Z` with a GitHub release; see
+[CHANGELOG.md](CHANGELOG.md).
 
-References studied: kunchenguid/firstmate, deepseek-ai/dsh-superagent-prototype,
-mattpocock/skills.
+## Credits
+
+Ideas borrowed from [firstmate](https://github.com/kunchenguid/firstmate),
+[dsh-superagent-prototype](https://github.com/deepseek-ai/dsh-superagent-prototype),
+[mattpocock/skills](https://github.com/mattpocock/skills) and
+[superpowers](https://github.com/obra/superpowers).
+
+## License
+
+[MIT](LICENSE)

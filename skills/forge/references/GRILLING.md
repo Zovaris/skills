@@ -1,5 +1,6 @@
 # Grilling
 
+After the brainstorm settled the why and the approach, close the remaining decisions.
 Treat the plan as a design tree. Each round:
 
 1. Find the **frontier**: open decisions whose prerequisites are all settled.

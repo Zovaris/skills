@@ -77,10 +77,19 @@ Agents that write tests work in their own git worktree. You fix the code; they n
 **review** — `references/REVIEW.md`. Two fresh **subagents**, `agents/standards.md` and
 `agents/spec-check.md`; never merge or rerank their reports. **Done:** no open blocking finding.
 
-**ship.** Commit and open a PR (commit/pr skills if present, else git + `gh`). PR body: what and
-why; tests added; commands actually run with results; agents run and what they found; "Decided
-without you" if any; ADRs added. Update docs the change touched.
-**Done:** PR open with green CI, or committed when there is no remote.
+**ship.** Update docs the change touched, then:
+- **Atomic commits** with `scripts/commit.sh`: read `commit.sh style` once, then one commit per
+  concern (`commit.sh "<msg>" <paths>`), each one building and passing on its own. Never
+  `git add -A`, never `--no-verify`.
+- **PR** with `scripts/pr.sh`: if `pr.sh template` finds one, fill every heading of it (N/A when
+  one doesn't apply); otherwise: what and why, tests added, commands actually run with results,
+  agents run and what they found, "Decided without you" if any, ADRs added. Title in the commit
+  style. `pr.sh create --base <b> --title "<t>" --body-file <f>`.
+- **Clean up** once the PR is merged or the work is abandoned: `scripts/cleanup.sh <repo>
+  <branch> [<worktree>]` removes the worktree and the local branch (it refuses to drop unpushed
+  work). Remote branches are the host's business.
+**Done:** PR open with green CI (or committed when there is no remote); no stray worktrees or
+local branches from this task.
 
 **retro** — `references/DOCS.md`. Mechanical mistakes → an automated check; judgement calls →
 `docs/agents/STANDARDS.md`; facts about the user → the harness's memory; project facts → repo

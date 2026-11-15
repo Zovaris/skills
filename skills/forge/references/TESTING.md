@@ -2,7 +2,8 @@
 
 Launch each as a fresh **subagent**: prompt = the agent file's text followed by an `## Inputs`
 block with exactly what the file lists. Agents that write tests work in their own git worktree
-(the harness's isolation option, or `git worktree add` yourself and pass the path). Launch them
+(the harness's isolation option, or `git worktree add` yourself and pass the path); once their
+tests are merged into yours, remove those worktrees and branches (`scripts/cleanup.sh`). Launch them
 together so they run in parallel. Without a subagent tool: write each prompt to a file and run
 `scripts/agent.sh --bg --cwd <worktree> --log <file> <prompt-file>` per agent, then read the logs.
 Read-only agents (spec-check, standards) use `agent.sh --readonly`.

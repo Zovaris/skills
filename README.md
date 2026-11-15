@@ -23,6 +23,19 @@ in the repo (`docs/specs/<slug>/`) or locally (`~/.agents/plans/<repo>/<slug>/`)
 /silent /forge build next one task, no talk, ends with `done: <where it landed>`
 ```
 
+## How forge and foreman work together
+
+Each skill works alone. Installed together, they hand work to each other through the task list.
+
+![forge and foreman share one task list](docs/flow.svg)
+
+- **Start with forge, finish with anything.** After `/forge plan`, run some tasks here with
+  `/forge build next` and hand the rest to `/foreman <task dir>`; both update the same statuses.
+- **Start with foreman.** Give it tasks, a task dir, board ids or just an idea; with only an idea
+  it asks whether you have a plan, offers `/forge plan`, or splits the idea itself.
+- **Blocked tasks wait.** `Blocked by` in each task decides what starts now; foreman launches
+  the rest as their blockers merge.
+
 ## Install
 
 With the [skills CLI](https://github.com/vercel-labs/skills) (Node 22.20+). It picks the agents

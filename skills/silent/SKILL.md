@@ -4,7 +4,7 @@ description: Silent mode for the task the user gives with it, run as /silent <ta
 disable-model-invocation: true
 argument-hint: <task, or empty to run what was just agreed>
 metadata:
-  version: 0.3.0
+  version: 0.4.0
 ---
 
 # Silent mode

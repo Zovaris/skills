@@ -4,7 +4,7 @@ description: Personal engineering workflow — brainstorm and grill the idea, sp
 disable-model-invocation: true
 argument-hint: "[brainstorm|plan|spec|build [next]|test|review|ship|debug|adr|retro|init | from <phase>] [fast|full] <task or path>"
 metadata:
-  version: 0.3.0
+  version: 0.4.0
 ---
 
 # forge

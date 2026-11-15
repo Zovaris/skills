@@ -5,6 +5,12 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+### foreman
+- Workers turn on their harness's auto-archive when their PR closes, so sessions waiting on a manual merge end on their own.
+- A PR closed without merge marks the item `dropped` and ends its worker.
+- The foreman ends every finished worker before its final message; `blocked` / `failed` ones stay open for inspection.
+- New `/foreman cleanup [batch]`: re-verifies waiting PRs after the batch is over and ends their workers.
+
 ## v0.4.0 — 2026-11-15
 
 First tagged release.

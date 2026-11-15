@@ -10,6 +10,7 @@ State is always the batch dir and git, so the same batch can be foremaned from a
 | **tell** worker | `SendMessage` to its `local_…` id | `SendMessage` to its address | append to `<batch-dir>/<id>.inbox.md`, then **respawn** it |
 | **wake** foreman | `watch.sh` with `run_in_background` | same | `watch.sh` as a background job; if the harness can't wake on exit, run it in the foreground (it returns within `max-min`) |
 | **end** worker | `archive_session` | `claude stop <id>` + `claude rm <id>` | `kill <pid>` if alive |
+| auto-end on PR close | the worker turns on the app's auto-archive for its PR | none: `/foreman cleanup` | none: `/foreman cleanup` |
 | **subagent** (short read-only job) | Agent tool | Agent tool | `agent.sh --readonly <prompt-file>` |
 
 Always write the brief to `<batch-dir>/<id>.brief.md` before spawning, whatever the adapter: a

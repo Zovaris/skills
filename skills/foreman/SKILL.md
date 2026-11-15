@@ -1,8 +1,8 @@
 ---
 name: foreman
-description: Runs one or many tasks in parallel, one silent agent session per task in its own worktree, each to its own PR (or report), while this session supervises them from small status files and a zero-token watcher. Takes inline tasks, a task dir or MD file, board ids, or just an idea. Invoked as /foreman <tasks | dir | idea>, "status" or "doctor".
+description: Runs one or many tasks in parallel, one silent agent session per task in its own worktree, each to its own PR (or report), while this session supervises them from small status files and a zero-token watcher. Takes inline tasks, a task dir or MD file, board ids, or just an idea. Invoked as /foreman <tasks | dir | idea>, "status", "cleanup" or "doctor".
 disable-model-invocation: true
-argument-hint: <tasks, one per line | task dir or .md | board ids | an idea> | status [batch] | doctor
+argument-hint: <tasks, one per line | task dir or .md | board ids | an idea> | status [batch] | cleanup [batch] | doctor
 ---
 
 # foreman
@@ -38,6 +38,8 @@ the loop below uses only those five verbs).
 - `/foreman <input>`: see Intake. One task is fine: you still get a worktree, a silent worker
   and verification, and this session stays free.
 - `/foreman status [batch]`: `status.js board`, shown as is.
+- `/foreman cleanup [batch]`: `verify.sh` every `pr_open` / `ready` item and apply the `merged`
+  and `closed` actions below; for batches that finished while PRs waited on the user.
 - `/foreman doctor`: `doctor.sh`, shown as is (it detects the harness and checks only what that
   harness needs); offer to fix what lives in the user's own files.
 - Options in words: `max N` workers (default 3, a token-cost cap), `model <name>`, `stack`,
@@ -143,6 +145,9 @@ secrets or client data in it.
      Log low and medium ones in `decisions.md`.
    - `verify` (`pr_open`, `ready`): `verify.sh <repo> <branch> <pr>`. `unpushed` or `red` goes
      back to the worker in one line. `ready`: list it as waiting for the user's merge.
+     `closed` (closed without merge): `state=dropped note="PR closed without merge"`, remove the
+     worktree, keep the branch, **end** the worker, set the source to `dropped`, and name it in
+     the final message.
    - `merged` (after `verify.sh` says `merged`): `git worktree remove` + `prune`,
      `git branch -d`, **end** the worker, update the source, launch the dependents unblocked
      (`tasks.js ready` again for a task dir).
@@ -154,6 +159,10 @@ secrets or client data in it.
      brief; (4) after a second relaunch fails, tell the user with the `note`. Never a fresh
      worktree for the same task.
 5. **Finish** when every item is `merged`, `reported`, `dropped`, held or waiting on the user.
+   Before the final message, **end** every worker whose item is final and still running. Leave
+   `blocked` / `failed` workers open for the user to inspect. Workers still `ready` end on their
+   own when the PR closes (auto-archive, where the harness has it); otherwise the final message
+   says `/foreman cleanup` finishes them after the merges.
 
 ## Talking to the user
 

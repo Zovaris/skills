@@ -52,7 +52,8 @@ current step, so the foreman sees where you are without asking.
   impact (low: local, cheap to undo; medium: shapes a module or internal contract; high: widens
   scope, customer-visible, money, data, security, public API/schema, prod, irreversible). End
   your turn. The foreman closes the question; later progress doesn't.
-- PR opened: state=pr_open (if your harness can watch PRs or auto-fix CI, turn it on). A draft or
+- PR opened: state=pr_open. If your harness can watch the PR, auto-fix CI or auto-archive this
+  session when the PR closes, turn those on. A draft or
   unfinished PR is state=blocked, never pr_open.
 - Green and reviewed: tests_run=<commands actually run>, risks=<or none>. merge auto → merge into
   <base>, state=merged; manual → state=ready. Never the production branch.

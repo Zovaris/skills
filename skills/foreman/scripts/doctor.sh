@@ -14,26 +14,41 @@ have() { command -v "$1" >/dev/null 2>&1; }
 for t in git gh jq node; do
   have "$t" && ok "$t found" || bad "$t missing" "install $t (brew install $t)"
 done
-# Headless agent CLI for agent.sh / consult.sh (any harness).
+# Harness: decides which adapter applies and which checks are relevant (no false alarms).
+read -r HARNESS ADAPTER <<<"$("$(dirname "$0")/harness.sh")"
+ok "harness: $HARNESS (adapter: $ADAPTER; override with FOREMAN_HARNESS)"
+
+# Headless agent CLI: required to spawn workers with the 'any' adapter; else only consult.sh uses it.
 cli=""; [ -n "${AGENT_CMD:-}" ] && cli="AGENT_CMD"
 [ -z "$cli" ] && for c in claude codex opencode gemini; do have "$c" && { cli="$c"; break; }; done
-[ -n "$cli" ] && ok "agent CLI: $cli" || warn "no headless agent CLI on PATH (agent.sh adapter, consult.sh)" "install one (claude, codex, opencode, gemini) or set AGENT_CMD; in-app sessions still work"
+if [ -n "$cli" ]; then ok "agent CLI: $cli"
+elif [ "$ADAPTER" = any ]; then bad "no headless agent CLI on PATH (needed to spawn workers here)" "install one (claude, codex, opencode, gemini) or set AGENT_CMD"
+else warn "no headless agent CLI on PATH (only consult.sh needs it here)" "optional: install one or set AGENT_CMD"; fi
 have gh && { gh auth status >/dev/null 2>&1 && ok "gh signed in" || bad "gh not signed in" "gh auth login"; }
 
 # Skills the workers use: forge (workflow) and silent (no talk).
 SKILL_DIR="$(cd "$(dirname "$0")/.." && pwd -P)"
 for s in forge silent; do
   found=""
-  for f in ~/.agents/skills/$s/SKILL.md ~/.claude/skills/$s/SKILL.md "$SKILL_DIR/../$s/SKILL.md"; do [ -f "$f" ] && { found="$f"; break; }; done
-  [ -n "$found" ] && ok "$s skill: $found" || warn "$s skill not found" "ln -sfn <repo>/$s ~/.agents/skills/$s (and link it into your harness's skills dir)"
+  for f in "$SKILL_DIR/../$s/SKILL.md" ~/.agents/skills/$s/SKILL.md ~/.claude/skills/$s/SKILL.md ~/.codex/skills/$s/SKILL.md ~/.config/opencode/skills/$s/SKILL.md; do [ -f "$f" ] && { found="$f"; break; }; done
+  [ -n "$found" ] && ok "$s skill: $found" || warn "$s skill not found" "npx skills add Zovaris/skills -g --skill $s"
 done
 
-# Claude Code desktop only: session starts auto-approved (no 'Allow once' card per worker).
-S=~/.claude/settings.json
-if [ ! -d ~/.claude ]; then :
-elif have jq && [ -f "$S" ] && jq -e '.hooks.PermissionRequest[]? | select(.matcher=="mcp__ccd_session__start_session") | .hooks[] | select(.command|test("\"behavior\":\"allow\""))' "$S" >/dev/null 2>&1
-then ok "start_session auto-approve hook"
-else warn "Claude desktop: no start_session auto-approve hook (one click per worker)" "add a PermissionRequest hook, matcher mcp__ccd_session__start_session, printing {\"hookSpecificOutput\":{\"hookEventName\":\"PermissionRequest\",\"decision\":{\"behavior\":\"allow\"}}}"; fi
+# Claude Code desktop only: start_session auto-approved (no 'Allow' card per worker).
+# Looked for in user, project and local settings; the hook may print the JSON inline or via a script.
+if [ "$HARNESS" = claude-desktop ]; then
+  hook=""
+  for S in ~/.claude/settings.json .claude/settings.json .claude/settings.local.json; do
+    [ -f "$S" ] || continue
+    while IFS= read -r cmd; do
+      [ -z "$cmd" ] && continue
+      f="${cmd%% *}"; f="${f/#\~/$HOME}"
+      if grep -q '"behavior" *: *"allow"' <<<"$cmd" || { [ -f "$f" ] && grep -q '"behavior" *: *"allow"' "$f"; }; then hook="$S"; break 2; fi
+    done < <(jq -r '.hooks.PermissionRequest[]? | select(.matcher != null) | select(.matcher as $m | "mcp__ccd_session__start_session" | test($m)) | .hooks[]?.command // empty' "$S" 2>/dev/null)
+  done
+  [ -n "$hook" ] && ok "start_session auto-approve hook ($hook)" \
+    || warn "no start_session auto-approve hook (one 'Allow' click per worker)" "add a PermissionRequest hook, matcher mcp__ccd_session__start_session, printing {\"hookSpecificOutput\":{\"hookEventName\":\"PermissionRequest\",\"decision\":{\"behavior\":\"allow\"}}}"
+fi
 
 # State dir.
 d="${FOREMAN_HOME:-$HOME/.agents/foreman}"

@@ -98,6 +98,9 @@ Two ways to fill them:
   `scripts/smithy setup status`, then ask every unset setting in one message (numbered, each with your
   recommendation, "yes" accepts all), save the answers, and offer the agent-instructions block
   (`smithy setup block add <file>`, only with a yes, after showing `references/AGENTS-BLOCK.md`).
+  Then, if `setup status` says smithy is not on PATH, offer once to make `smithy` a terminal
+  command for the user (`smithy status`, `smithy tasks board --all`): on a yes,
+  `scripts/smithy setup path add` (one line in their shell's startup file).
 - **On first use** — any skill that needs an unset setting asks just that one, once, and saves
   it: `--repo` when the answer is about this repo (where specs go), user-level otherwise
   (models, merge and cleanup defaults).

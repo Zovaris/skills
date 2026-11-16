@@ -20,6 +20,7 @@ Scripts are in `<skill-dir>/scripts/` (`<skill-dir>` is this file's folder):
 | `harness.sh` | Prints `<harness> <adapter>` (desktop, cli or any); `WARDEN_HARNESS` overrides |
 | `status.js board\|get\|set\|live` | Status cards: the board with each item's `stage`, one card, writes (workers), a live view for the user |
 | `watch.sh [batch] [max-min]` | Blocks without tokens until a card needs you or goes stale |
+| `wait-for.js <target>…` | Same waiter for GitHub: `pr:<n>`, `run:<id>`, `branch:<name>`, `prs`, `issues:<label>`, `batch:<name>`, any mix |
 | `wait-turn.sh <batch> <id>` | A launched worker waits here until its prereqs merge and a running slot frees |
 | `verify.sh <repo> <branch> [pr]` | Proof for a PR claim: pushed head matches, checks, mergeable |
 | `route.js` | Picks a model tier (cheap, mid, strong) per task |

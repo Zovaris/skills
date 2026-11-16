@@ -22,6 +22,31 @@ t "branch slug capped at 40" 'b="$($S/names.sh branch 03 "a very long title that
 t "worktree is a sibling" '[ "$($S/names.sh worktree feat/x)" = "$(cd "$T" && pwd -P)/worktrees/repo-feat-x" ]'
 t "branch template setting" '$S/config.sh set git.branch "agent/{key}-{slug}" && [ "$($S/names.sh branch 7 "Add x")" = agent/7-add-x ] && $S/config.sh set git.branch "{type}/{key}-{slug}"'
 
+# wait-for.js with a fake gh
+mkdir -p "$T/bin"
+cat > "$T/bin/gh" <<'GH'
+#!/usr/bin/env bash
+case "$1 $2" in
+  "auth status") exit 0 ;;
+  "pr view") cat "$T_PR" ;;
+  "run view") cat "$T_RUN" ;;
+esac
+GH
+chmod +x "$T/bin/gh"; export T_PR="$T/pr.json" T_RUN="$T/run.json"
+W() { PATH="$T/bin:$PATH" node $S/wait-for.js "$@"; }
+echo '{"number":5,"url":"u5","state":"OPEN","mergeable":"MERGEABLE","headRefOid":"abc1234","statusCheckRollup":[{"name":"unit","status":"COMPLETED","conclusion":"SUCCESS"}]}' > "$T/pr.json"
+t "pr: finished checks reported at once" '[ "$(W pr:5 --max 0)" = "pr 5 checks=green u5" ]'
+echo '{"number":5,"url":"u5","state":"OPEN","mergeable":"MERGEABLE","headRefOid":"abc1234","statusCheckRollup":[{"name":"unit","status":"COMPLETED","conclusion":"FAILURE"},{"name":"lint","status":"COMPLETED","conclusion":"SUCCESS"}]}' > "$T/pr.json"
+t "pr: red names the failed checks" '[ "$(W pr:5 --max 0)" = "pr 5 checks=red failed=unit u5" ]'
+echo '{"number":5,"url":"u5","state":"OPEN","mergeable":"MERGEABLE","headRefOid":"abc1234","statusCheckRollup":[{"name":"unit","status":"IN_PROGRESS"}]}' > "$T/pr.json"
+t "pr: pending → heartbeat" 'W pr:5 --max 0; [ $? -eq 4 ]'
+( sleep 2; echo '{"number":5,"url":"u5","state":"MERGED","mergeable":"UNKNOWN","headRefOid":"abc1234","statusCheckRollup":[{"name":"unit","status":"IN_PROGRESS"}]}' > "$T/pr.json" ) &
+t "pr: merge wakes it" '[ "$(W pr:5 --every 1 --max 1)" = "pr 5 merged u5" ]'
+wait
+echo '{"status":"completed","conclusion":"failure","name":"CI","url":"r1","jobs":[{"name":"build","conclusion":"failure"},{"name":"lint","conclusion":"success"}]}' > "$T/run.json"
+t "run: finished with failed jobs" '[ "$(W run:9 --max 0)" = "run 9 failure failed=build r1" ]'
+t "unknown target exits 2" 'W nope:1 --max 0; [ $? -eq 2 ]'
+
 # commit.sh
 t "style is conventional" '[ "$($S/commit.sh style | head -1)" = "style: conventional" ]'
 t "rejects trailing period" '! $S/commit.sh check "feat: add x."'

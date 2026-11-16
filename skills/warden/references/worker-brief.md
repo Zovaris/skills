@@ -68,8 +68,8 @@ requirements from the intent and the code"; out of scope if the user named it>
   alone are not reasons to stop.
 - Same obstacle twice after a real fix attempt: state=blocked with the one thing you need; stop.
 - Do not create worktrees or issues; never start, fork or hand off sessions.
-- Waiting on CI or anything external: one blocking command (`gh pr checks <pr> --watch`, or an
-  `until …; do sleep 30; done` loop) with a 10-minute timeout. No sleep-then-check turns.
+- Waiting on CI or a PR: one blocking `<warden-dir>/scripts/wait-for.js pr:<pr>` (or `run:<id>`,
+  `branch:<name>`); it prints one line when something happens. No sleep-then-check turns.
 
 ## Status card
 `<skill-dir>/scripts/status.js set <batch> <id> key=value…` at every phase change and before

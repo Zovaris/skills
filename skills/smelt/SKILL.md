@@ -112,7 +112,8 @@ the docs the change touched (`references/DOCS.md`). Then:
   finds one, fill every heading (N/A when one doesn't apply); otherwise what and why, tests
   added, commands run with results, agents run and what they found, "Decided without you" (from
   `rulings.md` if any), ADRs added. Title in the commit style:
-  `pr.sh create --base <b> --title "<t>" --body-file <f>`. (2) **Merge locally** into the base
+  `pr.sh create --base <b> --title "<t>" --body-file <f>`; then wait for its checks with
+  `scripts/wait-for.js pr:<n>` (background where the harness wakes on exit), never sleep loops. (2) **Merge locally** into the base
   only when the user asks. (3) **Keep** the branch for later. Discard work only when the user
   explicitly says to.
 - **Clean up** once merged or discarded: `scripts/cleanup.sh <repo> <branch> [<worktree>]`,

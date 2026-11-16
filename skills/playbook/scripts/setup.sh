@@ -4,16 +4,19 @@
 #   setup.sh block status [file]    is the block in <file> (default: this harness's user file)?
 #   setup.sh block add [file]       add or refresh the block (between playbook:start/end markers)
 #   setup.sh block remove [file]    remove it
-# Default file per harness: claude-* → ~/.claude/CLAUDE.md, codex → ~/.codex/AGENTS.md,
-# opencode → ~/.config/opencode/AGENTS.md, gemini → ~/.gemini/GEMINI.md, else ./AGENTS.md.
+# Default file per harness: claude-* → ~/.claude/CLAUDE.md, codex → $CODEX_HOME/AGENTS.md,
+# opencode → $XDG_CONFIG_HOME/opencode/AGENTS.md, gemini → ~/.gemini/GEMINI.md,
+# pi → $PI_CODING_AGENT_DIR/AGENTS.md, dsh → $DSH_HOME/AGENTS.md, else ./AGENTS.md (Cursor has
+# no global file; it reads the project's AGENTS.md).
 set -euo pipefail
 DIR="$(cd "$(dirname "$0")" && pwd -P)"
 BLOCK="$DIR/../references/AGENTS-BLOCK.md"
 harness() { "$DIR/harness.sh" | awk '{print $1}'; }
 default_file() {
   case "$(harness)" in
-    claude-*) echo "$HOME/.claude/CLAUDE.md" ;; codex) echo "$HOME/.codex/AGENTS.md" ;;
-    opencode) echo "$HOME/.config/opencode/AGENTS.md" ;; gemini) echo "$HOME/.gemini/GEMINI.md" ;;
+    claude-*) echo "$HOME/.claude/CLAUDE.md" ;; codex) echo "${CODEX_HOME:-$HOME/.codex}/AGENTS.md" ;;
+    opencode) echo "${XDG_CONFIG_HOME:-$HOME/.config}/opencode/AGENTS.md" ;; gemini) echo "$HOME/.gemini/GEMINI.md" ;;
+    pi) echo "${PI_CODING_AGENT_DIR:-$HOME/.pi/agent}/AGENTS.md" ;; dsh) echo "${DSH_HOME:-$HOME/.dsh}/AGENTS.md" ;;
     *) echo "$PWD/AGENTS.md" ;;
   esac
 }

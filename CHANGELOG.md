@@ -5,6 +5,10 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+### foreman and silent
+- The worker brief carries the silent rules itself, at the top and again before the closing line, and foreman spawns workers with the brief's full text instead of a pointer to the file, so the rules don't fade over a long session.
+- `silent` names the narration it forbids ("Now let me…", "Next I'll…") and says the rule lasts the whole session.
+
 ## v0.6.0 — 2026-11-15
 
 ### shared

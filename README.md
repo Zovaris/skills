@@ -5,8 +5,16 @@
 **Agent skills for planned, test-first, parallel software work.**
 
 [![check](https://github.com/Zovaris/skills/actions/workflows/check.yml/badge.svg)](https://github.com/Zovaris/skills/actions/workflows/check.yml)
-[![release](https://img.shields.io/github/v/release/Zovaris/skills?sort=semver)](https://github.com/Zovaris/skills/releases)
+[![release](https://img.shields.io/github/v/release/Zovaris/skills?sort=semver&label=release)](https://github.com/Zovaris/skills/releases)
+[![Go](https://img.shields.io/github/go-mod/go-version/Zovaris/skills?logo=go&logoColor=white&label=Go)](go.mod)
 [![license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+
+[![Agent Skills](https://img.shields.io/badge/format-SKILL.md-8b7fe0)](#skills)
+[![Claude Code](https://img.shields.io/badge/Claude_Code-supported-d97757?logo=claude&logoColor=white)](#harnesses)
+[![Codex](https://img.shields.io/badge/Codex-supported-412991?logo=openai&logoColor=white)](#harnesses)
+[![OpenCode](https://img.shields.io/badge/OpenCode-supported-24292f)](#harnesses)
+[![Cursor](https://img.shields.io/badge/Cursor-supported-000000)](#harnesses)
+[![Gemini CLI](https://img.shields.io/badge/Gemini_CLI-supported-4285f4?logo=googlegemini&logoColor=white)](#harnesses)
 
 </div>
 

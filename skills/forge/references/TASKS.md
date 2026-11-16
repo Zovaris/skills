@@ -6,16 +6,21 @@ updates it; never hand-edit status lines when the script can.
 
 ## Where it lives
 
-Use the user's default, `scripts/config.sh get tasks.location` (`repo`, `local` or `board`), and
-`config.sh get tasks.commit` (default `true`). Unset → ask once at the end of the spec, with
-your recommendation first, and offer to save the answer with `config.sh set`:
+Run `scripts/task-dir.sh <slug>`: it reads the user's settings, creates the dir and prints it.
+When it exits 3 it prints `ask <key>: <question>`: ask the user that (your recommendation first),
+save the answer for this repo with `scripts/config.sh set --repo <key> <value>`, run it again.
+It asks at most twice per repo, ever:
 
-| Choice | Where | When |
-|---|---|---|
-| Board | the user's tracker (GitHub Issues via `gh`, or Linear/Jira through the harness's tools) | the user already works from a board |
-| Repo, committed (`tasks.commit` true, the default) | `docs/specs/<slug>/` | the plan is versioned and reviewed with the code |
-| Repo, not committed (`tasks.commit` false) | `.docs/specs/<slug>/`, with `.docs/` added to `.git/info/exclude` (local, so the ignore isn't committed either) | next to the code, but specs stay out of git |
-| Local | `~/.agents/plans/<repo>/<slug>/` (`$FORGE_PLANS`) | private notes outside the repo |
+1. `tasks.commit` — commit the specs and tasks to git? `true` → `docs/specs/<slug>/`, reviewed
+   with the code. `false` → `.docs/specs/<slug>/`, next to the code but out of git.
+2. `tasks.ignore` (only when `false`) — how `.docs/` stays out of git: `gitignore` adds it to
+   `.gitignore` (commit that one line with `commit.sh`, so the whole team ignores it) or
+   `exclude` adds it to `.git/info/exclude` (this machine only, nothing committed).
+
+`tasks.location` (default `repo`) switches the whole thing: `local` puts plans in
+`~/.agents/plans/<repo>/<slug>/` (`$FORGE_PLANS`), `board` puts tasks on the user's tracker
+(GitHub Issues via `gh`, or Linear/Jira through the harness's tools) and keeps the spec where
+`tasks.commit` says. `scripts/config.sh list` shows the current values.
 
 Other places: list them in `$FORGE_TASKS_DIRS` (colon-separated) so `tasks.js` finds them.
 

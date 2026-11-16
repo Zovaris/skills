@@ -24,7 +24,7 @@ the architecture with the user before a fourth attempt.
 **Redirect signals.** When the user says "is that really happening?", "you're guessing", "stop,
 look again" or similar, you skipped a phase: go back to reproduce or locate.
 
-Then run `agents/regression.md` against the fix and continue with review.
+Then the regression agent proves the fix, and review follows.
 
 ## Red flags
 

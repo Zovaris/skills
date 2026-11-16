@@ -29,14 +29,14 @@ For each task:
    - `NEEDS_CONTEXT` → answer from the spec or code (ruling) and send it back; if only the user
      can answer, ask (under `/silent`, decide and rule).
    - `BLOCKED` → `tasks.js set <file> status=todo`, note why, move to the next unblocked task.
-4. **Verify** per `references/VERIFY.md`: read the diff, run the task's tests and the suite.
+4. **Verify** (the verify gate): read the diff, run the task's tests and the suite.
 5. **Review** the diff with a fresh `agents/spec-check.md` (task file as the spec) and, at
-   `normal`/`full`, `agents/standards.md`. Handle findings per `references/RECEIVING.md`.
+   `normal`/`full`, `agents/standards.md`. Handle findings with the receiving-review rules.
 6. **Fix loop**: send the reproduced findings back to a fresh implementer with the diff. At most
    3 rounds; round 3 uses the strong model. Still failing → `BLOCKED` with the findings.
 7. Commit the task atomically (`scripts/commit.sh`), `tasks.js set <file> status=done`.
 
-After the last task: one whole-branch review (`references/REVIEW.md`), one fix wave, then ship.
+After the last task: one whole-branch review (the review phase), one fix wave, then ship.
 
 ## Rulings
 

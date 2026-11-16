@@ -1,6 +1,6 @@
 # Spec
 
-## Spec — `spec.md` in the task dir (`references/TASKS.md` says where)
+## Spec — `spec.md` in the task dir (`scripts/task-dir.sh <slug>` gives it)
 
 Explore the code first. Propose the test seams (public entry points where behaviour is observable;
 ideally one, as high-level as possible) and confirm them with the user before writing.
@@ -33,4 +33,4 @@ Status: draft | agreed | done
 
 ## Tasks
 
-Split the spec into tasks, choose where they live and how to run them: `references/TASKS.md`.
+Then split it into tasks (the spec phase's next step).

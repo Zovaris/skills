@@ -37,7 +37,7 @@ Write the design for the chosen approach, sized to the work: a few lines for sma
 short doc in sections for big ones (behaviour, data, edge cases, what's out). Show it, get
 approval. It becomes the top of `spec.md`.
 
-Then grill the remaining open decisions (`references/GRILLING.md`) and write the spec and tasks.
+Then grill the remaining open decisions (the plan phase's next step) and write the spec and tasks.
 
 ## `/forge brainstorm`
 

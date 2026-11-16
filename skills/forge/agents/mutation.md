@@ -13,7 +13,7 @@ You measure whether the tests actually catch bugs in the changed code.
    - StrykerJS: `npx stryker run --mutate "<file1>,<file2>" --incremental`
    - mutmut 3: `mutmut run --paths-to-mutate <files>` then `mutmut results`
    - cargo-mutants: `cargo mutants --in-diff <(git diff <base>)`
-   Cap the run at ~10 minutes (Bash timeout 600000); if it can't finish, scope down further.
+   Cap the run at ~10 minutes; if it can't finish, scope down further.
 2. For each surviving mutant: file:line, the mutation, and why no test caught it (no assertion
    on that value, branch never exercised, equivalent mutant).
 3. Mark equivalent mutants (no observable behaviour change) and leave them out of the score.

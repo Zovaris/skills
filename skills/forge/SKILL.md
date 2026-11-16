@@ -1,6 +1,6 @@
 ---
 name: forge
-description: Engineering workflow — brainstorm and grill the idea, spec and a shared task list, build with TDD, attack it with independent test agents (adversarial, regression, property, mutation, E2E), review on spec, standards and security, verify every claim, ship a PR, keep ADRs, glossary and standards. Start at any phase, pick a speed (fast, normal, full), work the task list one at a time, all at once here, or hand it to foreman. Run as /forge [phase|from <phase>] [fast|full] <task>.
+description: Runs an engineering workflow (brainstorm, spec, task list, TDD build, test agents, review, verify, PR) at a chosen speed (fast, normal or full), from any phase. Invoked by the user as /forge.
 disable-model-invocation: true
 argument-hint: "[brainstorm|plan|spec|build [next|all]|test|review|ship|debug|adr|retro|init | from <phase>] [fast|full] <task or path>"
 ---
@@ -11,10 +11,13 @@ One workflow in phases with exit gates. Start wherever the user already is, run 
 speed calls for, and read a reference only when its phase starts. Paths are relative to
 `<skill-dir>` (this file's folder). Works in any agent harness: where this file says
 **subagent**, use your harness's subagent tool with a fresh context; without one, write the
-prompt to a file and run `scripts/agent.sh [--readonly] <prompt-file>` (any agent CLI).
+prompt to a file and run `scripts/agent.sh [--readonly] <prompt-file>` (any agent CLI). An
+**agent** is such a subagent given one of the prompts in `agents/` (implementer, test agents,
+reviewers); it sees only what that prompt lists.
 Subagent models: `scripts/route.js` picks cheap, mid or strong per job from the task itself
 (read-only agents and reviews cheap, risky or hard work strong); unset tiers → propose
-`config.sh suggest-models` (or ask for each tier when there are none) and save the user's yes.
+`scripts/config.sh suggest-models` (or ask for each tier when there are none) and save the
+user's yes.
 
 ## Pick the entry point
 
@@ -27,8 +30,8 @@ Subagent models: `scripts/route.js` picks cheap, mid or strong per job from the 
 | `/forge build all [dir]` | `references/EXECUTE.md`: every task here, one implementer subagent each |
 | `/forge <phase> <task>` | that phase only: `spec`, `build`, `test`, `review`, `ship`, `retro` |
 | `/forge from <phase> <task>` | that phase to the end, e.g. `from test` on code you already wrote |
-| `/forge debug <bug>` | `references/DEBUG.md` → build (fix) → test → review → ship |
-| `/forge adr <title>` · `/forge init` | with the docs skill installed (`scripts/find-skill.sh docs`), follow its `adr` / `init` mode; else `references/DOCS.md` |
+| `/forge debug <bug>` | `references/DEBUG.md` → build (fix) → test (`agents/regression.md`) → review → ship |
+| `/forge adr <title>` · `/forge init` | with the docs skill installed (`scripts/find-skill.sh docs`), follow its `adr` / `init` mode; else `references/DOCS.md`. **Done:** the files are written and listed |
 
 Already have a plan in your head or in the chat? That *is* the spec: start at `build` and treat
 the agreed points as the acceptance criteria; don't re-plan.
@@ -77,7 +80,7 @@ and Interfaces, self-reviewed, where the user picks; then ask how to run them: h
 time (`build next`), here all at once (`build all`), in parallel with foreman (if installed),
 or later. **Done:** spec + tasks written, each fits one fresh context; the user chose.
 
-**build · TDD** — `references/TDD.md`. From a task file: `tasks.js set <file> status=doing`
+**build · TDD** — `references/TDD.md`. From a task file: `scripts/tasks.js set <file> status=doing`
 first, `status=done pr=<url>` after ship. One test at a time at the agreed seams; each fails
 for the right reason before any code; never edit a test to go green (if it contradicts the
 spec, stop and say so). Single test files while working, typecheck often, full suite at the
@@ -90,7 +93,7 @@ Agents that write tests work in their own git worktree. You fix the code; they n
 **Done:** every reproduced finding fixed (failing test first) or rejected with one line; VERIFY
 gate on the suite.
 
-**review** — `references/REVIEW.md`. Fresh **subagents**: `agents/standards.md`,
+**review** — `references/REVIEW.md` (findings: `references/RECEIVING.md`). Fresh **subagents**: `agents/standards.md`,
 `agents/spec-check.md`, and `agents/security.md` when the speed or the change calls for it;
 never merge or rerank their reports. Findings and human PR comments: `references/RECEIVING.md`.
 **Done:** no open blocking finding; every high security finding shown to the user.
@@ -117,7 +120,8 @@ or local branches from this task.
 
 **retro** — `references/DOCS.md`. Mechanical mistakes → an automated check; judgement calls →
 `docs/agents/STANDARDS.md`; facts about the user → the harness's memory; project facts → repo
-docs. Propose, write what the user accepts.
+docs. Propose, write what the user accepts. **Done:** each accepted lesson is written and
+listed; the rest are named as dropped.
 
 ## Always
 
@@ -127,19 +131,16 @@ docs. Propose, write what the user accepts.
   "Decided without you".
 - No claim without fresh evidence (`references/VERIFY.md`): every "passes" names the command
   and its result; every "an agent did it" comes with its diff.
-- Never `--no-verify`, never skip or delete a failing test to go green, never update snapshots
-  in the same pass as a refactor.
+- Never `--no-verify`, never skip or delete a failing test to go green.
 - Keep a short task list of the phases you're running (your harness's to-do tool if it has
   one) and tick it as you go; it is the user's progress view.
 
 ## Red flags
 
+Phase-specific ones live in TDD, DEBUG and VERIFY; these cover the whole workflow.
+
 | Thought | Reality |
 |---|---|
 | "Too small for the workflow" | Then it's `fast`, not skipped: a test and the verify gate still. |
 | "I know what they want, skip the questions" | Your belief is thinner than it feels. Ask the one question that matters. |
-| "I'll write the tests once it works" | Tests written after prove nothing. |
-| "The agent said it's done" | Read the diff, run the tests. |
-| "Review found nothing, ship it" | Did the verify gate run on the integrated tree? |
-| "The reviewer is probably right" | Verify the finding before changing code. |
 | "Let me clean up these old branches too" | Only what forge created. Never force. |

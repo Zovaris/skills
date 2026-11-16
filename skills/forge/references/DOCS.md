@@ -6,7 +6,7 @@ Files are created only when there is something to write in them.
 |---|---|---|
 | Domain terms | `docs/GLOSSARY.md` | everyone, phase 0 |
 | Hard decisions | `docs/adr/NNNN-<slug>.md` | phase 0 when relevant |
-| Specs and tasks | `docs/specs/<slug>/` or `~/.agents/plans/<repo>/<slug>/` (see TASKS.md) | build, review |
+| Specs and tasks | `docs/specs/<slug>/`, `.docs/specs/<slug>/` (out of git) or `~/.agents/plans/<repo>/<slug>/` (`scripts/task-dir.sh` decides) | build, review |
 | Judgement rules for agents | `docs/agents/STANDARDS.md` | standards reviewer |
 | Mechanical rules | lint rules, hooks, scripts | CI, hooks |
 | Facts about the user, their preferences | the harness's memory | every session |

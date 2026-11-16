@@ -6,7 +6,7 @@ block with exactly what the file lists. Agents that write tests work in their ow
 tests are merged into yours, remove those worktrees and branches (`scripts/cleanup.sh`). Launch them
 together so they run in parallel. Without a subagent tool: write each prompt to a file and run
 `scripts/agent.sh --bg --cwd <worktree> --log <file> <prompt-file>` per agent, then read the logs.
-Read-only agents (spec-check, standards) use `agent.sh --readonly`.
+Read-only agents (spec-check, standards, security, builder) use `agent.sh --readonly`.
 
 Which ones run depends on the speed (table in SKILL.md); within it, use this to choose.
 

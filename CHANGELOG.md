@@ -5,6 +5,8 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+## v0.8.0 — 2026-11-16
+
 ### smithy (breaking)
 - The repo is now `Zovaris/smithy` (GitHub redirects the old name): install with
   `npx skills add Zovaris/smithy -g`.

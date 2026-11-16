@@ -20,6 +20,9 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ### tend (new)
 - Keeps open PRs mergeable: CI fixes, rebases after sibling merges, review comments; launched by foreman for its batches.
+- Models: routine work on the user's cheap model, code fixes on the strong one; `--model` / `--fix-model` override.
+- `watch [prs|issues|all]`: keeps adopting new PRs (default) and can queue accepted labeled issues as task files for foreman, never building them; `scripts/watch.sh` waits without tokens.
+- A PR it can't get green comes back to foreman as a `blocked` / `needs_decision` card, or to the user as `needs you <url>: <why>`.
 
 ### forge
 - `build all`: every task here with one implementer subagent each, per-task review, capped fix loop and a rulings ledger.

@@ -27,7 +27,7 @@ prints and follow it: you can't run it as a slash command.
 | several tasks done at once, or a task list run in parallel | **foreman** | Spawns sessions and costs tokens: propose it with the task list and wait for a yes, or tell the user to run `/foreman`. |
 | a fact, a comparison, "why does X", "can we Y" | **scout** | Model-invoked; read-only; answers with sources. |
 | a decision recorded, docs, module READMEs, comment policy, a codebase map, to search past decisions | **docs** | Model-invoked. Search `docs search` before re-deciding anything. |
-| open PRs kept green, rebased, review comments handled | **tend** | Suggest `/tend <pr>`; foreman launches it for its own PRs. |
+| open PRs kept green, rebased, review comments handled; new PRs or labeled issues watched | **tend** | Suggest `/tend <pr>` or `/tend watch [prs\|issues\|all]`; foreman launches it for its own PRs. Issues it accepts become task files in `~/.agents/plans/<repo>/inbox/` for foreman. |
 | the work done without conversation | **silent** | Only when the user runs `/silent` or asks for no talk. |
 | — every reply | **direct** | If installed, write every reply its way unless the user says "normal mode". |
 

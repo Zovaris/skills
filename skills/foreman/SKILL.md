@@ -175,8 +175,11 @@ secrets or client data in it.
    own when the PR closes (auto-archive, where the harness has it); otherwise the final message
    says `/foreman cleanup` finishes them after the merges.
 6. **Tend** (when the tend skill is installed): once every ship item is `pr_open` or `ready` and
-   its worker has ended, **spawn** one tend session for the batch: brief = "Read <tend-skill> and
-   follow it for `batch <batch>`; report through the cards (`--card <status.js> <batch> <id>`)".
+   its worker has ended, **spawn** one tend session for the batch on the cheap model
+   (`config.sh model cheap`; code fixes inside it go to the strong one): brief = "Read
+   <tend-skill> and follow it for `batch <batch>`; report through the cards (`--card <status.js>
+   <batch> <id>`)". A PR it can't get green comes back as a `blocked` or `needs_decision` card,
+   handled like any other.
    It keeps the PRs green, rebased after sibling merges and answered; you keep watching cards.
    Without tend, list the open PRs in the final message.
 

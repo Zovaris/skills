@@ -67,6 +67,12 @@ t "task-dir asks for tasks.ignore" 'o="$(cd "$T/repo" && $S/task-dir.sh pay)"; [
 (cd "$T/repo" && $S/config.sh set --repo tasks.ignore exclude >/dev/null && $S/task-dir.sh pay >/dev/null && $S/task-dir.sh pay >/dev/null)
 t "exclude adds .docs/ once" '[ "$(grep -c "^.docs/$" "$(cd "$T/repo" && git rev-parse --git-path info/exclude)")" = 1 ] && [ -d "$T/repo/.docs/specs/pay" ]'
 
+# model suggestions
+t "suggestions only where aliases are stable" 'FOREMAN_HARNESS=codex $S/config.sh suggest-models; [ $? -eq 3 ]'
+t "claude suggests haiku/sonnet/opus" '[ "$(FOREMAN_HARNESS=claude-cli $S/config.sh suggest-models | paste -sd, -)" = "cheap haiku,mid sonnet,strong opus" ]'
+FOREMAN_HARNESS=claude-cli $S/config.sh accept-models >/dev/null
+t "accept saves them for that harness" '[ "$(FOREMAN_HARNESS=claude-cli $S/config.sh model strong)" = opus ]'
+
 # route.js
 $S/config.sh set-model mid midm >/dev/null
 t "router: typo is cheap" '[ "$($S/route.js --text "fix typo in README" | cut -d" " -f1)" = cheap ]'

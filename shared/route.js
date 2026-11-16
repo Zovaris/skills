@@ -4,7 +4,7 @@
 //            [--speed fast|normal|full] [--json]
 // Prints `<tier> <model>  # reasons`, or JSON with --json. <model> is the user's model for that
 // tier in this harness (config.sh model <tier>); `-` when unset (use the session default, and
-// ask the user once to set it). The caller may move one tier up or down with a stated reason;
+// propose `config.sh suggest-models`, or ask the user to name the tier). The caller may move one tier up or down with a stated reason;
 // a user's explicit model always wins.
 // Tiers: cheap (mechanical, read-only, small), mid (most feature work), strong (risky, ambiguous,
 // cross-cutting, or the last fix round).

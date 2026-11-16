@@ -5,6 +5,8 @@
 # Models are stored per harness (user file only) because names differ; nothing is hard-coded.
 #   config.sh model <cheap|mid|strong>          model for this harness; exit 3 when unset
 #   config.sh set-model <cheap|mid|strong> <name> [harness]
+#   config.sh suggest-models                    `<tier> <model>` suggestions for this harness; exit 3 when none
+#   config.sh accept-models                     save the suggestions (only after the user said yes)
 #   config.sh get <key>                         effective value (repo, then user, then default); exit 3 when unset with no default
 #   config.sh set [--repo] <key> <value>        value parsed as JSON when it is JSON
 #   config.sh list                              every known setting: value, source, what it does
@@ -53,6 +55,16 @@ case "${1:-}" in
   set-model)
     [[ "${2:-}" =~ ^(cheap|mid|strong)$ ]] && [ -n "${3:-}" ] || { echo 'usage: config.sh set-model <cheap|mid|strong> <name> [harness]' >&2; exit 2; }
     write "$USER_CFG" "models.${4:-$(harness)}.$2" "$3"; echo "saved models.${4:-$(harness)}.$2 = $3 ($USER_CFG)" ;;
+  suggest-models)
+    # Only where the harness has stable tier aliases; elsewhere model names vary per account and
+    # provider, so the user names them.
+    case "$(harness)" in
+      claude-*) printf 'cheap haiku\nmid sonnet\nstrong opus\n' ;;
+      *) exit 3 ;;
+    esac ;;
+  accept-models)
+    sug="$("$0" suggest-models)" || { echo "no suggestions for $(harness): ask the user for each tier" >&2; exit 3; }
+    while read -r tier m; do write "$USER_CFG" "models.$(harness).$tier" "$m"; echo "saved models.$(harness).$tier = $m"; done <<<"$sug" ;;
   get)
     [ -n "${2:-}" ] || exit 2
     r="$(effective "$2")" || exit 3; echo "${r% *}" ;;

@@ -2,7 +2,7 @@
 
 Agent skills for planned, test-first, parallel software work. They use the open `SKILL.md`
 format and work in any harness that loads skills (Claude Code, Codex, OpenCode, Cursor, Gemini…):
-everything is files, git, bash and node, and harness-specific bits live in small adapters.
+everything is Markdown plus one small Go binary (`smithy`) that drives git and the GitHub CLI, and harness-specific bits live in small adapters.
 GitHub work goes through the GitHub CLI (`gh`), which `/warden doctor` checks.
 
 ## Start with use-smithy
@@ -29,7 +29,7 @@ file (`AGENTS.md` / `CLAUDE.md`): ask your agent to "run use-smithy setup".
 
 ## Harnesses
 
-Every skill is plain files plus bash, node and git; nothing depends on one vendor. What changes
+Every skill is Markdown plus the `smithy` binary, git and `gh`; nothing depends on one vendor. What changes
 per harness is how you start a skill, how warden starts workers and whether a waiting session
 can be woken up:
 
@@ -37,14 +37,14 @@ can be woken up:
 |---|---|---|---|---|
 | Claude Code desktop | `~/.claude/skills` | `/smelt` | app sessions (`start_session`) | yes |
 | Claude Code CLI | `~/.claude/skills` | `/smelt` | `claude --bg` | yes |
-| Codex CLI | `~/.agents/skills` | `$smelt` | `agent.sh` → `codex exec` | no: foreground watcher |
-| OpenCode | `~/.config/opencode/skills`, `~/.agents/skills` | `@smelt` | `agent.sh` → `opencode run --standalone` | yes |
-| Pi | `~/.pi/agent/skills`, `~/.agents/skills` | `/skill:smelt` | `agent.sh` → `pi -p` | no: foreground watcher |
-| DeepSeek Harness | `~/.dsh/skills`, `~/.agents/skills` | `/smelt` | `agent.sh` → `dsh headless` | yes |
-| Gemini CLI | `~/.gemini/skills`, `~/.agents/skills` | ask: "use smelt" | `agent.sh` → `gemini -p` | with `backgroundCompletionBehavior: inject` |
-| Cursor CLI | `~/.cursor/skills`, `~/.agents/skills` | `/smelt` | `agent.sh` → `agent -p` | no: foreground watcher |
+| Codex CLI | `~/.agents/skills` | `$smelt` | `smithy agent` → `codex exec` | no: foreground watcher |
+| OpenCode | `~/.config/opencode/skills`, `~/.agents/skills` | `@smelt` | `smithy agent` → `opencode run --standalone` | yes |
+| Pi | `~/.pi/agent/skills`, `~/.agents/skills` | `/skill:smelt` | `smithy agent` → `pi -p` | no: foreground watcher |
+| DeepSeek Harness | `~/.dsh/skills`, `~/.agents/skills` | `/smelt` | `smithy agent` → `dsh headless` | yes |
+| Gemini CLI | `~/.gemini/skills`, `~/.agents/skills` | ask: "use smelt" | `smithy agent` → `gemini -p` | with `backgroundCompletionBehavior: inject` |
+| Cursor CLI | `~/.cursor/skills`, `~/.agents/skills` | `/smelt` | `smithy agent` → `agent -p` | no: foreground watcher |
 
-`shared/agent.sh` runs workers headless with each CLI's flags for writing files, running commands
+`smithy agent` runs workers headless with each CLI's flags for writing files, running commands
 and opening PRs without prompts (`AGENT_CLI` picks one, `AGENT_ARGS` adds flags, `AGENT_CMD`
 plugs in anything else). User-invoked skills (smelt, warden, hush, tend) stay out of the model's
 reach where the harness supports it (`disable-model-invocation`, and `agents/openai.yaml` for
@@ -123,7 +123,7 @@ Two JSON files, the repo's first: `<repo>/.smithy/config.json` (this repo only) 
 
 | Setting | Default | What it does |
 |---|---|---|
-| `models.<harness>.cheap` / `.mid` / `.strong` | suggested or ask | Stored per harness (`smithy config set-model <tier> <name>`); on Claude the agent suggests haiku, sonnet, opus. The router (`route.js`) picks a tier per task: cheap for small, mechanical or read-only work, mid for most features, strong for risky, hard or large work and the last fix round. |
+| `models.<harness>.cheap` / `.mid` / `.strong` | suggested or ask | Stored per harness (`smithy config set-model <tier> <name>`); on Claude the agent suggests haiku, sonnet, opus. The router (`smithy route`) picks a tier per task: cheap for small, mechanical or read-only work, mid for most features, strong for risky, hard or large work and the last fix round. |
 | `warden.worker_model` | `route` | `route`: a tier per task; `session`: the parent's model; or one model name for every worker. |
 | `tasks.commit` | ask | Commit specs and tasks (`docs/specs/`) or keep them out of git (`.docs/specs/`). |
 | `tasks.ignore` | ask | When not committed: a committed `.gitignore` line, or `.git/info/exclude` (this machine only). |
@@ -143,7 +143,7 @@ Coming from 0.7 (`~/.agents/`): the first run moves your settings, plans and bat
 | Hook | Harness | Does |
 |---|---|---|
 | `start_session` auto-approve (`PermissionRequest`) | Claude Code desktop | Skips the "Allow" click per warden worker. `/warden doctor` checks it only there. |
-| `skills/smelt/scripts/guard-tests.sh` | any with a pre-edit hook | Blocks test-file edits during TDD's green phase. |
+| `skills/smelt/scripts/smithy guard-tests` | any with a pre-edit hook | Blocks test-file edits during TDD's green phase. |
 
 ## Development
 
@@ -156,7 +156,7 @@ Coming from 0.7 (`~/.agents/`): the first run moves your settings, plans and bat
   writes `checksums.txt`, attests the build and publishes the GitHub release with the
   CHANGELOG section as notes.
 - Scripts used by several skills live in `shared/`; edit them there and run
-  `scripts/sync-shared.sh`, which copies them into each skill (each skill installs on its own).
+  `go run ./tools/sync-shared`, which copies them into each skill (each skill installs on its own).
 - `tests/run.sh` runs every offline test (shared scripts, skill lint, and the ledger, warden,
   scout and tend scripts); CI runs it.
 - `scripts/drill.sh` pressure-tests skills against a real agent CLI (`tests/drill/*.md`); it

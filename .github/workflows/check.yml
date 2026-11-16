@@ -22,7 +22,6 @@ jobs:
           for t in darwin/arm64 darwin/amd64 linux/arm64 linux/amd64 windows/amd64; do
             GOOS=${t%/*} GOARCH=${t#*/} go build -trimpath -ldflags "-s -w" -o /dev/null ./cmd/smithy
           done
-      - name: Shell and Node syntax
+      - name: Launcher syntax
         run: |
-          for f in shared/*.sh shared/smithy skills/*/scripts/*.sh scripts/*.sh; do sh -n "$f" 2>/dev/null || bash -n "$f"; done
-          for f in shared/*.js skills/*/scripts/*.js; do node --check "$f"; done
+          sh -n shared/smithy

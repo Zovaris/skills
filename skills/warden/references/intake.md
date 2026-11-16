@@ -18,7 +18,7 @@ Work out what you were given, in this order, and say in the plan line which it w
      exists, continue at 1.
    - "I split it quickly": read the code, propose 2–6 tasks in the task-file format (vertical
      slices, real blockers only) in one message, write them once approved to the dir
-     `task-dir.sh <slug>` gives (same settings and questions as smelt), continue at 1.
+     `smithy task-dir <slug>` gives (same settings and questions as smelt), continue at 1.
    - "Run it as one task": continue at 3 with the idea as the only line.
    Under `/hush`, don't ask: split when the idea clearly has independent parts, else one task.
 
@@ -31,7 +31,7 @@ Store it as `mode` in `batch.json`. A `(full)` item overrides the batch speed.
 ## Kinds
 
 `ship` (default) ends in a PR. `scout` ("investigate", "compare", "find out why") ends in
-`report.md` in the batch dir and no PR; with the scout skill installed (`find-skill.sh scout`) its
+`report.md` in the batch dir and no PR; with the scout skill installed (`smithy skills scout`) its
 worker follows that SKILL.md and writes the report there.
 
 ## Base branch

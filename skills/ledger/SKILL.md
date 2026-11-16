@@ -32,7 +32,7 @@ line, and pointers to the files above.
   standards file collects judgement rules the reviewers enforce). Add to AGENTS.md (or CLAUDE.md if
   that is what the repo uses) a short block: where docs live and the comment policy. Detect the
   stack and offer the matching lint config from `references/COMMENTS.md`; write it only on yes.
-- **adr `<title>`** — only when the ADR test below passes. `scripts/adr.sh "<title>"` creates the
+- **adr `<title>`** — only when the ADR test below passes. `scripts/smithy adr "<title>"` creates the
   next numbered file from `references/ADR-FORMAT.md`; fill it from the conversation and the code,
   status `proposed` until the user accepts it. Superseding: new ADR, then change only the old
   one's status line to `superseded by NNNN`.
@@ -42,12 +42,12 @@ line, and pointers to the files above.
   whose content now lives in the README.
 - **map** — write `docs/agents/MAP.md` per `references/MAP.md`, so agents stop re-exploring the
   repo. Refresh it when entry points or layout change.
-- **sync `[base]`** — `references/DRIFT.md`: `scripts/drift.sh <base>` first (deterministic),
+- **sync `[base]`** — `references/DRIFT.md`: `scripts/smithy drift <base>` first (deterministic),
   then judge what it flags. Update the docs in the same branch; report what changed.
-- **comments `[paths]`** — `scripts/comments.sh <paths>` (or `--diff <base>`). For each finding:
+- **comments `[paths]`** — `scripts/smithy comments <paths>` (or `--diff <base>`). For each finding:
   move the content to the module README or an ADR, turn it into a doc comment if it documents
   public API, or delete it. Re-run until clean.
-- **search `<query>`** — `scripts/search.sh "<query>"`: ADRs first, then glossary, module
+- **search `<query>`** — `scripts/smithy search "<query>"`: ADRs first, then glossary, module
   READMEs, other docs. Read the hits you need; quote file:line when you use them.
 
 ## ADR test
@@ -70,7 +70,7 @@ Code carries no explanatory comments. Allowed:
 
 Forbidden: explanatory inline or block comments, commented-out code, TODO/FIXME/HACK/XXX (open
 an issue), bare directives without a reason. Enforce with the stack's linter
-(`references/COMMENTS.md`) plus `scripts/comments.sh` in pre-commit and CI.
+(`references/COMMENTS.md`) plus `scripts/smithy comments` in pre-commit and CI.
 
 ## Always
 

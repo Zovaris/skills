@@ -43,6 +43,6 @@ Run typecheck every few cycles; the full suite at the end of the task.
 
 ## Optional hard guard
 
-`scripts/guard-tests.sh` is a PreToolUse hook that blocks edits to test files while
+`scripts/smithy guard-tests` is a PreToolUse hook that blocks edits to test files while
 `.smelt/green` exists. `touch .smelt/green` before writing code, remove it to write the next test.
 Install instructions are in the script header.

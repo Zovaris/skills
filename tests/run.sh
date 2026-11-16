@@ -10,7 +10,7 @@ if [ -z "${SMITHY_BIN:-}" ]; then
   export SMITHY_BIN="$out/smithy"
 fi
 go test ./... >/dev/null || { go test ./...; rc=1; }
-scripts/sync-shared.sh --check || rc=1
+go run ./tools/sync-shared --check || rc=1
 tests/skills.sh || rc=1
 for t in tests/*/run.sh; do bash "$t" || rc=1; done
 exit $rc

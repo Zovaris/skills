@@ -22,7 +22,7 @@ Fields: `state`, `phase`, `progress` (`3/7`, the worker's own task list), `branc
 
 | State | Meaning |
 |---|---|
-| `waiting` | Launched, waiting in `wait-turn.sh` for prereqs or a running slot |
+| `waiting` | Launched, waiting in `smithy wait-turn` for prereqs or a running slot |
 | `working` | Building |
 | `needs_decision` | Asked a question (`decision_key`, `question`, `options`, `impact`); stays open until you close it |
 | `blocked` / `failed` | Stopped; `note` says what it needs |

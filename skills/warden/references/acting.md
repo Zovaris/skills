@@ -1,6 +1,6 @@
 # Acting on cards
 
-One section per stage. Every final item goes through `cleanup.sh <repo> <branch> <worktree>`:
+One section per stage. Every final item goes through `smithy cleanup <repo> <branch> <worktree>`:
 worktree and local branch removed, unpushed work refused with `kept <branch>: …`, which goes in the
 final message instead of being forced. With `cleanup ask`, list what you would clean and end, and
 do it on the user's yes.
@@ -9,7 +9,7 @@ do it on the user's yes.
 
 By `impact` (you may raise it, never lower it):
 - **low** (local, cheap to undo, restores or completes the intent): decide on the merits.
-- **medium** (shapes a module or internal contract): `consult.sh` with the worker's question and
+- **medium** (shapes a module or internal contract): `smithy consult` with the worker's question and
   options verbatim, in neutral order. `NEED-INFO` goes back to the worker; `ESCALATE` makes it
   high.
 - **high** (widens scope beyond the intent, customer-visible, money, data, security, public API or
@@ -23,25 +23,25 @@ yourself: `smithy cards set <batch> <id> state=working decision_key=`. Log low a
 
 ## verify (`pr_open`, `ready`)
 
-`verify.sh <repo> <branch> <pr>`:
+`smithy verify <repo> <branch> <pr>`:
 - `unpushed` or `red`: back to the worker in one line.
 - `ready` with `note=merge-blocked` in merge auto: merge it yourself (`gh pr merge`); refused here
   too → list it for the user, with the doctor's permission hint.
 - other `ready`: list it as waiting for the user's merge.
-- `closed` (closed without merge): `state=dropped note="PR closed without merge"`, `cleanup.sh`,
+- `closed` (closed without merge): `state=dropped note="PR closed without merge"`, `smithy cleanup`,
   **end** the worker, set the source to `dropped`, name it in the final message.
 
 ## merged
 
-After `verify.sh` says `merged`: `cleanup.sh`, **end** the worker, update the source. Its
+After `smithy verify` says `merged`: `smithy cleanup`, **end** the worker, update the source. Its
 dependents are already waiting and start on their own. A `followup: <file>` in the note is work
 found after the merge: small and inside the intent → add it as an item (spawn it if this harness
 can from here, else propose it); bigger → a scope question for the user, with the other decisions.
 
 ## reported · dropped
 
-`reported`: read the report's first lines, **end** the worker, `cleanup.sh`. `dropped`:
-`cleanup.sh`, **end** the worker.
+`reported`: read the report's first lines, **end** the worker, `smithy cleanup`. `dropped`:
+`smithy cleanup`, **end** the worker.
 
 ## stuck (`blocked`, `failed`, or no card update for 45 min)
 

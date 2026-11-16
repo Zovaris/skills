@@ -6,7 +6,7 @@ updates it; never hand-edit status lines when the script can.
 
 ## Where it lives
 
-Run `scripts/task-dir.sh <slug>`: it reads the user's settings, creates the dir and prints it.
+Run `scripts/smithy task-dir <slug>`: it reads the user's settings, creates the dir and prints it.
 When it exits 3 it prints `ask <key>: <question>`: ask the user that (your recommendation first),
 save the answer for this repo with `scripts/smithy config set --repo <key> <value>`, run it again.
 It asks at most twice per repo, ever:
@@ -14,7 +14,7 @@ It asks at most twice per repo, ever:
 1. `tasks.commit` — commit the specs and tasks to git? `true` → `docs/specs/<slug>/`, reviewed
    with the code. `false` → `.docs/specs/<slug>/`, next to the code but out of git.
 2. `tasks.ignore` (only when `false`) — how `.docs/` stays out of git: `gitignore` adds it to
-   `.gitignore` (commit that one line with `commit.sh`, so the whole team ignores it) or
+   `.gitignore` (commit that one line with `smithy commit`, so the whole team ignores it) or
    `exclude` adds it to `.git/info/exclude` (this machine only, nothing committed).
 
 `tasks.location` (default `repo`) switches the whole thing: `local` puts plans in

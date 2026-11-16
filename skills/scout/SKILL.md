@@ -36,7 +36,7 @@ security, money or data loss.
 Run `references/INVESTIGATOR.md` as a **subagent** on that model, with the question, the
 sub-questions and the repo path filled in:
 - harness subagent tool with a model parameter, read-only tools; or
-- `scripts/agent.sh --readonly --model <m> <prompt-file>` (any agent CLI).
+- `scripts/smithy agent --readonly --model <m> <prompt-file>` (any agent CLI).
 
 Doing it inline is fine when the answer is one or two lookups; inline runs on the session's
 model, so say so in the report. Either way:

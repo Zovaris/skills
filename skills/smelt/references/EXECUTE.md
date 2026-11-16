@@ -7,9 +7,9 @@ alternative.
 
 ## Models
 
-Each implementer gets the model `scripts/route.js --file <task file> --speed <speed>` picks
+Each implementer gets the model `scripts/smithy route --file <task file> --speed <speed>` picks
 (cheap, mid or strong, from the task's risk, difficulty and size); reviewers use
-`route.js --kind review`; the last fix round goes one tier up. You may move a pick one tier with
+`smithy route --kind review`; the last fix round goes one tier up. You may move a pick one tier with
 a reason; a model the user named always wins. A tier whose model is unset prints `-`: propose
 `scripts/smithy config suggest-models` and save on a yes (`smithy config accept-models`), or ask for each
 tier when there are no suggestions; until then use the session default.
@@ -21,7 +21,7 @@ For each task:
 
 1. `smithy tasks set <file> status=doing`.
 2. **Brief.** Prompt = `agents/implementer.md` + `## Inputs`: the task file's path and text, the
-   spec path, the test commands from `stack.sh`, the files and interfaces the task lists, and
+   spec path, the test commands from `smithy stack`, the files and interfaces the task lists, and
    the rulings so far that touch it. Never your conversation.
 3. **Status.** The implementer ends with one of:
    - `DONE` → step 4.
@@ -34,7 +34,7 @@ For each task:
    `normal`/`full`, `agents/standards.md`. Handle findings with the receiving-review rules.
 6. **Fix loop**: send the reproduced findings back to a fresh implementer with the diff. At most
    3 rounds; round 3 uses the strong model. Still failing → `BLOCKED` with the findings.
-7. Commit the task atomically (`scripts/commit.sh`), `smithy tasks set <file> status=done`.
+7. Commit the task atomically (`scripts/smithy commit`), `smithy tasks set <file> status=done`.
 
 After the last task: one whole-branch review (the review phase), one fix wave, then ship.
 
@@ -42,7 +42,7 @@ After the last task: one whole-branch review (the review phase), one fix wave, t
 
 Decisions that come up without the user, by impact:
 - **low** (local, cheap to undo): decide yourself.
-- **medium** (shapes a module or an internal contract): `scripts/consult.sh "<question>"
+- **medium** (shapes a module or an internal contract): `scripts/smithy consult "<question>"
   "<options, neutral order>" [--context <file>]`, one tool-less call to the user's strong model
   in whatever harness you're in. Follow its pick; `NEED-INFO` → find that out and ask again;
   `ESCALATE` → it's high.

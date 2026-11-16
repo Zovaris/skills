@@ -8,19 +8,19 @@ export WARDEN_HOME="$(mktemp -d)"; trap 'rm -rf "$WARDEN_HOME"' EXIT
 B="$WARDEN_HOME/b1"; mkdir -p "$B"
 echo '{"batch":"b1","max":1,"items":[{"id":"a"},{"id":"b","prereqs":["a"]},{"id":"c"},{"id":"d","prereqs":["x"]},{"id":"x"}]}' > "$B/batch.json"
 "$F/smithy" cards set b1 a state=working phase=build >/dev/null
-t "b waits while prereq a works" '$F/wait-turn.sh b1 b 0; [ $? -eq 4 ]'
+t "b waits while prereq a works" '$F/smithy wait-turn b1 b 0; [ $? -eq 4 ]'
 t "b card is waiting" '[ "$(jq -r .state "$B/b.json")" = waiting ]'
-t "c waits for a slot (max 1)" '$F/wait-turn.sh b1 c 0; [ $? -eq 4 ]'
+t "c waits for a slot (max 1)" '$F/smithy wait-turn b1 c 0; [ $? -eq 4 ]'
 t "waiting is not stale-stuck" '"$F/smithy" cards board b1 --json | jq -e ".items[] | select(.id==\"b\") | .stage == \"waiting\""'
 "$F/smithy" cards set b1 x state=dropped >/dev/null
-t "prereq dropped → blocked" '$F/wait-turn.sh b1 d 0; [ "$(jq -r .state "$B/d.json")" = blocked ]'
+t "prereq dropped → blocked" '$F/smithy wait-turn b1 d 0; [ "$(jq -r .state "$B/d.json")" = blocked ]'
 "$F/smithy" cards set b1 a state=merged >/dev/null
-t "b goes once a merged and a slot is free" '$F/wait-turn.sh b1 b 1 | grep -q "go b"'
-t "unknown item → exit 2" '$F/wait-turn.sh b1 zz 0; [ $? -eq 2 ]'
+t "b goes once a merged and a slot is free" '$F/smithy wait-turn b1 b 1 | grep -q "go b"'
+t "unknown item → exit 2" '$F/smithy wait-turn b1 zz 0; [ $? -eq 2 ]'
 ( sleep 2; "$F/smithy" cards set b1 b phase=test progress=2/5 >/dev/null ) &
-t "progress-only change → heartbeat" '$F/watch.sh b1 0; [ $? -eq 4 ]'
+t "progress-only change → heartbeat" '$F/smithy wait batch:b1 --max 0; [ $? -eq 4 ]'
 wait
 ( sleep 2; "$F/smithy" cards set b1 b state=pr_open pr=u >/dev/null ) &
-t "pr_open wakes the watcher" '$F/watch.sh b1 1 | grep -q "b  verify"'
+t "pr_open wakes the watcher" '$F/smithy wait batch:b1 --max 1 | grep -q "b  verify"'
 wait
 echo "warden: $pass passed, $fail failed"; [ $fail -eq 0 ]

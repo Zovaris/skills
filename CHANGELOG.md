@@ -5,6 +5,14 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+### tests
+- Go unit tests for cards, config, harness, ghx, tasks, wait and warden (each 96–100%); total
+  Go coverage 66%.
+- CI runs `go test -race`, writes per-package coverage to the job summary and fails under 60%.
+- Fix: `smithy wait prs|issues` no longer misses the first new item when the first snapshot was
+  empty.
+- `smithy doctor` looks up skills in-process instead of running itself once per skill.
+
 ## v0.8.0 — 2026-11-16
 
 ### smithy (breaking)

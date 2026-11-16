@@ -46,6 +46,12 @@ node "$S/tasks.js" set docs/specs/pay/01-a.md status=done pr=https://x/1 >/dev/n
 t "02 ready after 01 done" 'node $S/tasks.js next | grep -q 02-b.md'
 t "rejects bad status" '! node $S/tasks.js set docs/specs/pay/02-b.md status=bogus'
 
+mkdir -p .docs/specs/priv elsewhere/x
+printf '# 01 · P\nStatus: todo\nBlocked by: none\n' > .docs/specs/priv/01-p.md
+printf '# 01 · E\nStatus: todo\nBlocked by: none\n' > elsewhere/x/01-e.md
+t "where finds .docs/specs" 'node $S/tasks.js where | grep -q "/.docs/specs/priv$"'
+t "where honours FORGE_TASKS_DIRS" 'FORGE_TASKS_DIRS=elsewhere node $S/tasks.js where | grep -q "/elsewhere/x$"'
+
 # config.sh + harness.sh
 t "harness override" '[ "$($S/harness.sh)" = "codex any" ]'
 t "model unset → exit 3" '$S/config.sh model cheap; [ $? -eq 3 ]'

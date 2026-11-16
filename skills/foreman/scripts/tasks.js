@@ -7,7 +7,8 @@
 //   tasks.js where                       print the task dirs found for this repo
 // A task file starts with `# NN · <title>` followed by `Key: value` header lines:
 //   Status: todo | doing | done | dropped     Blocked by: 01, 03 | none     PR: <url> | -
-// Task dirs: docs/specs/<slug>/ in the repo, or ~/.agents/plans/<repo>/<slug>/ outside it.
+// Task dirs: docs/specs/<slug>/ (committed), .docs/specs/<slug>/ (in the repo, never committed),
+// ~/.agents/plans/<repo>/<slug>/ ($FORGE_PLANS), plus any colon-separated $FORGE_TASKS_DIRS.
 // [dir] defaults to the only task dir found, else the most recently changed one.
 const fs = require('fs');
 const os = require('os');
@@ -23,7 +24,8 @@ const plansHome = () => process.env.FORGE_PLANS || path.join(os.homedir(), '.age
 
 const taskDirs = () => {
   const root = repoRoot();
-  const bases = [path.join(root, 'docs', 'specs'), path.join(plansHome(), path.basename(root))];
+  const extra = (process.env.FORGE_TASKS_DIRS || '').split(':').filter(Boolean).map((d) => path.resolve(root, d));
+  const bases = [path.join(root, 'docs', 'specs'), path.join(root, '.docs', 'specs'), path.join(plansHome(), path.basename(root)), ...extra];
   const dirs = [];
   for (const b of bases) {
     if (!fs.existsSync(b)) continue;
@@ -38,7 +40,7 @@ const taskDirs = () => {
 const resolveDir = (dir) => {
   if (dir) { if (!fs.existsSync(dir)) die(`no task dir ${dir}`); return path.resolve(dir); }
   const dirs = taskDirs();
-  if (!dirs.length) die('no task dir found (docs/specs/<slug>/ or ~/.agents/plans/<repo>/<slug>/); pass one');
+  if (!dirs.length) die('no task dir found (docs/specs/, .docs/specs/, ~/.agents/plans/<repo>/ or $FORGE_TASKS_DIRS); pass one');
   return dirs[0];
 };
 

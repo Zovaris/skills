@@ -6,13 +6,18 @@ updates it; never hand-edit status lines when the script can.
 
 ## Where it lives
 
-Ask once at the end of the spec, with your recommendation first:
+Use the user's default, `scripts/config.sh get tasks.location` (`repo`, `local` or `board`), and
+`config.sh get tasks.commit` (default `true`). Unset → ask once at the end of the spec, with
+your recommendation first, and offer to save the answer with `config.sh set`:
 
 | Choice | Where | When |
 |---|---|---|
 | Board | the user's tracker (GitHub Issues via `gh`, or Linear/Jira through the harness's tools) | the user already works from a board |
-| Repo | `docs/specs/<slug>/` | the plan should be versioned and reviewed with the code |
-| Local | `~/.agents/plans/<repo>/<slug>/` (`$FORGE_PLANS`) | private notes; keep the repo clean |
+| Repo, committed (`tasks.commit` true, the default) | `docs/specs/<slug>/` | the plan is versioned and reviewed with the code |
+| Repo, not committed (`tasks.commit` false) | `.docs/specs/<slug>/`, with `.docs/` added to `.git/info/exclude` (local, so the ignore isn't committed either) | next to the code, but specs stay out of git |
+| Local | `~/.agents/plans/<repo>/<slug>/` (`$FORGE_PLANS`) | private notes outside the repo |
+
+Other places: list them in `$FORGE_TASKS_DIRS` (colon-separated) so `tasks.js` finds them.
 
 Board tasks still get the same fields (status, blocked by, PR) in the issue body or labels; the
 spec stays in the repo or local dir and the issues link to it.
@@ -66,7 +71,8 @@ reading the whole plan, and what tells you two tasks would collide.
 Status moves `todo → doing → done` (or `dropped` with a line saying why). Whoever starts a task
 sets `doing`; whoever lands it sets `done` and `PR`. In a repo task dir the `done` + `PR` change is
 committed in the task's own branch, so it lands with the PR; nothing is committed to the base
-branch just to move a status. Local dirs and boards are updated directly.
+branch just to move a status. Uncommitted dirs (`.docs/specs`), local dirs and boards are
+updated directly.
 
 ## Commands
 

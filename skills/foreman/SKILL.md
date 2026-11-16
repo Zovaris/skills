@@ -24,7 +24,7 @@ Scripts are in `<skill-dir>/scripts/` (`<skill-dir>` is this file's folder):
 | `status.js live [batch]` | Live board for the user in any terminal (each worker's `done` = its to-do progress) |
 | `watch.sh [batch] [max-min]` | Blocks without tokens until a card changes or goes stale |
 | `verify.sh <repo> <branch> [pr]` | Proof for a PR claim: pushed head matches, checks, mergeable |
-| `consult.sh "<question>" "<options>"` | One bare call to the user's strong model (`config.sh model strong`), ~1k tokens |
+| `consult.sh "<question>" "<options>" [--context <f>]` | One tool-less call to the user's strong model through the current harness's CLI, ~1k tokens |
 | `config.sh model cheap\|strong` · `set-model` | The user's cheap and strong model for this harness (`~/.agents/config.json`) |
 | `agent.sh [--bg] [--cwd d] [--readonly] <prompt-file>` | Runs any headless agent CLI (claude, codex, opencode, gemini, `$AGENT_CMD`) |
 | `cleanup.sh <repo> <branch> [<worktree>]` | Removes a finished item's worktree and local branch; refuses to drop unpushed work |

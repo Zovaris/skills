@@ -46,7 +46,9 @@ Not installed? Do the work the plain way and, once, mention the skill that would
   `scripts/config.sh model cheap`. Exit 3 means unset: ask once which cheap and strong models to
   use in this harness and save them with `config.sh set-model`.
 - Ask only for decisions that are the user's: scope, money, prod, data, security, irreversible
-  actions, pushing, merging.
+  actions, pushing, merging. Other decisions that would stop the work: low impact, decide;
+  medium, one `consult.sh` call to the user's strong model (forge, foreman, tend ship it; it
+  uses the current harness's CLI, no tools); log what was decided and why.
 
 ## 4 · Red flags
 

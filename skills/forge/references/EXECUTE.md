@@ -40,7 +40,16 @@ After the last task: one whole-branch review (`references/REVIEW.md`), one fix w
 
 ## Rulings
 
-Every decision you make instead of the user is one line in `<dir>/rulings.md`:
+Decisions that come up without the user, by impact:
+- **low** (local, cheap to undo): decide yourself.
+- **medium** (shapes a module or an internal contract): `scripts/consult.sh "<question>"
+  "<options, neutral order>" [--context <file>]`, one tool-less call to the user's strong model
+  in whatever harness you're in. Follow its pick; `NEED-INFO` → find that out and ask again;
+  `ESCALATE` → it's high.
+- **high** (scope, customer-visible behaviour, money, data, security, public API, production,
+  irreversible): the user decides.
+
+Every decision made without the user is one line in `<dir>/rulings.md`:
 `- NN · <question> → <choice> (why)`. Rulings bind later tasks (pass the relevant ones in each
 brief) and become the PR's "Decided without you". A ruling that turns out to be the user's call
 goes to them before ship.

@@ -121,7 +121,10 @@ docs. Propose, write what the user accepts.
 
 ## Always
 
-- Ask only for decisions that are the user's; under `/silent` decide and record them.
+- Ask only for decisions that are the user's. When you'd otherwise stop to ask (under
+  `/silent`, in `build all`, or the user is away): low impact → decide; medium → one
+  `scripts/consult.sh` call to the user's strong model; high → the user. Record each in the PR's
+  "Decided without you".
 - No claim without fresh evidence (`references/VERIFY.md`): every "passes" names the command
   and its result; every "an agent did it" comes with its diff.
 - Never `--no-verify`, never skip or delete a failing test to go green, never update snapshots

@@ -44,6 +44,14 @@ SendMessage, to: \"<name>\"" in the brief. Launch from the workspace root (a tru
 
 ## Any harness (agent.sh)
 
+`agent.sh` picks the installed CLI (or `AGENT_CLI`) and passes the flags it needs to work
+unattended: `codex exec` with the git dir writable and network on, `opencode run --standalone
+--auto`, `gemini --approval-mode yolo`, `agent -p --force` (Cursor), `pi -p`, `dsh headless
+--approval-policy never`, `claude -p --permission-mode auto`. Workers get `FOREMAN_HARNESS` set
+to their CLI. **wake**: OpenCode and DeepSeek Harness resume the session when a background
+command ends; Gemini only with `tools.shell.backgroundCompletionBehavior: "inject"`; Codex, Pi and
+Cursor don't, so run `watch.sh` in the foreground there (it returns within `max-min`).
+
 Workers are one-shot headless runs of whatever agent CLI is installed (`AGENT_CMD` overrides:
 codex, opencode, gemini, aider, a custom wrapper). They can't receive messages mid-run, so:
 - A worker that needs a decision writes its card and exits.

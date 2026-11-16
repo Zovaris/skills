@@ -18,13 +18,36 @@ file (`AGENTS.md` / `CLAUDE.md`): ask your agent to "run playbook setup".
 | Skill | Started by | What it does |
 |---|---|---|
 | `playbook` | the agent | Routes work to the installed skills and holds the shared rules. **Install it.** |
-| `forge` | you: `/forge [brainstorm\|plan\|build [next\|all]\|test\|review\|debug\|… \| from <phase>] [fast\|full] <task>` | One task, step by step: brainstorm → spec → task list → TDD → test agents (adversarial, regression, property, mutation, E2E, security) → review → PR → retro. Start at any phase; `fast` for small changes, `full` for risky ones. Through playbook, the agent can follow it too. |
+| `forge` | you (`/forge`, `$forge`, `@forge`… per harness): `/forge [brainstorm\|plan\|build [next\|all]\|test\|review\|debug\|… \| from <phase>] [fast\|full] <task>` | One task, step by step: brainstorm → spec → task list → TDD → test agents (adversarial, regression, property, mutation, E2E, security) → review → PR → retro. Start at any phase; `fast` for small changes, `full` for risky ones. Through playbook, the agent can follow it too. |
 | `foreman` | you: `/foreman <tasks \| task dir \| board ids \| idea>` · `status` · `cleanup` · `doctor` | Many tasks at once: one silent worker and git worktree per task, each to its own PR or report, supervised from small status cards and a zero-token watcher. |
 | `docs` | the agent or you: `/docs init\|adr\|module\|map\|sync\|comments\|search` | ADRs, glossary, module READMEs, a codebase map, doc drift checks, and the comment policy: API doc comments only, the "why" lives in docs. |
 | `scout` | the agent or you | Read-only investigation with sources ("can we…", "why does…", "compare…"), on your cheap model. |
 | `tend` | you: `/tend <pr…> \| batch <batch>`, or foreman | Keeps open PRs mergeable: fixes CI, rebases after sibling merges, handles review comments. |
 | `silent` | you: `/silent <task>` | Does the task with no talk; ends with one line, `done: <where it landed>`. |
 | `direct` | the agent | Short, direct replies with no filler or AI tells. Off with "normal mode". |
+
+## Harnesses
+
+Every skill is plain files plus bash, node and git; nothing depends on one vendor. What changes
+per harness is how you start a skill, how foreman starts workers and whether a waiting session
+can be woken up:
+
+| Harness | Skills folder (global) | Start a skill | Foreman workers | Wake on background exit |
+|---|---|---|---|---|
+| Claude Code desktop | `~/.claude/skills` | `/forge` | app sessions (`start_session`) | yes |
+| Claude Code CLI | `~/.claude/skills` | `/forge` | `claude --bg` | yes |
+| Codex CLI | `~/.agents/skills` | `$forge` | `agent.sh` → `codex exec` | no: foreground watcher |
+| OpenCode | `~/.config/opencode/skills`, `~/.agents/skills` | `@forge` | `agent.sh` → `opencode run --standalone` | yes |
+| Pi | `~/.pi/agent/skills`, `~/.agents/skills` | `/skill:forge` | `agent.sh` → `pi -p` | no: foreground watcher |
+| DeepSeek Harness | `~/.dsh/skills`, `~/.agents/skills` | `/forge` | `agent.sh` → `dsh headless` | yes |
+| Gemini CLI | `~/.gemini/skills`, `~/.agents/skills` | ask: "use forge" | `agent.sh` → `gemini -p` | with `backgroundCompletionBehavior: inject` |
+| Cursor CLI | `~/.cursor/skills`, `~/.agents/skills` | `/forge` | `agent.sh` → `agent -p` | no: foreground watcher |
+
+`shared/agent.sh` runs workers headless with each CLI's flags for writing files, running commands
+and opening PRs without prompts (`AGENT_CLI` picks one, `AGENT_ARGS` adds flags, `AGENT_CMD`
+plugs in anything else). User-invoked skills (forge, foreman, silent, tend) stay out of the model's
+reach where the harness supports it (`disable-model-invocation`, and `agents/openai.yaml` for
+Codex); Gemini has no such switch.
 
 ## How they fit together
 

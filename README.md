@@ -1,8 +1,9 @@
-# skills
+# smithy
 
 Agent skills for planned, test-first, parallel software work. They use the open `SKILL.md`
 format and work in any harness that loads skills (Claude Code, Codex, OpenCode, Cursor, Gemini…):
 everything is files, git, bash and node, and harness-specific bits live in small adapters.
+GitHub work goes through the GitHub CLI (`gh`), which `/warden doctor` checks.
 
 ## Start with use-smithy
 
@@ -19,10 +20,10 @@ file (`AGENTS.md` / `CLAUDE.md`): ask your agent to "run use-smithy setup".
 |---|---|---|
 | `use-smithy` | the agent | Routes work to the installed skills and holds the shared rules. **Install it.** |
 | `smelt` | you (`/smelt`, `$smelt`, `@smelt`… per harness): `/smelt [brainstorm\|plan\|build [next\|all]\|test\|review\|debug\|… \| from <phase>] [fast\|full] <task>` | One task, step by step: brainstorm → spec → task list → TDD → test agents (adversarial, regression, property, mutation, E2E, security) → review → PR → retro. Start at any phase; `fast` for small changes, `full` for risky ones. Through use-smithy, the agent can follow it too. |
-| `warden` | you: `/warden <tasks \| task dir \| board ids \| idea>` · `status` · `cleanup` · `doctor` | Many tasks at once: one silent worker and git worktree per task, each to its own PR or report, supervised from small status cards and a zero-token watcher. |
+| `warden` | you: `/warden <tasks \| task dir \| board ids \| idea>` · `status [all]` · `cleanup` · `doctor` | Many tasks at once: one silent worker and git worktree per task, each to its own PR or report, supervised from small status cards and a zero-token watcher. |
 | `ledger` | the agent or you: `/ledger init\|adr\|module\|map\|sync\|comments\|search` | ADRs, glossary, module READMEs, a codebase map, doc drift checks, and the comment policy: API doc comments only, the "why" lives in docs. |
 | `scout` | the agent or you | Read-only investigation with sources ("can we…", "why does…", "compare…"), on your cheap model. |
-| `tend` | you: `/tend <pr…> \| batch <batch>`, or warden | Keeps open PRs mergeable: fixes CI, rebases after sibling merges, handles review comments. |
+| `tend` | you: `/tend <pr…> \| batch <batch> \| watch [prs\|issues\|all]`, or warden | Keeps open PRs mergeable: fixes CI, rebases after sibling merges, handles review comments. |
 | `hush` | you: `/hush <task>` | Does the task with no talk; ends with a short `done: <where it landed>` line. |
 | `simple` | the agent | Short, direct replies with no filler or AI tells. Off with "normal mode". |
 
@@ -58,8 +59,27 @@ Codex); Gemini has no such switch.
   builds it one task at a time (`build next`, `build all`); warden runs the ready tasks in
   parallel and tend keeps their PRs green.
 - Start with smelt and hand the rest to warden, or start with warden and let it ask for a plan.
+- No tracker? `tasks.js board --all` (or `/warden status all`) lists every task list and batch on
+  your machine.
+- Branches are named one way everywhere: `<type>/<key>-<slug>` (`feat/PROJ-123-add-login`,
+  `fix/42-null-crash`), with the ticket, issue or task number as the key; worktrees sit next to
+  the repo in `../worktrees/`.
 - Commits are atomic in your repo's style, PRs follow your template, and finished worktrees and
   local branches are removed every time.
+
+## Waiting without tokens
+
+Agents never sleep and re-check. They run `wait-for.js` in the background; it polls GitHub with
+`gh` and exits with one line when something happens, which wakes the agent:
+
+```bash
+wait-for.js pr:42                 # checks finished (green/red + failed names), merged, closed, conflict, review, comment
+wait-for.js run:123 branch:main   # a workflow run, or every run on the branch's latest commit
+wait-for.js prs issues:agent      # new or updated PRs (yours or a batch's) and labeled issues
+wait-for.js batch:20261115-1030   # a warden card that needs the warden
+```
+
+Mix targets in one call; pick events with `--events` or the `watch.events` setting.
 
 ## Install
 
@@ -100,6 +120,12 @@ Two JSON files, the repo's first: `<repo>/.smithy/config.json` (this repo only) 
 | `warden.merge` / `warden.cleanup` | `auto` / `auto` | Merge green PRs; end finished workers and remove their worktrees and branches without asking. |
 | `warden.max` / `warden.mode` | `3` / `smelt fast` | Parallel workers; how workers build: `smelt fast`, `smelt normal`, `smelt full` or `plain`. |
 | `tend.watch` / `tend.label` | `prs` / `agent` | What `/tend watch` follows; the issue label it may queue. |
+| `git.branch` | `{type}/{key}-{slug}` | Branch names (`names.sh`); e.g. `agent/{key}-{slug}`. |
+| `git.worktree` | `{parent}/worktrees/{repo}-{branch}` | Where worktrees go. |
+| `watch.events` / `watch.every` / `watch.max` | all / `30` / `50` | What wakes a waiting agent, seconds between polls, minutes before a heartbeat. |
+
+Coming from 0.7 (`~/.agents/`): the first run moves your settings, plans and batches to
+`~/.smithy/` (`config.sh migrate` does it by hand).
 
 ## Hooks (all optional)
 

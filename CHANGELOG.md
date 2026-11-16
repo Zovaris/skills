@@ -5,6 +5,35 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+### smithy (breaking)
+- The collection is now **smithy** and the generic names are gone: playbook → `use-smithy`,
+  forge → `smelt`, foreman → `warden`, docs → `ledger`, silent → `hush`, direct → `simple`;
+  `scout` and `tend` stay. Reinstall, and use the new commands (`/smelt`, `/warden`, `/hush`…).
+- Settings, plans, batches and tend state live in `~/.smithy/` (`$SMITHY_HOME`) and
+  `<repo>/.smithy/config.json`; the first run moves the old `~/.agents/` files
+  (`config.sh migrate` by hand). The repo's old `.agents/config.json` is still read until moved.
+
+### waiting
+- `wait-for.js`: one zero-token waiter for `pr:` (checks finished green/red with the failed
+  names, merged, closed, conflict, review, comment, push), `run:`, `branch:`, `prs`, `issues:`
+  and `batch:` targets, any mix in one call. Already-finished checks return at once; a bad
+  target fails fast. Settings `watch.events`, `watch.every`, `watch.max`.
+- tend's and warden's `watch.sh` are presets over it; smelt, warden workers and tend wait on it
+  instead of sleep loops.
+
+### naming
+- `names.sh`: branches `<type>/<key>-<slug>` (key: Jira or Linear key, issue number or task
+  `NN`) and worktrees `<repo-parent>/worktrees/<repo>-<branch>`, from `git.branch` and
+  `git.worktree`. smelt, warden and tend use it; tend no longer depends on a branch prefix.
+
+### tasks
+- `tasks.js add` creates the next task file; `tasks.js board [--all]` lists every task list and
+  warden batch here or on the whole machine; `/warden status all` shows it.
+
+### use-smithy
+- Proposes saving repeated commands and throwaway scripts into `scripts/` with a `SCRIPTS.md`
+  index at the end of a task (after scriptify), and checks that index first.
+
 ## v0.7.0 — 2026-11-15
 
 ### review against skill-authoring best practices

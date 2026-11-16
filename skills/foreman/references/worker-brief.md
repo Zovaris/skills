@@ -1,9 +1,20 @@
 # Worker brief
 
-Fill the `<…>` slots and drop the lines that don't apply. `<silent-skill>` and `<forge-skill>` are
-the absolute paths from `scripts/find-skill.sh silent|forge`: workers read those files; they can't
-run user-invoked skills as slash commands. `<intent>` is copied verbatim from
+Fill the `<…>` slots and drop the lines that don't apply. `<intent>` is copied verbatim from
 `batch.json`: never summarize it or add requirements, plans or acceptance criteria to it.
+`<foreman-dir>` is this skill's folder.
+
+What workers are:
+- They can't run `/forge` or `/silent` as commands (user-invoked skills). `<silent-skill>` and
+  `<forge-skill>` are the absolute paths `scripts/find-skill.sh silent|forge` prints: workers read
+  those files and follow them, which works in any harness.
+- Silent: their only outputs are the status card and one closing line; they never address the
+  user.
+- Mode `forge <speed>`: they follow forge's build phases at that speed (a `(full)` item overrides
+  it). Mode `plain`: the repo's agent instructions, else just the brief. A trivial change (copy, a
+  button, a style tweak) goes straight to a PR in either mode.
+- Effort: low for explicit, well-understood work; high for ambiguous investigation.
+- The prompt you spawn with is this brief's full text, never a pointer to the file.
 
 ```
 You are worker <id> in foreman batch <batch>: <title>. Kind: <ship|scout>.
@@ -28,8 +39,8 @@ requirements from the intent and the code"; out of scope if the user named it>
 ## How
 - Silent: the rules above; <silent-skill> has the rest (token-saving habits, when to stop). Read
   it once if the path is set.
-- Workflow: <mode forge: "read <forge-skill> and follow it yourself as `build <speed>` on this task: run
-  its phases in order; its references/, agents/ and scripts/ paths are relative to its folder.
+- Workflow: <mode forge: "read <forge-skill> and follow its build phases yourself at speed <speed>
+  on this task, in order; its references/, agents/ and scripts/ paths are relative to its folder.
   Don't try to invoke it as a slash command." | mode plain: "work the way the repo's agent instructions
   (AGENTS.md / CLAUDE.md) say: tests for what you change, typecheck and lint green.">
 <committed repo task file (docs/specs): "- In your branch, set the task file's `Status: done` and `PR: <url>`
@@ -58,7 +69,7 @@ requirements from the intent and the code"; out of scope if the user named it>
 - Same obstacle twice after a real fix attempt: state=blocked with the one thing you need; stop.
 - Do not create worktrees or issues; never start, fork or hand off sessions.
 - Waiting on CI or anything external: one blocking command (`gh pr checks <pr> --watch`, or an
-  `until …; do sleep 30; done` loop with a 600000 ms Bash timeout). No sleep-then-check turns.
+  `until …; do sleep 30; done` loop) with a 10-minute timeout. No sleep-then-check turns.
 
 ## Status card
 `<skill-dir>/scripts/status.js set <batch> <id> key=value…` at every phase change and before
@@ -69,11 +80,12 @@ current step, so the foreman sees where you are without asking.
   impact (low: local, cheap to undo; medium: shapes a module or internal contract; high: widens
   scope, customer-visible, money, data, security, public API/schema, prod, irreversible). End
   your turn. The foreman closes the question; later progress doesn't.
-- PR opened: state=pr_open. If your harness can watch the PR, auto-fix CI or auto-archive this
-  session when the PR closes, turn those on. A draft or
-  unfinished PR is state=blocked, never pr_open.
+- PR opened: state=pr_open. If your harness supports it, turn on PR watching, CI auto-fix and
+  auto-archive of this session when the PR closes. A draft or unfinished PR is state=blocked,
+  never pr_open.
 - Green and reviewed: tests_run=<commands actually run>, risks=<or none>. merge auto → merge into
-  <base>, state=merged; manual → state=ready. Never the production branch. If the merge itself
+  <base>, state=merged; manual → state=ready. A PR into the production branch is manual unless
+  the intent says to release it. If the merge itself
   is refused (permission rule, branch protection, a classifier): don't retry around it;
   state=ready note=merge-blocked, and the foreman merges.
 - Work found after your PR merged: small and inside this task's intent (a missed case, a typo, a

@@ -1,0 +1,54 @@
+# Acting on cards
+
+One section per stage. Every final item goes through `cleanup.sh <repo> <branch> <worktree>`:
+worktree and local branch removed, unpushed work refused with `kept <branch>: …`, which goes in the
+final message instead of being forced. With `cleanup ask`, list what you would clean and end, and
+do it on the user's yes.
+
+## decide (`needs_decision`)
+
+By `impact` (you may raise it, never lower it):
+- **low** (local, cheap to undo, restores or completes the intent): decide on the merits.
+- **medium** (shapes a module or internal contract): `consult.sh` with the worker's question and
+  options verbatim, in neutral order. `NEED-INFO` goes back to the worker; `ESCALATE` makes it
+  high.
+- **high** (widens scope beyond the intent, customer-visible, money, data, security, public API or
+  schema, production, irreversible, or the same kind of finding recurring): the user decides. One
+  message with all of them; each gives the intent, the proposed change, the smallest alternative
+  that still meets the intent, and your recommendation. Wait.
+
+Relay answers with **tell**, quoting the user's words when they decided, and close the question
+yourself: `status.js set <batch> <id> state=working decision_key=`. Log low and medium ones in
+`decisions.md`.
+
+## verify (`pr_open`, `ready`)
+
+`verify.sh <repo> <branch> <pr>`:
+- `unpushed` or `red`: back to the worker in one line.
+- `ready` with `note=merge-blocked` in merge auto: merge it yourself (`gh pr merge`); refused here
+  too → list it for the user, with the doctor's permission hint.
+- other `ready`: list it as waiting for the user's merge.
+- `closed` (closed without merge): `state=dropped note="PR closed without merge"`, `cleanup.sh`,
+  **end** the worker, set the source to `dropped`, name it in the final message.
+
+## merged
+
+After `verify.sh` says `merged`: `cleanup.sh`, **end** the worker, update the source. Its
+dependents are already waiting and start on their own. A `followup: <file>` in the note is work
+found after the merge: small and inside the intent → add it as an item (spawn it if this harness
+can from here, else propose it); bigger → a scope question for the user, with the other decisions.
+
+## reported · dropped
+
+`reported`: read the report's first lines, **end** the worker, `cleanup.sh`. `dropped`:
+`cleanup.sh`, **end** the worker.
+
+## stuck (`blocked`, `failed`, or no card update for 45 min)
+
+Recovery ladder, one rung per wake:
+1. Answer from the intent if the note asks something it settles.
+2. One corrective line to the worker (**tell**).
+3. Relaunch in the **same worktree** with the brief's relaunch line.
+4. After a second relaunch fails, tell the user with the `note`.
+
+Never a fresh worktree for the same task.

@@ -10,7 +10,7 @@ State is always the batch dir and git, so the same batch can be foremaned from a
 | **tell** worker | `SendMessage` to its `local_…` id | `SendMessage` to its address | append to `<batch-dir>/<id>.inbox.md`, then **respawn** it |
 | **wake** foreman | `watch.sh` with `run_in_background` | same | `watch.sh` as a background job; if the harness can't wake on exit, run it in the foreground (it returns within `max-min`) |
 | **end** worker | `archive_session` | `claude stop <id>` + `claude rm <id>` | `kill <pid>` if alive |
-| auto-end on PR close | the worker turns on the app's auto-archive for its PR | none: `/foreman cleanup` | none: `/foreman cleanup` |
+| auto-end on PR close | the worker turns on the app's auto-archive for its PR (if your harness supports it) | none: `/foreman cleanup` | none: `/foreman cleanup` |
 | **subagent** (short read-only job) | Agent tool | Agent tool | the harness's own (Codex `spawn_agent`, OpenCode, Gemini, Cursor and DeepSeek subagents); Pi has none: `agent.sh --readonly [--model <m>] <prompt-file>` |
 
 Always write the brief to `<batch-dir>/<id>.brief.md` before spawning, whatever the adapter: a
@@ -24,8 +24,8 @@ approval click but not this rule. That is why the loop launches every worker in 
 and lets dependents wait in their own session (`wait-turn.sh`). Work that appears later (a
 follow-up item) is proposed as a card, or listed for the user. When the user starts a proposed
 card, its session id doesn't come back to you: find it with `list_sessions {"linked": true}` and
-record it in `batch.json`. A relaunch from an event turn (recovery rung 3) is proposed the same
-way; prefer rung 2 (**tell**) there.
+record it in `batch.json`. A relaunch from an event turn (the third rung of the stuck ladder) is
+proposed the same way; prefer the second rung (**tell**) there.
 
 `start_session` with `initiation "user_asked"`, `context "fresh"`, `use_worktree false`, no
 `cwd`, `name` = id, `model` = the item's routed model (omit when `-`), `wake_when_done true`, `prompt` = the brief's full text

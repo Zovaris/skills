@@ -45,11 +45,10 @@ the loop below uses only those five verbs).
   and `closed` actions below; for batches that finished while PRs waited on the user.
 - `/foreman doctor`: `doctor.sh`, shown as is (it detects the harness and checks only what that
   harness needs); offer to fix what lives in the user's own files.
-- Options in words: `max N` workers (default 3, a token-cost cap), `model <name>`, `stack`,
-  `merge auto|manual` (default `auto`), `cleanup auto|ask` (default `auto`: finished workers are
-  ended and their worktrees and local branches removed without asking; both are stored in
-  `batch.json` as the user's standing permission for this batch), `forge fast|normal|full` or
-  `plain` (worker mode), and
+- Options in words: `max N` workers (a token-cost cap), `model <name>`, `stack`,
+  `merge auto|manual`, `cleanup auto|ask` (`auto`: finished workers are ended and their worktrees
+  and local branches removed without asking), `forge fast|normal|full` or `plain` (worker mode),
+  and
   `(auto)` / `(manual)` / `(scout)` / `(full)` after a task.
 
 ## Intake
@@ -69,14 +68,19 @@ Work out what you were given, in this order, and say in the plan line which it w
    - "Plan it with forge" (when forge is installed): the user runs `/forge plan <idea>` here; when
      its task list exists, continue at 1.
    - "I split it quickly": read the code, propose 2–6 tasks in the task-file format (vertical
-     slices, real blockers only) in one message, write them to `~/.agents/plans/<repo>/<slug>/`
-     (or the repo if the user prefers) once approved, continue at 1.
+     slices, real blockers only) in one message, write them once approved to the dir
+     `task-dir.sh <slug>` gives (same settings and questions as forge), continue at 1.
    - "Run it as one task": continue at 3 with the idea as the only line.
    Under `/silent`, don't ask: split quickly when the idea clearly has independent parts, else run
    it as one task.
 
+**Defaults** come from `config.sh get foreman.max|foreman.merge|foreman.cleanup|foreman.mode`
+(3, auto, auto, forge fast unless the user changed them); words in the request win for this
+batch. The plan line states the values used, and `batch.json` stores them as the user's
+standing permission for this batch.
+
 **Worker mode**, once per batch: with forge installed, ask "forge (fast / normal / full) or
-plain?" unless the user already said; default `forge fast`. Without forge: `plain` (silent rules
+plain?" unless the user already said or set `foreman.mode`; default `forge fast`. Without forge: `plain` (silent rules
 plus the repo's agent instructions), no question. Store it as `mode` in `batch.json`.
 
 **Status back to the source**, so forge and the board stay in sync:

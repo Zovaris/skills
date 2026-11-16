@@ -12,7 +12,7 @@
 //   branch:<name>         every workflow run on the branch's latest commit finished
 //   prs[:<label>]         a PR opened or updated: yours, a warden batch's, or with the label
 //   issues[:<label>]      an issue opened or updated with the label (default `agent`)
-//   batch:<name>          a warden card needs the foreman (needs warden's status.js beside this file)
+//   batch:<name>          a warden card needs the warden (needs warden's status.js beside this file)
 //
 // Output, one line each: `pr 42 checks=red failed=lint,unit <url>`, `pr 42 merged <url>`,
 // `run 123 failure failed=build <url>`, `branch main success`, `pr 7 new <url>`,
@@ -174,7 +174,7 @@ function listTarget(kind, label) {
   };
 }
 
-// batch: warden cards. Wakes on stages that need the foreman, or on any change with --all.
+// batch: warden cards. Wakes on stages that need the warden, or on any change with --all.
 function batchTarget(name) {
   const statusJs = path.join(__dirname, 'status.js');
   if (!fs.existsSync(statusJs)) die('batch: targets need warden (status.js beside this script)', 2);

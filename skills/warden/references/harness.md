@@ -2,7 +2,7 @@
 
 The loop in SKILL.md uses five operations. `scripts/harness.sh` prints which adapter applies
 (`desktop`, `cli` or `any`); if you clearly have tools it didn't detect, use the matching column.
-State is always the batch dir and git, so the same batch can be foremaned from any harness.
+State is always the batch dir and git, so the same batch can be run from any harness.
 
 | Operation | Claude Code desktop | Claude Code CLI | Any harness |
 |---|---|---|---|

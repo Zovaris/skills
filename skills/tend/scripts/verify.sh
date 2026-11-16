@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Proof for a worker's PR claim, so the foreman never trusts a status line alone.
+# Proof for a worker's PR claim, so the warden never trusts a status line alone.
 #   verify.sh <repo> <branch> [pr]
 # Prints one line: `<verdict> pr=<url> state=<state> head=<sha7> checks=<pass|fail|pending|none> mergeable=<x>`
 # Verdicts: green | pending | red | merged | closed | unpushed (local head not on the PR) | no-pr

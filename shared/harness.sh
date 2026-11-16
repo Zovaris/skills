@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Prints the harness this shell runs in and the adapter to use (foreman references/harness.md).
+# Prints the harness this shell runs in and the adapter to use (warden references/harness.md).
 #   harness.sh            -> "<harness> <adapter>", e.g. "claude-desktop desktop"
 # Harness: claude-desktop | claude-cli | codex | opencode | gemini | pi | dsh | cursor | unknown
 # Adapter: desktop | cli | any
-# $FOREMAN_HARNESS overrides detection (agent.sh sets it for workers). Detection uses only the
+# $WARDEN_HARNESS overrides detection (agent.sh sets it for workers). Detection uses only the
 # variables each harness sets for its own child processes, not user settings like CODEX_HOME;
 # AI_AGENT (a cross-tool convention) and Cursor's unreliable variables come last.
-h="${FOREMAN_HARNESS:-}"
+h="${WARDEN_HARNESS:-}"
 if [ -z "$h" ]; then
   if [ "${CLAUDE_CODE_ENTRYPOINT:-}" = "claude-desktop" ]; then h=claude-desktop
   elif [ -n "${CLAUDECODE:-}" ] || [ -n "${CLAUDE_CODE_ENTRYPOINT:-}" ]; then h=claude-cli

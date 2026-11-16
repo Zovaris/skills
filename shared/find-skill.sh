@@ -6,7 +6,7 @@
 #   find-skill.sh --list     `<name> <path>` for every skill of this repo that is installed
 set -euo pipefail
 here="$(cd "$(dirname "$0")/.." && pwd -P)"
-KNOWN="playbook forge foreman docs scout tend silent direct"
+KNOWN="use-smithy smelt warden ledger scout tend hush simple"
 find_one() {
   local f
   local top; top="$(git rev-parse --show-toplevel 2>/dev/null || true)"

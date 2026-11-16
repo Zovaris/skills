@@ -5,8 +5,8 @@
 # Prints one line per change: `pr <number> <url>` or `issue <number> <url>`; exit 0 on change,
 # 4 on heartbeat (nothing changed within --max-min, default 50). Run it in the background where
 # the harness can wake on exit, else in the foreground.
-# PRs: open PRs by the user, on foreman/ or tend/ branches, or with --label. Issues: open issues
-# with --label (default `agent`). Seen state: ~/.agents/tend/<owner-repo>-<scope>.json ($TEND_HOME).
+# PRs: open PRs by the user, on warden/ or tend/ branches, or with --label. Issues: open issues
+# with --label (default `agent`). Seen state: ~/.smithy/tend/<owner-repo>-<scope>.json ($TEND_HOME).
 set -uo pipefail
 scope="prs"; label=""; every=120; max=50
 case "${1:-}" in prs|issues|all) scope="$1"; shift ;; esac
@@ -15,13 +15,13 @@ while [ $# -gt 0 ]; do case "$1" in
   *) echo "unknown option $1" >&2; exit 2 ;; esac; done
 repo="$(gh repo view --json nameWithOwner -q .nameWithOwner 2>/dev/null)" || { echo "not a GitHub repo" >&2; exit 2; }
 me="$(gh api user -q .login 2>/dev/null || true)"
-state="${TEND_HOME:-$HOME/.agents/tend}/${repo//\//-}-$scope.json"; mkdir -p "$(dirname "$state")"
+state="${TEND_HOME:-${SMITHY_HOME:-$HOME/.smithy}/tend}/${repo//\//-}-$scope.json"; mkdir -p "$(dirname "$state")"
 
 snapshot() {
   local out="[]"
   if [ "$scope" != issues ]; then
     out="$(gh pr list --state open --limit 100 --json number,url,headRefName,author,labels,updatedAt \
-      | jq --arg me "$me" --arg l "$label" '[.[] | select(.author.login == $me or (.headRefName | test("^(foreman|tend)/")) or ($l != "" and any(.labels[]?; .name == $l)))
+      | jq --arg me "$me" --arg l "$label" '[.[] | select(.author.login == $me or (.headRefName | test("^(warden|tend)/")) or ($l != "" and any(.labels[]?; .name == $l)))
         | {kind: "pr", number, url, v: .updatedAt}]')"
   fi
   if [ "$scope" != prs ]; then

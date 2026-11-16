@@ -1,6 +1,6 @@
 ---
 name: scout
-description: Read-only investigation that answers one question with cited sources and changes nothing. Use when asked "can we do X", "what does library Z do", "how does this code work" or "compare A vs B" before deciding or building. Not for past project decisions (docs).
+description: Read-only investigation that answers one question with cited sources and changes nothing. Use when asked "can we do X", "what does library Z do", "how does this code work" or "compare A vs B" before deciding or building. Not for past project decisions (ledger).
 argument-hint: <question> [--out <report path>]
 ---
 
@@ -25,7 +25,7 @@ recommendation and the trade-off, not with the choice made.
 - prints a name → use it.
 - exit 3 → propose `scripts/config.sh suggest-models` and save on a yes (`config.sh
   accept-models`); with no suggestions, ask "Which cheap model should scouts use in this
-  harness?" and save it with `config.sh set-model cheap <name>`. Under `/silent`, don't ask: use the harness
+  harness?" and save it with `config.sh set-model cheap <name>`. Under `/hush`, don't ask: use the harness
   default and say so in the report.
 
 Use the strong model (`config.sh model strong`) only when the user asks or the question is about
@@ -50,7 +50,7 @@ model, so say so in the report. Either way:
 
 Fill `references/FORMAT.md`. Destination:
 - default: the chat;
-- `--out <path>` (foreman passes `<batch-dir>/<id>/report.md`, forge passes its task dir): write
+- `--out <path>` (warden passes `<batch-dir>/<id>/report.md`, smelt passes its task dir): write
   the file there and reply with its path and the one-line answer.
 
 **Done:** the question has an answer (or "unknown" with what would settle it), every claim has a

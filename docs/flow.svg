@@ -1,19 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="900" height="260" viewBox="0 0 900 260" role="img" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
-  <title>forge and foreman share one task list</title>
+  <title>smelt and warden share one task list</title>
   <style>
     .t { font-size: 15px; font-weight: 600; fill: #1f2328; }
     .s { font-size: 12px; fill: #59636e; }
     .box { fill: #f6f8fa; stroke: #d1d9e0; }
-    .forge { fill: #f1effd; stroke: #8b7fe0; }
-    .foreman { fill: #e6f6f0; stroke: #3fa07c; }
+    .smelt { fill: #f1effd; stroke: #8b7fe0; }
+    .warden { fill: #e6f6f0; stroke: #3fa07c; }
     .line { stroke: #8c959f; stroke-width: 1.5; fill: none; }
     .head { fill: #8c959f; }
     @media (prefers-color-scheme: dark) {
       .t { fill: #f0f6fc; }
       .s { fill: #9198a1; }
       .box { fill: #151b23; stroke: #3d444d; }
-      .forge { fill: #231f3d; stroke: #8b7fe0; }
-      .foreman { fill: #12291f; stroke: #3fa07c; }
+      .smelt { fill: #231f3d; stroke: #8b7fe0; }
+      .warden { fill: #12291f; stroke: #3fa07c; }
       .line { stroke: #656c76; }
       .head { fill: #656c76; }
     }
@@ -27,20 +27,20 @@
   <rect class="box" x="20" y="100" width="110" height="60" rx="10"/>
   <text class="t" x="75" y="135" text-anchor="middle">Idea</text>
 
-  <rect class="forge" x="170" y="100" width="160" height="60" rx="10"/>
-  <text class="t" x="250" y="126" text-anchor="middle">/forge plan</text>
+  <rect class="smelt" x="170" y="100" width="160" height="60" rx="10"/>
+  <text class="t" x="250" y="126" text-anchor="middle">/smelt plan</text>
   <text class="s" x="250" y="145" text-anchor="middle">brainstorm · spec</text>
 
   <rect class="box" x="370" y="100" width="160" height="60" rx="10"/>
   <text class="t" x="450" y="126" text-anchor="middle">Task list</text>
   <text class="s" x="450" y="145" text-anchor="middle">board · repo · local</text>
 
-  <rect class="forge" x="580" y="30" width="180" height="60" rx="10"/>
-  <text class="t" x="670" y="56" text-anchor="middle">/forge build next</text>
+  <rect class="smelt" x="580" y="30" width="180" height="60" rx="10"/>
+  <text class="t" x="670" y="56" text-anchor="middle">/smelt build next</text>
   <text class="s" x="670" y="75" text-anchor="middle">one at a time</text>
 
-  <rect class="foreman" x="580" y="170" width="180" height="60" rx="10"/>
-  <text class="t" x="670" y="196" text-anchor="middle">/foreman</text>
+  <rect class="warden" x="580" y="170" width="180" height="60" rx="10"/>
+  <text class="t" x="670" y="196" text-anchor="middle">/warden</text>
   <text class="s" x="670" y="215" text-anchor="middle">in parallel</text>
 
   <rect class="box" x="800" y="100" width="80" height="60" rx="10"/>

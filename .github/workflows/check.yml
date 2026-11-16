@@ -15,7 +15,23 @@ jobs:
         run: |
           test -z "$(gofmt -l .)" || { gofmt -l .; exit 1; }
           go vet ./...
-      - name: Offline tests (go test, skill lint, script tests through the binary)
+      - name: Go tests (race detector, coverage)
+        run: |
+          go test -race -covermode=atomic -coverprofile=cover.out ./...
+          total="$(go tool cover -func=cover.out | awk '/^total:/ {print $3}')"
+          {
+            echo "## Go coverage: $total"
+            echo
+            echo '| Package | Coverage |'
+            echo '|---|---|'
+            go test -cover ./... 2>/dev/null | awk '{pkg=$1=="ok"?$2:$1; sub("github.com/Zovaris/smithy/","",pkg); for(i=1;i<=NF;i++) if($i ~ /%$/) print "| " pkg " | " $i " |"}'
+          } >> "$GITHUB_STEP_SUMMARY"
+          awk -v t="${total%\%}" -v min="$COVERAGE_MIN" 'BEGIN { if (t+0 < min+0) { print "coverage " t "% is below " min "%"; exit 1 } }'
+        env:
+          COVERAGE_MIN: "60"
+      - name: Integration tests (skill lint, CLI tests through the binary)
+        env:
+          SKIP_GO_TEST: "1"
         run: tests/run.sh
       - name: Builds on every release target
         run: |

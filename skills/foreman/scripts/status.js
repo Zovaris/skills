@@ -12,7 +12,7 @@ const os = require('os');
 const path = require('path');
 
 const HOME = process.env.FOREMAN_HOME || path.join(os.homedir(), '.agents', 'foreman');
-const STATES = ['working', 'needs_decision', 'blocked', 'failed', 'pr_open', 'ready', 'merged', 'dropped', 'reported'];
+const STATES = ['waiting', 'working', 'needs_decision', 'blocked', 'failed', 'pr_open', 'ready', 'merged', 'dropped', 'reported'];
 const STALE_MIN = Number(process.env.FOREMAN_STALE_MIN || 45);
 const read = (f) => { try { return JSON.parse(fs.readFileSync(f, 'utf8')); } catch { return null; } };
 const die = (m, code = 1) => { process.stderr.write(m + '\n'); process.exit(code); };
@@ -57,6 +57,7 @@ const stage = (s, item) => {
   if (!s) return item.session ? 'starting' : 'queued';
   const age = s.updated ? (Date.now() - Date.parse(s.updated)) / 60000 : 0;
   switch (s.state) {
+    case 'waiting': return 'waiting';
     case 'needs_decision': return 'decide';
     case 'blocked': case 'failed': return 'stuck';
     case 'pr_open': case 'ready': return 'verify';

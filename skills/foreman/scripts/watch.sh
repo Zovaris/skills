@@ -1,21 +1,29 @@
 #!/usr/bin/env bash
-# foreman: zero-token watcher. Blocks until a worker's status changes or one goes stale, then
-# prints the changed rows and exits, so the foreman wakes only when there is something to do.
-#   watch.sh [batch] [max-minutes=50]
-# Run it in the background (Bash run_in_background, or Monitor); its exit re-invokes the foreman.
-# Exit 0 = change, 4 = heartbeat (nothing happened within max-minutes).
+# foreman: zero-token watcher. Blocks until a card needs the foreman, then prints those cards and
+# exits, so the foreman wakes only when there is something to do.
+#   watch.sh [batch] [max-minutes=50] [--all]
+# Default (actionable): wakes only when a changed card's stage is decide, stuck, verify (pr_open
+# or ready), merged, reported or dropped, or a card newly goes stale. Progress updates
+# (phase/progress while working or waiting) don't wake it. --all wakes on any card change.
+# Run it in the background where the harness wakes on exit; else in the foreground.
+# Exit 0 = something to act on, 4 = heartbeat (nothing within max-minutes).
 set -uo pipefail
 DIR="$(cd "$(dirname "$0")" && pwd -P)"
-batch="${1:-}"; max="${2:-50}"
+all=0; args=()
+for a in "$@"; do [ "$a" = --all ] && all=1 || args+=("$a"); done
+batch="${args[0]:-}"; max="${args[1]:-50}"
 since="$(node -e "console.log(new Date().toISOString())")"
 end=$(( $(date +%s) + max * 60 ))
-stuck_before="$(node "$DIR/status.js" board $batch --json 2>/dev/null | jq -r '[.items[] | select(.stage=="stuck") | .id] | join(",")')"
+board() { node "$DIR/status.js" board $batch --json 2>/dev/null; }
+stuck_before="$(board | jq -r '[.items[] | select(.stage=="stuck") | .id] | join(",")')"
+ACT='["decide","stuck","verify","merged","reported","dropped"]'
 while [ "$(date +%s)" -lt "$end" ]; do
-  if node "$DIR/status.js" board $batch --changed-since "$since" >/dev/null 2>&1; then
-    node "$DIR/status.js" board $batch --json | jq -r --arg s "$since" '.items[] | select(.updated != null and .updated > $s) | "\(.id)  \(.stage)  \(.phase)  \(.progress // "-")  \(.text)"'
-    exit 0
-  fi
-  stuck_now="$(node "$DIR/status.js" board $batch --json 2>/dev/null | jq -r '[.items[] | select(.stage=="stuck") | .id] | join(",")')"
+  b="$(board)"
+  if [ $all -eq 1 ]; then sel='.items[] | select(.updated != null and .updated > $s)'
+  else sel='.items[] | select(.updated != null and .updated > $s and (.stage as $g | $act | index($g)))'; fi
+  hits="$(jq -r --arg s "$since" --argjson act "$ACT" "$sel"' | "\(.id)  \(.stage)  \(.phase)  \(.progress // "-")  \(.text)"' <<<"$b")"
+  [ -n "$hits" ] && { echo "$hits"; exit 0; }
+  stuck_now="$(jq -r '[.items[] | select(.stage=="stuck") | .id] | join(",")' <<<"$b")"
   if [ "$stuck_now" != "$stuck_before" ] && [ -n "$stuck_now" ]; then echo "stale: $stuck_now"; exit 0; fi
   sleep 20
 done

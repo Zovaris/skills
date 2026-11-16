@@ -474,9 +474,46 @@ Targets (any mix):
   branch:<name>       every workflow run on the branch's latest commit finished
   prs[:<label>]       a PR opened or updated: yours, a warden batch's, or with the label
   issues[:<label>]    an issue opened or updated with the label (default agent)
-  batch:<name>        a warden card needs the warden (--all: any card change)
+  batch:<name>        a warden card needs the warden (--all: any card change); polls every 10 s
+  watch[:prs|issues|all]  tend's watch mode: new or updated PRs and/or labeled issues
+                      (scope from tend.watch, label from tend.label)
 Finished checks are reported at once. Exit 0 = events, 4 = heartbeat, 2 = bad target, 3 = gh missing or signed out.
 Defaults: settings watch.events, watch.every (30 s), watch.max (50 min).`
+
+// expandWatch turns `watch[:prs|issues|all]` into prs and issues targets, the scope and label
+// coming from tend.watch and tend.label when not given.
+func expandWatch(targets []string) ([]string, bool) {
+	var out []string
+	watch := false
+	for _, t := range targets {
+		kind, scope, _ := strings.Cut(t, ":")
+		if kind != "watch" {
+			out = append(out, t)
+			continue
+		}
+		watch = true
+		if scope == "" {
+			scope = config.Get("tend.watch", "prs")
+		}
+		label := config.Get("tend.label", "agent")
+		if scope != "issues" {
+			out = append(out, "prs")
+		}
+		if scope != "prs" {
+			out = append(out, "issues:"+label)
+		}
+	}
+	return out, watch
+}
+
+func onlyBatches(targets []string) bool {
+	for _, t := range targets {
+		if !strings.HasPrefix(t, "batch:") {
+			return false
+		}
+	}
+	return true
+}
 
 // Main runs `smithy wait`.
 func Main(args []string) int {
@@ -514,6 +551,10 @@ func Main(args []string) int {
 		fmt.Fprintln(os.Stderr, usage)
 		return 2
 	}
+	targets, watchMode := expandWatch(targets)
+	if watchMode && evs == "" {
+		evs = "new,updated"
+	}
 	if evs == "" {
 		evs = config.Get("watch.events", strings.Join(allEvents, ","))
 	}
@@ -526,6 +567,9 @@ func Main(args []string) int {
 	}
 	if every < 0 {
 		every, _ = strconv.ParseFloat(config.Get("watch.every", "30"), 64)
+		if onlyBatches(targets) {
+			every = 10
+		}
 	}
 	if max < 0 {
 		max, _ = strconv.ParseFloat(config.Get("watch.max", "50"), 64)

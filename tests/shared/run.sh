@@ -58,6 +58,14 @@ t "model unset → exit 3" '$S/config.sh model cheap; [ $? -eq 3 ]'
 $S/config.sh set-model cheap mini >/dev/null
 t "model saved per harness" '[ "$($S/config.sh model cheap)" = mini ] && jq -e ".models.codex.cheap" "$AGENTS_CONFIG"'
 
+(cd "$T/repo" && $S/config.sh set --repo tasks.commit false >/dev/null)
+t "repo setting overrides, false kept as false" '[ "$(cd "$T/repo" && $S/config.sh get tasks.commit)" = false ]'
+t "default applies when unset" '[ "$(cd "$T/repo" && $S/config.sh get foreman.merge)" = auto ]'
+t "no default → exit 3" '(cd "$T/repo" && $S/config.sh get tasks.ignore); [ $? -eq 3 ]'
+t "task-dir asks for tasks.ignore" 'o="$(cd "$T/repo" && $S/task-dir.sh pay)"; [ $? -eq 3 ] && grep -q "^ask tasks.ignore" <<<"$o"'
+(cd "$T/repo" && $S/config.sh set --repo tasks.ignore exclude >/dev/null && $S/task-dir.sh pay >/dev/null && $S/task-dir.sh pay >/dev/null)
+t "exclude adds .docs/ once" '[ "$(grep -c "^.docs/$" "$(cd "$T/repo" && git rev-parse --git-path info/exclude)")" = 1 ] && [ -d "$T/repo/.docs/specs/pay" ]'
+
 # playbook setup.sh block
 printf '# Rules\n' > "$T/AGENTS.md"
 t "block missing" '! $P/setup.sh block status "$T/AGENTS.md"'

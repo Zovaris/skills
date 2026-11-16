@@ -77,6 +77,12 @@ t "router: review is cheap" '[ "$($S/route.js --kind review | cut -d" " -f1)" = 
 t "router: unset tier prints -" '[ "$($S/route.js --text "add OAuth login" | cut -d" " -f2)" = - ]'
 t "router: needs input" '$S/route.js; [ $? -eq 2 ]'
 
+# consult.sh
+t "consult builds a tool-less prompt" 'CONSULT_CMD=cat $S/consult.sh "Q1" "A; B" | grep -q "Question: Q1"'
+echo "ctx-line" > "$T/ctx.md"
+t "consult adds context" 'CONSULT_CMD=cat $S/consult.sh "Q1" "A; B" --context "$T/ctx.md" | grep -q ctx-line'
+t "consult falls back when the harness CLI is missing" 'FOREMAN_HARNESS=pi AGENT_CMD="grep -c Question" PATH="/usr/bin:/bin:$(dirname "$(command -v node)")" $S/consult.sh "Q" "A; B" | grep -q 1'
+
 # playbook setup.sh block
 printf '# Rules\n' > "$T/AGENTS.md"
 t "block missing" '! $P/setup.sh block status "$T/AGENTS.md"'

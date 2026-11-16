@@ -28,6 +28,7 @@ Scripts are in `<skill-dir>/scripts/` (`<skill-dir>` is this file's folder):
 | `agent.sh` | Runs any headless agent CLI (claude, codex, opencode, gemini, cursor, pi, dsh, `$AGENT_CMD`) |
 | `task-dir.sh <slug>` · `tasks.js list\|ready\|set\|where` | Where a new task list goes; the shared task list (same format as smelt) |
 | `commit.sh` · `pr.sh` · `cleanup.sh` | Atomic commits, PRs from the template, removing a finished worktree and local branch |
+| `names.sh` | Branch and worktree names (`branch <key> "<title>"`, `worktree <branch>`), from `git.branch` / `git.worktree` |
 | `find-skill.sh <name>` | Absolute path of an installed skill's SKILL.md (smelt, hush, scout, tend) |
 
 ## Usage
@@ -79,9 +80,10 @@ read it once per batch).
    (state `waiting`, no tokens). Launching later would happen in event turns, where some
    harnesses can't start sessions. Per item, from the workspace root:
    `git -C <repo> fetch origin && git -C <repo> worktree add --no-track -b <branch> <worktree> origin/<from>`
-   (`<worktree>`: where the repo's agent instructions put worktrees, else the absolute sibling path
-   `<repo-parent>/worktrees/<repo>-<id>`, never inside the repo; `<from>` is the base, or the
-   prereq's branch when stacked). Write each brief from `references/worker-brief.md` to
+   (`<branch>` = `scripts/names.sh branch <key> "<title>"`, where `<key>` is the item's ticket or
+   issue id, or the task file's `NN`; `<worktree>` = `scripts/names.sh worktree <branch> <repo>`,
+   unless the repo's agent instructions say otherwise, never inside the repo; `<from>` is the base,
+   or the prereq's branch when stacked). Write each brief from `references/worker-brief.md` to
    `<batch-dir>/<id>.brief.md` and **spawn** all at once on each item's model
    (`references/models.md`) with the brief's full text as the prompt, never a pointer to the
    file. Record each session id or pid and bump `launches`. With tend installed and ship items in

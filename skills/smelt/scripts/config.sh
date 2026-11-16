@@ -35,6 +35,8 @@ migrate() {
 # key | default ("ask" = no default, ask once) | used by | meaning
 KNOWN='tasks.location|repo|smelt plan|where task lists live: repo, local (~/.smithy/plans) or board
 tasks.commit|ask|smelt plan|commit specs and tasks (docs/specs) or keep them out of git (.docs/specs)
+git.branch|{type}/{key}-{slug}|smelt warden|branch name template: {type} feat/fix/docs/refactor/test/chore, {key} ticket or task id, {slug} from the title
+git.worktree|{parent}/worktrees/{repo}-{branch}|smelt warden tend|worktree path template ({branch} with / as -)
 tasks.ignore|ask|smelt plan|with tasks.commit false: gitignore (commit a .gitignore line) or exclude (local .git/info/exclude)
 warden.merge|auto|warden|auto: workers merge green PRs; manual: they stop at ready
 warden.cleanup|auto|warden|auto: end finished workers and remove worktrees and local branches without asking

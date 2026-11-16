@@ -10,6 +10,7 @@ export AGENTS_CONFIG="$T/config.json" FOREMAN_HARNESS=codex
 
 git init -q --bare "$T/remote.git"; git clone -q "$T/remote.git" "$T/repo" 2>/dev/null; cd "$T/repo"
 git config user.email t@t; git config user.name t
+git switch -q -c main 2>/dev/null || git checkout -q -b main  # CI runners default to master
 git commit -q --allow-empty -m "feat(core): init"; git commit -q --allow-empty -m "fix(api): handle nulls"
 git push -q origin HEAD:main 2>/dev/null; git remote set-head origin main >/dev/null 2>&1
 

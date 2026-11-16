@@ -5,6 +5,8 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+## v0.7.0 — 2026-11-15
+
 ### review against skill-authoring best practices
 - Shorter descriptions on every skill (what + when, ~170–290 characters).
 - foreman split from 237 to 114 lines: intake, state, acting and models moved to references; one defaults table with precedence; contradictions on production merges, `max`, tend launch and model rules resolved.

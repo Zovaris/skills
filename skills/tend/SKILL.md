@@ -18,8 +18,10 @@ wait for new PRs or issues), `config.sh` (the user's models and tend settings).
 ## Input
 
 - PR urls, numbers or branch names: one loop per PR, then stop.
-- `batch <name>`: every item of that foreman batch in state `pr_open` or `ready`
-  (`<foreman-dir>/scripts/status.js board <name> --json`), then stop.
+- `batch <name>`: the items of that foreman batch, each as it reaches `pr_open` or `ready`
+  (`<foreman-dir>/scripts/status.js board <name> --json`). Foreman starts you with the workers,
+  so between PRs wait with `<foreman-dir>/scripts/watch.sh <name>`; stop when every item is
+  final (merged, dropped, reported).
 - `watch [scope]`: keep going. Tend the PRs that match, then wait with `scripts/watch.sh` and
   adopt what appears, until the user stops it or `--max-hours` (default 8) passes. Scope:
   - `prs` (default): open PRs by the user, by foreman (`foreman/…` branches) or with `--label`.

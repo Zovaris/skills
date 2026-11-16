@@ -18,6 +18,15 @@ respawn reuses it.
 
 ## Claude Code desktop
 
+The app refuses `start_session` in a turn that an event started (the watcher exiting, a worker's
+message, CI): it only lets you propose a card there. A `PermissionRequest` hook removes the
+approval click but not this rule. That is why the loop launches every worker in the user's turn
+and lets dependents wait in their own session (`wait-turn.sh`). Work that appears later (a
+follow-up item) is proposed as a card, or listed for the user. When the user starts a proposed
+card, its session id doesn't come back to you: find it with `list_sessions {"linked": true}` and
+record it in `batch.json`. A relaunch from an event turn (recovery rung 3) is proposed the same
+way; prefer rung 2 (**tell**) there.
+
 `start_session` with `initiation "user_asked"`, `context "fresh"`, `use_worktree false`, no
 `cwd`, `name` = id, `model` if asked, `wake_when_done true`, `prompt` = the brief, `background` =
 the batch goal; all launches in one message. Record each session id.

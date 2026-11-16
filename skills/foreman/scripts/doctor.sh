@@ -55,6 +55,16 @@ if [ "$HARNESS" = claude-desktop ]; then
     || warn "no start_session auto-approve hook (one 'Allow' click per worker)" "add a PermissionRequest hook, matcher mcp__ccd_session__start_session, printing {\"hookSpecificOutput\":{\"hookEventName\":\"PermissionRequest\",\"decision\":{\"behavior\":\"allow\"}}}"
 fi
 
+# Claude Code: auto merges need `gh pr merge` allowed, or workers stop at ready (merge-blocked).
+if [ "${HARNESS%%-*}" = claude ]; then
+  allowed=""
+  for S in ~/.claude/settings.json .claude/settings.json .claude/settings.local.json; do
+    [ -f "$S" ] && jq -e '.permissions.allow[]? | select(test("^Bash\\(gh pr merge"))' "$S" >/dev/null 2>&1 && { allowed="$S"; break; }
+  done
+  [ -n "$allowed" ] && ok "gh pr merge allowed ($allowed)" \
+    || warn "gh pr merge not in the allow list (auto merges may stop at ready)" "add \"Bash(gh pr merge:*)\" to permissions.allow in ~/.claude/settings.json, or use merge manual"
+fi
+
 # State dir.
 d="${FOREMAN_HOME:-$HOME/.agents/foreman}"
 mkdir -p "$d" 2>/dev/null && [ -w "$d" ] && ok "writable $d" || bad "cannot write $d" "check permissions on $d"

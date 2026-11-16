@@ -24,13 +24,20 @@ requirements from the intent and the code"; out of scope if the user named it>
   its phases in order; its references/, agents/ and scripts/ paths are relative to its folder.
   Don't try to invoke it as a slash command." | mode plain: "work the way the repo's agent instructions
   (AGENTS.md / CLAUDE.md) say: tests for what you change, typecheck and lint green.">
-<repo task file: "- In your branch, set the task file's `Status: done` and `PR: <url>`
+<committed repo task file (docs/specs): "- In your branch, set the task file's `Status: done` and `PR: <url>`
   (`<foreman-dir>/scripts/tasks.js set <file> status=done pr=<url>`) so it lands with the PR.">
 - First step: check `pwd -P` and `git rev-parse --show-toplevel` equal <worktree> and the branch
   is <branch>. If not: state=blocked note=wrong-worktree, stop.
+<has prereqs or the batch is full: "- Then wait for your turn: run `<foreman-dir>/scripts/wait-turn.sh
+  <batch> <id>` (one blocking call; exit 4 means run it again, exit 0 means go). When it says go,
+  `git fetch origin && git merge origin/<base>` (or the prereq's branch when stacked) so you
+  start from the merged prereqs.">
 <relaunch: "- This is a relaunch. Read <batch-dir>/<id>.inbox.md first if it exists. Before any
   outside action, check git log, git status and `gh pr list --head <branch>`; continue from what
   exists, never open a second PR or rewrite pushed history.">
+- Stay current with the base: `git fetch origin && git merge origin/<base>` (resolve, run the
+  tests) before opening the PR and again right before merging. Other workers merge into the same
+  base while you work.
 - Commits: `<foreman-dir>/scripts/commit.sh style` once, then one atomic commit per concern with
   `commit.sh "<msg>" <paths>` in that style. PR: `<foreman-dir>/scripts/pr.sh template`; fill
   every heading of the template if there is one, then `pr.sh create --base <base> --title "<t>"
@@ -58,7 +65,14 @@ current step, so the foreman sees where you are without asking.
   session when the PR closes, turn those on. A draft or
   unfinished PR is state=blocked, never pr_open.
 - Green and reviewed: tests_run=<commands actually run>, risks=<or none>. merge auto → merge into
-  <base>, state=merged; manual → state=ready. Never the production branch.
+  <base>, state=merged; manual → state=ready. Never the production branch. If the merge itself
+  is refused (permission rule, branch protection, a classifier): don't retry around it;
+  state=ready note=merge-blocked, and the foreman merges.
+- Work found after your PR merged: small and inside this task's intent (a missed case, a typo, a
+  failing edge test) → fix it yourself in a follow-up PR from a new branch `<branch>-fix`, same
+  rules. Anything bigger or outside the intent → write it as a new task file `NN-<slug>.md` in
+  the task dir (or `<batch-dir>/followups/` without one), keep your card `merged`, and name it in
+  the note: `followup: <file>`. The foreman decides whether it becomes a task.
 - Someone else's PR already covers this: close yours with one sentence pointing to theirs;
   state=dropped.
 - Scout: write <batch-dir>/<id>/report.md (answer first, then evidence with file:line and links,

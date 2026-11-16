@@ -46,14 +46,18 @@ the loop below uses only those five verbs).
 - `/foreman doctor`: `doctor.sh`, shown as is (it detects the harness and checks only what that
   harness needs); offer to fix what lives in the user's own files.
 - Options in words: `max N` workers (default 3, a token-cost cap), `model <name>`, `stack`,
-  `merge auto|manual`, `forge fast|normal|full` or `plain` (worker mode), and
+  `merge auto|manual` (default `auto`), `cleanup auto|ask` (default `auto`: finished workers are
+  ended and their worktrees and local branches removed without asking; both are stored in
+  `batch.json` as the user's standing permission for this batch), `forge fast|normal|full` or
+  `plain` (worker mode), and
   `(auto)` / `(manual)` / `(scout)` / `(full)` after a task.
 
 ## Intake
 
 Work out what you were given, in this order, and say in the plan line which it was:
 
-1. **A task dir or task file** (`docs/specs/<slug>/`, `~/.agents/plans/<repo>/<slug>/`, an
+1. **A task dir or task file** (`docs/specs/<slug>/`, `.docs/specs/<slug>/`,
+   `~/.agents/plans/<repo>/<slug>/`, `tasks.js where` lists them; an
    `NN-*.md`, or "the tasks we just planned"): `tasks.js ready <dir>` gives what can start;
    blocked ones wait for their blockers. Id = `<slug>-NN`. Source = the file.
 2. **Board ids** (GitHub issues, Linear, Jira keys): read each with `gh` or the harness's tracker
@@ -78,8 +82,9 @@ plus the repo's agent instructions), no question. Store it as `mode` in `batch.j
 **Status back to the source**, so forge and the board stay in sync:
 - Local task dir: `tasks.js set <file> status=doing` at launch, `status=done pr=<url>` when
   merged, `status=dropped` when dropped.
-- Repo task dir: the worker sets `Status: done` and `PR:` in its own branch, so the change lands
-  with the PR; you don't commit to the base branch.
+- Committed repo task dir (`docs/specs`): the worker sets `Status: done` and `PR:` in its own
+  branch, so the change lands with the PR; you don't commit to the base branch.
+- Uncommitted repo task dir (`.docs/specs`): update it directly, like a local dir.
 - Board: one comment with the PR when it opens; close or move the issue when merged (only what the
   tracker's tools allow; never delete).
 
@@ -126,17 +131,25 @@ secrets or client data in it.
    PR already covering it (`gh pr list --search "<id>"`), or a task file already `done`. Someone
    else's PR for it → `dropped` with a pointer. Write `batch.json` (prereqs from the task files'
    `Blocked by`, the board's links or the user's words) and tell the user in one line: the input
-   type, the worker mode, what starts now, what waits on what, each item's base, kind and merge.
-2. **Launch** items whose prereqs are `merged` (with `stack`: `pr_open`) and that have no `hold`,
-   up to `max`. First, from the workspace root, per item:
+   type, the worker mode, what starts now, what waits on what, each item's base, kind, merge and
+   cleanup mode.
+2. **Launch everything now**, in this turn: every item without a `hold`, including the ones
+   whose prereqs haven't merged and the ones over `max`. Items that can't start yet get the
+   brief's wait line: their worker blocks in its own session on `wait-turn.sh` (state `waiting`,
+   no tokens while it waits) until its prereqs merge and a slot under `max` frees, then merges
+   the base and starts. Launching later would happen in event turns, where some harnesses can't
+   start sessions (`references/harness.md`). Per item, from the workspace root:
    `git -C <repo> fetch origin && git -C <repo> worktree add --no-track -b <branch> <worktree> origin/<from>`
-   (`<worktree>` where the repo's agent instructions (CLAUDE.md / AGENTS.md) put worktrees, else
-   `worktrees/<repo>-<id>`; `<from>` is the base, or the prereq's branch when stacked). Write the
-   brief from `references/worker-brief.md` (with the paths from `find-skill.sh forge` and
-   `find-skill.sh silent`, resolved once per batch) to `<batch-dir>/<id>.brief.md`, then **spawn** every
-   ready item at once. Record each session id or pid and bump `launches`.
+   (`<worktree>`: where the repo's agent instructions put worktrees, else the absolute sibling
+   path `<repo-parent>/worktrees/<repo>-<id>`, never inside the repo; `<from>` is the base, or
+   the prereq's branch when stacked). Write the brief from `references/worker-brief.md` (with the
+   paths from `find-skill.sh forge|silent|tend`, resolved once per batch) to
+   `<batch-dir>/<id>.brief.md`, then **spawn** them all in one go. Record each session id or pid
+   and bump `launches`. With tend installed and ship items in the batch, spawn its session now
+   too (step 6).
 3. **Watch.** End every turn that leaves workers running with **wake**: `watch.sh <batch>` in the
-   background; it costs no tokens while it waits and its exit wakes you. Never sleep or poll inside a turn. On wake, read only the cards it printed; open a full
+   background; it costs no tokens while it waits and wakes you only for cards that need you
+   (decisions, stuck, PRs to verify, merged, reported, dropped), not for progress updates. Never sleep or poll inside a turn. On wake, read only the cards it printed; open a full
    card with `status.js get` when a line isn't enough; a worker transcript only when its card is
    missing or contradicts itself (its log, with the agent.sh adapter).
 4. **Act** on each card whose `stage` is not final:
@@ -153,17 +166,22 @@ secrets or client data in it.
      yourself: `status.js set <batch> <id> state=working decision_key=`.
      Log low and medium ones in `decisions.md`.
    - `verify` (`pr_open`, `ready`): `verify.sh <repo> <branch> <pr>`. `unpushed` or `red` goes
-     back to the worker in one line. `ready`: list it as waiting for the user's merge.
+     back to the worker in one line. `ready` with `note=merge-blocked` in `merge auto`: merge it
+     yourself (`gh pr merge`); refused here too → list it for the user, with the doctor's
+     permission hint. Other `ready`: list it as waiting for the user's merge.
      `closed` (closed without merge): `state=dropped note="PR closed without merge"`,
      `cleanup.sh <repo> <branch> <worktree>`, **end** the worker, set the source to `dropped`, and name it in
      the final message.
    - `merged` (after `verify.sh` says `merged`): `cleanup.sh <repo> <branch> <worktree>`,
-     **end** the worker, update the source, launch the dependents unblocked
-     (`tasks.js ready` again for a task dir).
+     **end** the worker, update the source. Its dependents are already waiting and start on
+     their own. A `followup: <file>` in the note is work found after the merge: small and inside
+     the intent → add it as an item (spawn it if this harness can from here, else propose it);
+     bigger → it's a scope question for the user with the other decisions.
    - `reported`: read the report's first lines, **end** the worker, `cleanup.sh`.
    - `dropped`: `cleanup.sh`, **end** the worker.
    Every final item goes through `cleanup.sh`: worktree and local branch removed, unpushed work
    refused with `kept <branch>: …`, which you put in the final message instead of forcing it.
+   With `cleanup ask`, list what you would clean and end instead, and do it on the user's yes.
    - `stuck` (`blocked` / `failed`, or no card update for 45 min): recovery ladder, one rung per
      wake: (1) answer from the intent if the note asks something it settles; (2) one corrective
      line to the worker (**tell**); (3) relaunch in the **same worktree** with the relaunch line of the
@@ -174,8 +192,7 @@ secrets or client data in it.
    `blocked` / `failed` workers open for the user to inspect. Workers still `ready` end on their
    own when the PR closes (auto-archive, where the harness has it); otherwise the final message
    says `/foreman cleanup` finishes them after the merges.
-6. **Tend** (when the tend skill is installed): once every ship item is `pr_open` or `ready` and
-   its worker has ended, **spawn** one tend session for the batch on the cheap model
+6. **Tend** (when the tend skill is installed): spawned in step 2 with the workers, one tend session for the batch on the cheap model
    (`config.sh model cheap`; code fixes inside it go to the strong one): brief = "Read
    <tend-skill> and follow it for `batch <batch>`; report through the cards (`--card <status.js>
    <batch> <id>`)". A PR it can't get green comes back as a `blocked` or `needs_decision` card,

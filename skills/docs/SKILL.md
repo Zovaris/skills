@@ -1,6 +1,6 @@
 ---
 name: docs
-description: Project documentation as code — ADRs, glossary, module READMEs, a codebase map, doc comments on public APIs, and a no-inline-comments policy where the "why" lives in docs instead of code. Use when recording a decision (ADR), documenting a module or its public API, writing or updating docs/, checking docs are in sync with code, enforcing or fixing the comment policy, mapping a codebase, or searching past decisions and project docs.
+description: Keeps project docs in the repo: ADRs, glossary, module READMEs, doc comments, codebase map, drift checks and the no-inline-comments policy. Use to record a decision, document a module, sync docs with code, enforce comment rules, or search past decisions.
 argument-hint: "[init|adr <title>|module <path>|map|sync [base]|comments [paths]|search <query>]"
 ---
 
@@ -8,7 +8,7 @@ argument-hint: "[init|adr <title>|module <path>|map|sync [base]|comments [paths]
 
 Docs live in the repo, next to the code they explain, and are reviewed in the same PR. Scripts
 are in `scripts/`, details in `references/` (paths relative to this file's folder); read a
-reference only when its mode runs. Files are created only when there is something to write.
+reference only when its mode runs. Outside `init`, files are created only when there is something to write.
 
 ## Where things live
 
@@ -28,13 +28,14 @@ line, and pointers to the files above.
 ## Modes
 
 - **init** — create `docs/README.md` (index), `docs/adr/0000-record-architecture-decisions.md`
-  (accepted: we use ADRs), `docs/GLOSSARY.md` (header only). Add to AGENTS.md (or CLAUDE.md if
+  (accepted: we use ADRs), `docs/GLOSSARY.md` and `docs/agents/STANDARDS.md` (headers only; the
+  standards file collects judgement rules the reviewers enforce). Add to AGENTS.md (or CLAUDE.md if
   that is what the repo uses) a short block: where docs live and the comment policy. Detect the
   stack and offer the matching lint config from `references/COMMENTS.md`; write it only on yes.
 - **adr `<title>`** — only when the ADR test below passes. `scripts/adr.sh "<title>"` creates the
   next numbered file from `references/ADR-FORMAT.md`; fill it from the conversation and the code,
   status `proposed` until the user accepts it. Superseding: new ADR, then change only the old
-  one's status line to `Superseded by NNNN`.
+  one's status line to `superseded by NNNN`.
 - **module `<path>`** — write `<path>/README.md`: purpose, public entry points, invariants, the
   "why" that would otherwise be inline comments, links to ADRs. Add or fix doc comments on every
   exported symbol (what it does, params, returns, errors; not how). Remove explanatory comments
@@ -61,7 +62,8 @@ the module README.
 Code carries no explanatory comments. Allowed:
 - Doc comments on public API: TSDoc/JSDoc `/** */`, Python docstrings, GoDoc `// Name …` right
   above an exported symbol, Javadoc, Rust `///` and `//!`, KDoc.
-- License or SPDX headers, shebangs, encoding lines.
+- License or SPDX headers, shebangs, encoding lines, and a script's opening usage block (the
+  comment header right after the shebang).
 - Tool directives **with a reason**: `eslint-disable-next-line rule -- reason`,
   `@ts-expect-error reason`, `# noqa: E501 reason`, `# type: ignore[code]`, `//nolint:name // reason`.
 - `//go:build`, `//go:generate`, Rust `// SAFETY:` on unsafe blocks.

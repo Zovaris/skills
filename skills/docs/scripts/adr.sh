@@ -4,7 +4,8 @@
 # Numbers are never reused; 0000 is reserved for "record architecture decisions" (docs init).
 set -euo pipefail
 [ $# -ge 1 ] && [ -n "$1" ] || { echo 'usage: adr.sh "<title>" [adr-dir]' >&2; exit 2; }
-dir="${2:-docs/adr}"; mkdir -p "$dir"
+[ -n "${2:-}" ] && dir="$(mkdir -p "$2" && cd "$2" && pwd)" || dir="docs/adr"
+cd "$(git rev-parse --show-toplevel 2>/dev/null || pwd)"; mkdir -p "$dir"
 last="$(ls "$dir" 2>/dev/null | grep -oE '^[0-9]{4}' | sort -n | tail -1 || true)"
 n=$(printf '%04d' $(( 10#${last:-0} + 1 )))
 slug="$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-|-$//g' | cut -c1-60)"

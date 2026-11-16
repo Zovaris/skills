@@ -1,6 +1,6 @@
 ---
 name: playbook
-description: How to use the installed Zovaris skills (forge, foreman, docs, scout, tend, silent, direct). Use at the start of any software work — building, changing, fixing, planning, reviewing, investigating, documenting — and whenever the user asks how to work here or which skill to use.
+description: Routes code work to the installed skill that fits (forge, foreman, docs, scout, tend, silent, direct) and holds their shared rules. Use at the start of building, changing, fixing, reviewing or documenting code in a repo, or when asked which skill to use. Not for chats without code.
 ---
 
 # playbook
@@ -26,7 +26,7 @@ prints and follow it: you can't run it as a slash command.
 | to build, change or fix code | **forge** | Announce "Using forge `<route>` `<speed>`" in one line, read forge's SKILL.md and follow it: no plan → `plan`, a plan, spec or task → `build`, a bug → `debug`. Trivial work is `fast`. Its approval gates still apply. |
 | several tasks done at once, or a task list run in parallel | **foreman** | Spawns sessions and costs tokens: propose it with the task list and wait for a yes, or tell the user to run `/foreman`. |
 | a fact, a comparison, "why does X", "can we Y" | **scout** | Model-invoked; read-only; answers with sources. |
-| a decision recorded, docs, module READMEs, comment policy, a codebase map, to search past decisions | **docs** | Model-invoked. Search `docs search` before re-deciding anything. |
+| a decision recorded, docs, module READMEs, comment policy, a codebase map, to search past decisions | **docs** | Model-invoked. Search past decisions with its `search` mode before re-deciding anything. |
 | open PRs kept green, rebased, review comments handled; new PRs or labeled issues watched | **tend** | Suggest `/tend <pr>` or `/tend watch [prs\|issues\|all]`; foreman launches it for its own PRs. Issues it accepts become task files in `~/.agents/plans/<repo>/inbox/` for foreman. |
 | the work done without conversation | **silent** | Only when the user runs `/silent` or asks for no talk. |
 | — every reply | **direct** | If installed, write every reply its way unless the user says "normal mode". |
@@ -40,12 +40,12 @@ Not installed? Do the work the plain way and, once, mention the skill that would
 - Evidence over claims: "done", "passes", "fixed" always name the command and its result.
 - Commits are atomic in the repo's style, PRs follow its template, finished worktrees and local
   branches are removed (the `commit.sh`, `pr.sh`, `cleanup.sh` scripts in forge and foreman).
-- Decisions that are hard to reverse go to an ADR (docs). No explanatory code comments: API doc
+- Decisions that pass docs' ADR test (hard to reverse, surprising, a real trade-off) go to an ADR. No explanatory code comments: API doc
   comments only, the "why" lives in docs.
 - Models come in three tiers per harness (cheap, mid, strong); `route.js` picks the tier per job
   and `config.sh model <tier>` gives the model. When a tier is unset (exit 3, or `-` from
   route.js): run `scripts/config.sh suggest-models`. If it prints suggestions, propose them in
-  one line ("cheap haiku, mid sonnet, strong opus for this harness, ok?") and on a yes run
+  one line ("cheap <model>, mid <model>, strong <model> for this harness, ok?") and on a yes run
   `config.sh accept-models`. If it prints none, ask the user to name each tier and save them with
   `config.sh set-model <tier> <name>`. Ask once per harness; until then use the session's model.
   Under `/silent`, don't ask: use the session's model and say so at the end.

@@ -37,16 +37,17 @@ convention = "google"
 ## Go (golangci-lint)
 
 ```yaml
+version: "2"   # golangci-lint v2; on v1 move `settings` to a top-level `linters-settings`
 linters:
   enable: [revive, godot, godox, gocritic, nolintlint]
-linters-settings:
-  revive:
-    rules: [{ name: exported }, { name: package-comments }]
-  gocritic:
-    enabled-checks: [commentedOutCode]
-  nolintlint:
-    require-explanation: true
-    require-specific: true
+  settings:
+    revive:
+      rules: [{ name: exported }, { name: package-comments }]
+    gocritic:
+      enabled-checks: [commentedOutCode]
+    nolintlint:
+      require-explanation: true
+      require-specific: true
 ```
 
 ## Java (Checkstyle)

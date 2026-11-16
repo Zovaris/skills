@@ -1,6 +1,6 @@
 ---
 name: scout
-description: Read-only investigation that ends in a cited report and changes nothing. Use when the question is "can we do X", "why does Y happen", "what does library Z do", "how does this part of the code work" or "compare A vs B", before deciding or building. Runs on a cheap model by default.
+description: Read-only investigation that answers one question with cited sources and changes nothing. Use when asked "can we do X", "what does library Z do", "how does this code work" or "compare A vs B" before deciding or building. Not for past project decisions (docs).
 argument-hint: <question> [--out <report path>]
 ---
 
@@ -38,7 +38,8 @@ sub-questions and the repo path filled in:
 - harness subagent tool with a model parameter, read-only tools; or
 - `scripts/agent.sh --readonly --model <m> <prompt-file>` (any agent CLI).
 
-Doing it inline is fine when the answer is one or two lookups. Either way:
+Doing it inline is fine when the answer is one or two lookups; inline runs on the session's
+model, so say so in the report. Either way:
 - Sources, best first: the code (`path:line`), official docs, changelogs and release notes,
   issues and PRs, then everything else. Every claim gets a link or a `path:line`.
 - Run read-only commands only (`rg`, `git log`, `gh api`, `--help`, a REPL import). No installs,

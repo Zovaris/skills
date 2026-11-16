@@ -24,7 +24,7 @@ case "${1:-}" in
   status)
     echo "harness: $(harness)"
     echo "installed:"; "$DIR/find-skill.sh" --list | awk '{printf "  %-9s %s\n", $1, $2}'
-    for m in cheap strong; do v="$("$DIR/config.sh" model $m 2>/dev/null || true)"; echo "model $m: ${v:-unset (ask the user, then config.sh set-model $m <name>)}"; done
+    echo "settings (repo, then user, then default):"; "$DIR/config.sh" list | sed 's/^/  /' 
     f="$(default_file)"; has_block "$f" && echo "block: present in $f" || echo "block: missing in $f (setup.sh block add)"
     ;;
   block)

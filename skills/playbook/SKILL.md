@@ -59,9 +59,18 @@ Not installed? Do the work the plain way and, once, mention the skill that would
 | "Done, it should work" | Run it; quote the command and result. |
 | "I'll launch foreman, it's faster" | It costs sessions: propose it, wait for a yes. |
 
-## 5 · Setup (`/playbook setup` or when asked)
+## 5 · Settings and setup
 
-`scripts/setup.sh status` shows installed skills, model settings and whether the agent
-instructions block is present. `scripts/setup.sh block add <file>` adds a short block to the
-user's AGENTS.md / CLAUDE.md that points every session here; only with the user's yes, and
-show the block first (`references/AGENTS-BLOCK.md`).
+All settings live in two JSON files, repo first: `<repo>/.agents/config.json` (this repo only)
+and `~/.agents/config.json` (the user's defaults). `scripts/config.sh list` shows every setting
+with its value, where it came from and what uses it; `config.sh set [--repo] <key> <value>`
+changes one. Nobody has to edit JSON by hand.
+
+Two ways to fill them:
+- **Up front** — when the user says "playbook setup" (or `/playbook setup`): run
+  `scripts/setup.sh status`, then ask every unset setting in one message (numbered, each with your
+  recommendation, "yes" accepts all), save the answers, and offer the agent-instructions block
+  (`setup.sh block add <file>`, only with a yes, after showing `references/AGENTS-BLOCK.md`).
+- **On first use** — any skill that needs an unset setting asks just that one, once, and saves
+  it: `--repo` when the answer is about this repo (where specs go), user-level otherwise
+  (models, merge and cleanup defaults).

@@ -1,37 +1,63 @@
+<div align="center">
+
 # smithy
 
-Agent skills for planned, test-first, parallel software work. They use the open `SKILL.md`
-format and work in any harness that loads skills (Claude Code, Codex, OpenCode, Cursor, Gemini…):
-everything is Markdown plus one small Go binary (`smithy`) that drives git and the GitHub CLI, and harness-specific bits live in small adapters.
-GitHub work goes through the GitHub CLI (`gh`), which `/warden doctor` checks.
+**Agent skills for planned, test-first, parallel software work.**
 
-## Start with use-smithy
+[![check](https://github.com/Zovaris/skills/actions/workflows/check.yml/badge.svg)](https://github.com/Zovaris/skills/actions/workflows/check.yml)
+[![release](https://img.shields.io/github/v/release/Zovaris/skills?sort=semver)](https://github.com/Zovaris/skills/releases)
+[![license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-**Install `use-smithy` with everything else.** It is the one skill your agent loads on its own at
-the start of any coding work, and it tells the agent which of the other skills are installed,
-when to use each one and the rules they share. Without it, the agent only knows the other
-skills by their one-line descriptions, and the user-invoked ones never come up unless you type
-them. For the strongest effect, let use-smithy add a short pointer to your agent instructions
-file (`AGENTS.md` / `CLAUDE.md`): ask your agent to "run use-smithy setup".
+</div>
+
+smithy turns your coding agent into a small engineering team: it plans before it builds, writes
+the failing test first, checks its work with independent reviewers, runs many tasks in parallel
+and keeps the pull requests green until they merge. It works in any harness that loads
+`SKILL.md` skills (Claude Code, Codex, OpenCode, Cursor, Gemini, Pi,
+DeepSeek Harness), and needs nothing but git and the GitHub CLI.
+
+## Quick start
+
+```bash
+npx skills add Zovaris/skills -g
+```
+
+Pick every skill (at least `use-smithy`) and the agents to install to. Then, in your agent:
+
+1. **"run use-smithy setup"** — models, settings, and an optional pointer in your `AGENTS.md`.
+2. **`/smelt <task>`** — one task, planned and built test-first, ending in a PR.
+3. **`/warden <tasks>`** — many tasks at once, one worker and PR each.
+
+## How it works
+
+![How the smithy skills work together](docs/flow.svg)
+
+- **use-smithy** is loaded by the agent on its own and routes each piece of work to the skill that
+  fits.
+- **smelt** and **warden** share one task list (`NN-<slug>.md` files with status, blockers and PR),
+  in the repo or in `~/.smithy/plans/`. Plan with smelt, build one task at a time or hand the list
+  to warden.
+- **tend** keeps every open PR green: CI fixes, rebases after sibling merges, review threads.
+- Commits are atomic in your repo's style, PRs follow your template, branches are named
+  `<type>/<key>-<slug>`, and finished worktrees are removed every time.
 
 ## Skills
 
 | Skill | Started by | What it does |
 |---|---|---|
-| `use-smithy` | the agent | Routes work to the installed skills and holds the shared rules. **Install it.** |
-| `smelt` | you (`/smelt`, `$smelt`, `@smelt`… per harness): `/smelt [brainstorm\|plan\|build [next\|all]\|test\|review\|debug\|… \| from <phase>] [fast\|full] <task>` | One task, step by step: brainstorm → spec → task list → TDD → test agents (adversarial, regression, property, mutation, E2E, security) → review → PR → retro. Start at any phase; `fast` for small changes, `full` for risky ones. Through use-smithy, the agent can follow it too. |
-| `warden` | you: `/warden <tasks \| task dir \| board ids \| idea>` · `status [all]` · `cleanup` · `doctor` | Many tasks at once: one silent worker and git worktree per task, each to its own PR or report, supervised from small status cards and a zero-token watcher. |
-| `ledger` | the agent or you: `/ledger init\|adr\|module\|map\|sync\|comments\|search` | ADRs, glossary, module READMEs, a codebase map, doc drift checks, and the comment policy: API doc comments only, the "why" lives in docs. |
-| `scout` | the agent or you | Read-only investigation with sources ("can we…", "why does…", "compare…"), on your cheap model. |
-| `tend` | you: `/tend <pr…> \| batch <batch> \| watch [prs\|issues\|all]`, or warden | Keeps open PRs mergeable: fixes CI, rebases after sibling merges, handles review comments. |
-| `hush` | you: `/hush <task>` | Does the task with no talk; ends with a short `done: <where it landed>` line. |
-| `simple` | the agent | Short, direct replies with no filler or AI tells. Off with "normal mode". |
+| [use-smithy](skills/use-smithy/README.md) | the agent | Routes work to the installed skills and holds the shared rules. **Install it.** |
+| [smelt](skills/smelt/README.md) | you · `/smelt` | One task, step by step: brainstorm, spec, TDD, test agents, review, PR. `fast`, `normal` or `full`. |
+| [warden](skills/warden/README.md) | you · `/warden` | Many tasks in parallel: one silent worker and worktree per task, each to its own PR. |
+| [tend](skills/tend/README.md) | you · `/tend`, or warden | Keeps PRs mergeable: CI, rebases, review comments; can watch for new PRs and issues. |
+| [ledger](skills/ledger/README.md) | the agent or you | ADRs, glossary, module READMEs, codebase map, doc drift, comment policy. |
+| [scout](skills/scout/README.md) | the agent or you | Read-only answers with sources, on your cheap model. |
+| [hush](skills/hush/README.md) | you · `/hush` | Does the task with no talk; ends with one `done:` line. |
+| [simple](skills/simple/README.md) | the agent | Short, plain replies with no filler. Off with "normal mode". |
 
 ## Harnesses
 
-Every skill is Markdown plus the `smithy` binary, git and `gh`; nothing depends on one vendor. What changes
-per harness is how you start a skill, how warden starts workers and whether a waiting session
-can be woken up:
+Nothing depends on one vendor. What changes per harness is how you start a skill, how warden
+starts workers and whether a waiting session can be woken up:
 
 | Harness | Skills folder (global) | Start a skill | Warden workers | Wake on background exit |
 |---|---|---|---|---|
@@ -50,132 +76,57 @@ plugs in anything else). User-invoked skills (smelt, warden, hush, tend) stay ou
 reach where the harness supports it (`disable-model-invocation`, and `agents/openai.yaml` for
 Codex); Gemini has no such switch.
 
-## How they fit together
+## The smithy binary
 
-![smelt and warden share one task list](docs/flow.svg)
+![How a skill runs the smithy binary](docs/binary.svg)
 
-- One **task list** (`NN-<slug>.md` files with `Status`, `Blocked by`, `PR`) on your board, in the
-  repo (`docs/specs/<slug>/`) or locally (`~/.smithy/plans/<repo>/<slug>/`). smelt writes and
-  builds it one task at a time (`build next`, `build all`); warden runs the ready tasks in
-  parallel and tend keeps their PRs green.
-- Start with smelt and hand the rest to warden, or start with warden and let it ask for a plan.
-- No tracker? `smithy tasks board --all` (or `/warden status all`) lists every task list and batch on
-  your machine.
-- Branches are named one way everywhere: `<type>/<key>-<slug>` (`feat/PROJ-123-add-login`,
-  `fix/42-null-crash`), with the ticket, issue or task number as the key; worktrees sit next to
-  the repo in `../worktrees/`.
-- Commits are atomic in your repo's style, PRs follow your template, and finished worktrees and
-  local branches are removed every time.
-
-## Waiting without tokens
-
-Agents never sleep and re-check. They run `smithy wait` in the background; it polls GitHub with
-`gh` and exits with one line when something happens, which wakes the agent:
+Everything mechanical (settings, branch names, task lists, status cards, commits and PRs in your
+repo's style, waiting on CI) is one small Go binary, `smithy`. You never install it: each skill
+ships a launcher that downloads the binary for your platform from the matching release the first
+time it runs, verifies it, and caches it in `~/.smithy/bin/`. Agents wait on GitHub without
+spending tokens:
 
 ```bash
-smithy wait pr:42                 # checks finished (green/red + failed names), merged, closed, conflict, review, comment
+smithy wait pr:42                 # checks finished (with failed names), merged, closed, conflict, review
 smithy wait run:123 branch:main   # a workflow run, or every run on the branch's latest commit
-smithy wait prs issues:agent      # new or updated PRs (yours or a batch's) and labeled issues
-smithy wait batch:20261115-1030   # a warden card that needs the warden
+smithy wait watch                 # new or updated PRs and labeled issues
+smithy status                     # every task list and warden batch on this machine
 ```
 
-Mix targets in one call; pick events with `--events` or the `watch.events` setting.
-
-## Install
-
-With the [skills CLI](https://github.com/vercel-labs/skills) (Node 22.20+):
-
-```bash
-npx skills add Zovaris/skills -g
-```
-
-Pick the skills and agents to install to; include `use-smithy`. Without prompts:
-
-```bash
-npx skills add Zovaris/skills -g -y --skill '*' -a claude-code -a codex
-```
-
-Pin a release with `Zovaris/skills@v0.8.0`; update with `npx skills update -g`; drop `-g` to
-install into the current project only.
-
-Then run use-smithy setup (see [Start with use-smithy](#start-with-use-smithy)).
-
-### The smithy binary
-
-The scripts behind the skills are one Go binary, `smithy` (settings, branch names, task lists,
-warden cards, waiting on GitHub). You don't install it yourself: each skill ships a small
-launcher (`scripts/smithy`, and `smithy.cmd` for Windows) that, the first time it runs,
-downloads the binary for your platform from the matching GitHub release (~1.5 MB gzipped),
-checks it against the release's `checksums.txt` (and its build attestation when `gh` is
-installed), and keeps it in
-`~/.smithy/bin/<version>/`. `~/.smithy/bin/smithy` points at the current one. To run it yourself (`smithy --help`,
-`smithy status` for every task list and batch), let use-smithy setup add `~/.smithy/bin` to your
-`PATH`, or run `scripts/smithy setup path add` from any installed skill. On Windows,
-add `%USERPROFILE%\.smithy\bin` to your user PATH in System settings instead. `SMITHY_BIN` points
-the launcher at your own build.
+To use `smithy` in your own terminal, accept the PATH offer in use-smithy setup (on Windows, add
+`%USERPROFILE%\.smithy\bin` to your user PATH). `smithy --help` lists every command.
 
 ## Settings
 
-Two JSON files, the repo's first: `<repo>/.smithy/config.json` (this repo only) and
-`~/.smithy/config.json` (your defaults). You never edit them by hand:
+Two JSON files, the repo's first: `<repo>/.smithy/config.json` and `~/.smithy/config.json`. You
+never edit them by hand: use-smithy setup asks everything up front, or each skill asks the first
+time it needs a value. `smithy config list` shows every setting and where it came from; all of
+them, with defaults, are in [docs/settings.md](docs/settings.md).
 
-- **use-smithy setup** asks everything up front, or each skill asks a setting the first time it
-  needs it and saves your answer;
-- `smithy config list` (in any skill's `scripts/`) shows each setting, its value and where it came
-  from; `smithy config set [--repo] <key> <value>` changes one.
+## Install options
 
-| Setting | Default | What it does |
-|---|---|---|
-| `models.<harness>.cheap` / `.mid` / `.strong` | suggested or ask | Stored per harness (`smithy config set-model <tier> <name>`); on Claude the agent suggests haiku, sonnet, opus. The router (`smithy route`) picks a tier per task: cheap for small, mechanical or read-only work, mid for most features, strong for risky, hard or large work and the last fix round. |
-| `warden.worker_model` | `route` | `route`: a tier per task; `session`: the parent's model; or one model name for every worker. |
-| `tasks.commit` | ask | Commit specs and tasks (`docs/specs/`) or keep them out of git (`.docs/specs/`). |
-| `tasks.ignore` | ask | When not committed: a committed `.gitignore` line, or `.git/info/exclude` (this machine only). |
-| `tasks.location` | `repo` | `repo`, `local` (`~/.smithy/plans`) or `board`. |
-| `warden.merge` / `warden.cleanup` | `auto` / `auto` | Merge green PRs; end finished workers and remove their worktrees and branches without asking. |
-| `warden.max` / `warden.mode` | `3` / `smelt fast` | Parallel workers; how workers build: `smelt fast`, `smelt normal`, `smelt full` or `plain`. |
-| `tend.watch` / `tend.label` | `prs` / `agent` | What `/tend watch` follows; the issue label it may queue. |
-| `git.branch` | `{type}/{key}-{slug}` | Branch names (`smithy names`); e.g. `agent/{key}-{slug}`. |
-| `git.worktree` | `{parent}/worktrees/{repo}-{branch}` | Where worktrees go. |
-| `watch.events` / `watch.every` / `watch.max` | all / `30` / `50` | What wakes a waiting agent, seconds between polls, minutes before a heartbeat. |
+```bash
+npx skills add Zovaris/skills -g -y --skill '*' -a claude-code -a codex   # no prompts
+npx skills add Zovaris/skills@v0.8.0 -g                                   # pin a release
+npx skills update -g                                                      # update
+```
 
-Coming from 0.7 (`~/.agents/`): the first run moves your settings, plans and batches to
-`~/.smithy/` (`smithy config migrate` does it by hand).
+Drop `-g` to install into the current project only. Requires the
+[skills CLI](https://github.com/vercel-labs/skills) (Node 22.20+), git and
+[`gh`](https://cli.github.com) signed in.
 
-## Hooks (all optional)
+## Contributing
 
-| Hook | Harness | Does |
-|---|---|---|
-| `start_session` auto-approve (`PermissionRequest`) | Claude Code desktop | Skips the "Allow" click per warden worker. `/warden doctor` checks it only there. |
-| `skills/smelt/scripts/smithy guard-tests` | any with a pre-edit hook | Blocks test-file edits during TDD's green phase. |
-
-## Development
-
-- The binary's source is in `cmd/smithy` and `internal/` (Go, standard library only). Inside a
-  checkout the launcher builds it from source when a `.go` file changed, so symlinked skills
-  always run your working copy.
-- Pull requests run `check` (gofmt, vet, `go test`, every offline test through the binary, a
-  build per release target). A `v*` tag runs `release`: it checks the tag matches
-  `shared/VERSION`, builds darwin, linux (arm64, amd64) and windows binaries, gzips them,
-  writes `checksums.txt`, attests the build and publishes the GitHub release with the
-  CHANGELOG section as notes.
-- `shared/` holds the launcher (`smithy`, `smithy.cmd`) and `VERSION`; edit them there and run
-  `go run ./tools/sync-shared`, which copies them into each skill (each skill installs on its own).
-- `tests/run.sh` runs every offline test (`go test`, skill lint, and the ledger, warden,
-  scout and tend scripts); CI runs it.
-- `scripts/drill.sh` pressure-tests skills against a real agent CLI (`tests/drill/*.md`); it
-  costs tokens, so run it by hand per harness.
-
-## Versions
-
-One version for the whole repo, tagged `vX.Y.Z` with a GitHub release; see
-[CHANGELOG.md](CHANGELOG.md).
+See [CONTRIBUTING.md](CONTRIBUTING.md). One version for the whole repo, tagged `vX.Y.Z` with a
+GitHub release; changes are in [CHANGELOG.md](CHANGELOG.md).
 
 ## Credits
 
 Ideas borrowed from [firstmate](https://github.com/kunchenguid/firstmate),
 [dsh-superagent-prototype](https://github.com/deepseek-ai/dsh-superagent-prototype),
-[mattpocock/skills](https://github.com/mattpocock/skills) and
-[superpowers](https://github.com/obra/superpowers).
+[mattpocock/skills](https://github.com/mattpocock/skills),
+[superpowers](https://github.com/obra/superpowers) and
+[scriptify](https://github.com/pfcoperez/scriptify).
 
 ## License
 

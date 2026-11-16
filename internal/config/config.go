@@ -1,0 +1,353 @@
+// Package config reads and writes smithy settings: <repo>/.smithy/config.json first, then
+// ~/.smithy/config.json ($SMITHY_CONFIG), then built-in defaults. Models are stored per harness.
+package config
+
+import (
+	"encoding/json"
+	"errors"
+	"fmt"
+	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
+
+	"github.com/Zovaris/skills/internal/ghx"
+	"github.com/Zovaris/skills/internal/harness"
+)
+
+// Setting is one known key: its default ("ask" means no default, ask the user once), who uses
+// it and what it does.
+type Setting struct{ Key, Default, UsedBy, Meaning string }
+
+// Known lists every setting `smithy config list` shows.
+var Known = []Setting{
+	{"tasks.location", "repo", "smelt plan", "where task lists live: repo, local (~/.smithy/plans) or board"},
+	{"tasks.commit", "ask", "smelt plan", "commit specs and tasks (docs/specs) or keep them out of git (.docs/specs)"},
+	{"git.branch", "{type}/{key}-{slug}", "smelt warden", "branch name template: {type} feat/fix/docs/refactor/test/chore, {key} ticket or task id, {slug} from the title"},
+	{"git.worktree", "{parent}/worktrees/{repo}-{branch}", "smelt warden tend", "worktree path template ({branch} with / as -)"},
+	{"tasks.ignore", "ask", "smelt plan", "with tasks.commit false: gitignore (commit a .gitignore line) or exclude (local .git/info/exclude)"},
+	{"warden.merge", "auto", "warden", "auto: workers merge green PRs; manual: they stop at ready"},
+	{"warden.cleanup", "auto", "warden", "auto: end finished workers and remove worktrees and local branches without asking"},
+	{"warden.max", "3", "warden", "parallel workers (a token-cost cap)"},
+	{"warden.mode", "smelt fast", "warden", "worker mode: smelt fast, smelt normal, smelt full or plain"},
+	{"warden.worker_model", "route", "warden", "route: pick cheap/mid/strong per task (route.js); session: same model as the parent session; or one model name for every worker"},
+	{"watch.events", "checks,merged,closed,conflict,review,comment,push,new,updated", "smithy wait", "which events wake an agent waiting on GitHub"},
+	{"watch.every", "30", "smithy wait", "seconds between GitHub polls"},
+	{"watch.max", "50", "smithy wait", "minutes before a heartbeat exit (4) when nothing happened"},
+	{"tend.watch", "prs", "tend", "what /tend watch looks at: prs, issues or all"},
+	{"tend.label", "agent", "tend", "label of issues tend may queue for warden"},
+}
+
+// ErrUnset means the key has no value and no default: ask the user once, then save it.
+var ErrUnset = errors.New("unset")
+
+// UserFile is the user's settings file.
+func UserFile() string {
+	if f := os.Getenv("SMITHY_CONFIG"); f != "" {
+		return f
+	}
+	return filepath.Join(ghx.Home(), "config.json")
+}
+
+// RepoFile is this repo's settings file ("" outside a repo). Before 0.8 it was
+// .agents/config.json, still read until someone moves it.
+func RepoFile() string {
+	cwd, _ := os.Getwd()
+	top := ghx.RepoRoot(cwd)
+	if top == "" {
+		return ""
+	}
+	f := filepath.Join(top, ".smithy", "config.json")
+	if _, err := os.Stat(f); err != nil {
+		if old := filepath.Join(top, ".agents", "config.json"); exists(old) {
+			return old
+		}
+	}
+	return f
+}
+
+func exists(p string) bool { _, err := os.Stat(p); return err == nil }
+
+func load(file string) map[string]any {
+	m := map[string]any{}
+	if file == "" {
+		return m
+	}
+	b, err := os.ReadFile(file)
+	if err != nil {
+		return m
+	}
+	_ = json.Unmarshal(b, &m)
+	return m
+}
+
+func lookup(m map[string]any, key string) (any, bool) {
+	var cur any = m
+	for _, p := range strings.Split(key, ".") {
+		obj, ok := cur.(map[string]any)
+		if !ok {
+			return nil, false
+		}
+		if cur, ok = obj[p]; !ok || cur == nil {
+			return nil, false
+		}
+	}
+	return cur, true
+}
+
+func str(v any) string {
+	switch t := v.(type) {
+	case string:
+		return t
+	case float64:
+		return strconv.FormatFloat(t, 'f', -1, 64)
+	case bool:
+		return strconv.FormatBool(t)
+	default:
+		b, _ := json.Marshal(t)
+		return string(b)
+	}
+}
+
+func readKey(file, key string) (string, bool) {
+	v, ok := lookup(load(file), key)
+	if !ok {
+		return "", false
+	}
+	return str(v), true
+}
+
+func defaultOf(key string) string {
+	for _, s := range Known {
+		if s.Key == key {
+			return s.Default
+		}
+	}
+	return ""
+}
+
+// Effective returns a key's value and where it came from (repo, user or default).
+func Effective(key string) (string, string, error) {
+	if v, ok := readKey(RepoFile(), key); ok {
+		return v, "repo", nil
+	}
+	if v, ok := readKey(UserFile(), key); ok {
+		return v, "user", nil
+	}
+	if d := defaultOf(key); d != "" && d != "ask" {
+		return d, "default", nil
+	}
+	return "", "", ErrUnset
+}
+
+// Get returns a key's effective value, or fallback when it is unset.
+func Get(key, fallback string) string {
+	if v, _, err := Effective(key); err == nil {
+		return v
+	}
+	return fallback
+}
+
+// Set writes key = value into file; value is stored as JSON when it parses as JSON.
+func Set(file, key, value string) error {
+	m := load(file)
+	var v any
+	if err := json.Unmarshal([]byte(value), &v); err != nil {
+		v = value
+	}
+	cur := m
+	parts := strings.Split(key, ".")
+	for _, p := range parts[:len(parts)-1] {
+		next, ok := cur[p].(map[string]any)
+		if !ok {
+			next = map[string]any{}
+			cur[p] = next
+		}
+		cur = next
+	}
+	cur[parts[len(parts)-1]] = v
+	if err := os.MkdirAll(filepath.Dir(file), 0o755); err != nil {
+		return err
+	}
+	b, _ := json.MarshalIndent(m, "", "  ")
+	tmp := file + ".tmp"
+	if err := os.WriteFile(tmp, append(b, '\n'), 0o644); err != nil {
+		return err
+	}
+	return os.Rename(tmp, file)
+}
+
+func tier(t string) bool { return t == "cheap" || t == "mid" || t == "strong" }
+
+// Model returns the user's model for a tier in the current harness.
+func Model(t string) (string, error) {
+	h, _ := harness.Detect()
+	if v, ok := readKey(UserFile(), "models."+h+"."+t); ok {
+		return v, nil
+	}
+	return "", ErrUnset
+}
+
+// Suggest returns tier→model suggestions where the harness has stable aliases.
+func Suggest() [][2]string {
+	h, _ := harness.Detect()
+	if strings.HasPrefix(h, "claude-") {
+		return [][2]string{{"cheap", "haiku"}, {"mid", "sonnet"}, {"strong", "opus"}}
+	}
+	return nil
+}
+
+// Migrate moves pre-0.8 state (~/.agents/{config.json,plans,foreman,tend}) to ~/.smithy.
+func Migrate() []string {
+	home, _ := os.UserHomeDir()
+	old := filepath.Join(home, ".agents")
+	var moved []string
+	for _, p := range [][2]string{{"config.json", "config.json"}, {"plans", "plans"}, {"foreman", "warden"}, {"tend", "tend"}} {
+		a, b := filepath.Join(old, p[0]), filepath.Join(ghx.Home(), p[1])
+		if exists(a) && !exists(b) {
+			_ = os.MkdirAll(ghx.Home(), 0o755)
+			if os.Rename(a, b) == nil {
+				moved = append(moved, a+" -> "+b)
+			}
+		}
+	}
+	return moved
+}
+
+// AutoMigrate runs Migrate once, the first time smithy runs after an upgrade.
+func AutoMigrate() {
+	home, _ := os.UserHomeDir()
+	if os.Getenv("SMITHY_CONFIG") != "" || exists(ghx.Home()) || !exists(filepath.Join(home, ".agents", "config.json")) {
+		return
+	}
+	for _, m := range Migrate() {
+		fmt.Fprintln(os.Stderr, "moved", m)
+	}
+}
+
+const usage = `usage: smithy config <command>
+  model <cheap|mid|strong>              model for this harness; exit 3 when unset
+  set-model <cheap|mid|strong> <name> [harness]
+  suggest-models                        "<tier> <model>" suggestions for this harness; exit 3 when none
+  accept-models                         save the suggestions (only after the user said yes)
+  get <key>                             effective value (repo, user, default); exit 3 when unset
+  set [--repo] <key> <value>            value stored as JSON when it is JSON
+  list                                  every setting: value, source, what it does
+  migrate                               move pre-0.8 state from ~/.agents to ~/.smithy
+Unset with no default: ask the user once, then save with set (--repo when it only applies here).`
+
+// Main runs `smithy config` and returns the exit code.
+func Main(args []string) int {
+	if len(args) == 0 {
+		fmt.Fprintln(os.Stderr, usage)
+		return 2
+	}
+	h, _ := harness.Detect()
+	switch args[0] {
+	case "model":
+		if len(args) < 2 || !tier(args[1]) {
+			fmt.Fprintln(os.Stderr, "usage: smithy config model <cheap|mid|strong>")
+			return 2
+		}
+		m, err := Model(args[1])
+		if err != nil {
+			return 3
+		}
+		fmt.Println(m)
+	case "set-model":
+		if len(args) < 3 || !tier(args[1]) {
+			fmt.Fprintln(os.Stderr, "usage: smithy config set-model <cheap|mid|strong> <name> [harness]")
+			return 2
+		}
+		if len(args) > 3 {
+			h = args[3]
+		}
+		key := "models." + h + "." + args[1]
+		if err := Set(UserFile(), key, strconv.Quote(args[2])); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			return 1
+		}
+		fmt.Printf("saved %s = %s (%s)\n", key, args[2], UserFile())
+	case "suggest-models":
+		s := Suggest()
+		if s == nil {
+			return 3
+		}
+		for _, p := range s {
+			fmt.Println(p[0], p[1])
+		}
+	case "accept-models":
+		s := Suggest()
+		if s == nil {
+			fmt.Fprintf(os.Stderr, "no suggestions for %s: ask the user for each tier\n", h)
+			return 3
+		}
+		for _, p := range s {
+			if err := Set(UserFile(), "models."+h+"."+p[0], strconv.Quote(p[1])); err != nil {
+				fmt.Fprintln(os.Stderr, err)
+				return 1
+			}
+			fmt.Printf("saved models.%s.%s = %s\n", h, p[0], p[1])
+		}
+	case "get":
+		if len(args) < 2 {
+			return 2
+		}
+		v, _, err := Effective(args[1])
+		if err != nil {
+			return 3
+		}
+		fmt.Println(v)
+	case "set":
+		rest, file := args[1:], UserFile()
+		if len(rest) > 0 && rest[0] == "--repo" {
+			if file = RepoFile(); file == "" {
+				fmt.Fprintln(os.Stderr, "not in a git repo")
+				return 2
+			}
+			if strings.HasSuffix(file, filepath.Join(".agents", "config.json")) {
+				file = filepath.Join(filepath.Dir(filepath.Dir(file)), ".smithy", "config.json")
+			}
+			rest = rest[1:]
+		}
+		if len(rest) != 2 {
+			fmt.Fprintln(os.Stderr, "usage: smithy config set [--repo] <key> <value>")
+			return 2
+		}
+		if err := Set(file, rest[0], rest[1]); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			return 1
+		}
+		fmt.Printf("saved %s = %s (%s)\n", rest[0], rest[1], file)
+	case "migrate":
+		moved := Migrate()
+		if len(moved) == 0 {
+			fmt.Println("nothing to migrate")
+		}
+		for _, m := range moved {
+			fmt.Println("moved", m)
+		}
+	case "list":
+		for _, t := range []string{"cheap", "mid", "strong"} {
+			v, ok := readKey(UserFile(), "models."+h+"."+t)
+			src := ""
+			if ok {
+				src = "user"
+			} else {
+				v = "unset"
+			}
+			fmt.Printf("%-16s %-14s %-8s %s model in %s\n", "models."+t, v, src, t, h)
+		}
+		for _, s := range Known {
+			v, src, err := Effective(s.Key)
+			if err != nil {
+				v, src = "unset", "-"
+			}
+			fmt.Printf("%-16s %-14s %-8s %s (used by %s)\n", s.Key, v, src, s.Meaning, s.UsedBy)
+		}
+	default:
+		fmt.Fprintln(os.Stderr, usage)
+		return 2
+	}
+	return 0
+}

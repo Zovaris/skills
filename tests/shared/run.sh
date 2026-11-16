@@ -14,6 +14,14 @@ git switch -q -c main 2>/dev/null || git checkout -q -b main  # CI runners defau
 git commit -q --allow-empty -m "feat(core): init"; git commit -q --allow-empty -m "fix(api): handle nulls"
 git push -q origin HEAD:main 2>/dev/null; git remote set-head origin main >/dev/null 2>&1
 
+# names.sh
+t "branch from ticket" '[ "$($S/names.sh branch PROJ-123 "Add login with Google")" = feat/PROJ-123-add-login-with-google ]'
+t "branch from issue, type from title" '[ "$($S/names.sh branch "#42" "Fix null crash")" = fix/42-null-crash ]'
+t "branch without key" '[ "$($S/names.sh branch - "Update README")" = docs/update-readme ]'
+t "branch slug capped at 40" 'b="$($S/names.sh branch 03 "a very long title that keeps going and going past forty chars")" && [ ${#b} -le 52 ]'
+t "worktree is a sibling" '[ "$($S/names.sh worktree feat/x)" = "$(cd "$T" && pwd -P)/worktrees/repo-feat-x" ]'
+t "branch template setting" '$S/config.sh set git.branch "agent/{key}-{slug}" && [ "$($S/names.sh branch 7 "Add x")" = agent/7-add-x ] && $S/config.sh set git.branch "{type}/{key}-{slug}"'
+
 # commit.sh
 t "style is conventional" '[ "$($S/commit.sh style | head -1)" = "style: conventional" ]'
 t "rejects trailing period" '! $S/commit.sh check "feat: add x."'

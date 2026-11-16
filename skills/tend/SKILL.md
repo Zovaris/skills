@@ -18,6 +18,7 @@ Scripts are in `<skill-dir>/scripts/` (run them, don't read them):
 | `pr-state.sh <pr>` | Compact PR state: checks, mergeable, review, unresolved threads, behind |
 | `verify.sh` | Pushed head, checks, mergeable |
 | `commit.sh` | Commits in the repo's style |
+| `names.sh` | Worktree path for a PR branch |
 | `watch.sh` | Zero-token wait for new PRs or issues |
 | `consult.sh` | One tool-less call to the user's strong model for a technical choice |
 | `config.sh` | The user's models and tend settings |
@@ -35,7 +36,8 @@ Scripts are in `<skill-dir>/scripts/` (run them, don't read them):
   final (merged, dropped, reported).
 - `watch [scope]`: keep going. Tend the PRs that match, then wait with `scripts/watch.sh` and
   adopt what appears, until the user stops it or `--max-hours` (default 8) passes. Scope:
-  - `prs` (default): open PRs by the user, by warden (`warden/…` branches) or with `--label`.
+  - `prs` (default): open PRs by the user (warden and smelt open them as the user) or with
+    `--label`.
   - `issues`: new issues with `--label` (default `agent`); see "Issues" below. Never builds them.
   - `all`: both.
   The default scope is `config.sh get tend.watch` when set, else `prs`.
@@ -55,20 +57,20 @@ Scripts are in `<skill-dir>/scripts/` (run them, don't read them):
 ## Loop, per PR
 
 Check out the PR's branch in its existing worktree if there is one (`git worktree list`), else a
-new one at the absolute sibling path `<repo-parent>/worktrees/tend-<n>`; never in the user's main
-checkout or inside the repo. Then repeat:
+new one at `scripts/names.sh worktree <pr-branch>`; never in the user's main checkout or inside
+the repo. Then repeat:
 
 1. `scripts/pr-state.sh <pr>` → `{state, checks, mergeable, review, unresolved, behind}`.
 2. Act on the first thing that applies:
-   - **merged / closed** → stop this PR; remove the `tend-<n>` worktree you created.
+   - **merged / closed** → stop this PR; remove the worktree you created.
    - **checks fail** → `gh run view <run> --log-failed`. Same test passes on a plain rerun and
      nothing in the diff touches it → flaky: rerun once (`gh run rerun <run> --failed`) and note
      it. Otherwise it is a real failure: hand it to the fix model, failing test first when it is
      a bug, and push the fix. Red again after a second real fix → "needs you".
    - **conflicting or behind base** → follow the repo: rebase if its history is linear (no merge
      commits on the base in `git log --merges -5`), else merge the base. A rebase needs a force
-     push: `--force-with-lease` only on branches tend or warden created (`warden/…`,
-     `tend/…`, or listed in the batch); on anyone else's branch, merge the base instead or stop
+     push: `--force-with-lease` only on branches of a warden batch you were given, or of a PR the
+     user asked you to tend by name; on anyone else's branch, merge the base instead or stop
      with "needs you". Conflicts you can't resolve from both sides' intent → "needs you".
    - **unresolved review threads** (human or bot) → `references/RECEIVING.md`. At most 3 rounds
      per PR; the count lives in the card's `review_rounds` or `.tend/<pr>.rounds`.

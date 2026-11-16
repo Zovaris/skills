@@ -101,6 +101,8 @@ never merge or rerank their reports. Findings and human PR comments: `references
 **ship.** Docs first: with the ledger skill installed, its `sync` mode on the diff and its
 `comments` check on the changed files (API doc comments only, the why goes to docs); else update
 the docs the change touched (`references/DOCS.md`). Then:
+- **Branch:** still on the base? `git switch -c "$(scripts/names.sh branch <key|-> "<title>")"`
+  (`<key>`: the ticket, issue or task `NN`). Never invent another naming scheme.
 - **Integrate:** full suite on the tree you're about to ship (after rebasing or merging the
   base), VERIFY gate. Red → back to build.
 - **Atomic commits** with `scripts/commit.sh`: `commit.sh style` once, then one commit per

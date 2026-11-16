@@ -23,7 +23,7 @@ file (`AGENTS.md` / `CLAUDE.md`): ask your agent to "run playbook setup".
 | `docs` | the agent or you: `/docs init\|adr\|module\|map\|sync\|comments\|search` | ADRs, glossary, module READMEs, a codebase map, doc drift checks, and the comment policy: API doc comments only, the "why" lives in docs. |
 | `scout` | the agent or you | Read-only investigation with sources ("can we…", "why does…", "compare…"), on your cheap model. |
 | `tend` | you: `/tend <pr…> \| batch <batch>`, or foreman | Keeps open PRs mergeable: fixes CI, rebases after sibling merges, handles review comments. |
-| `silent` | you: `/silent <task>` | Does the task with no talk; ends with one line, `done: <where it landed>`. |
+| `silent` | you: `/silent <task>` | Does the task with no talk; ends with a short `done: <where it landed>` line. |
 | `direct` | the agent | Short, direct replies with no filler or AI tells. Off with "normal mode". |
 
 ## Harnesses
@@ -78,8 +78,7 @@ npx skills add Zovaris/skills -g -y --skill '*' -a claude-code -a codex
 Pin a release with `Zovaris/skills@v0.6.0`; update with `npx skills update -g`; drop `-g` to
 install into the current project only.
 
-Then ask your agent to **run playbook setup**. It shows what is installed, asks every unset
-setting in one message and offers to add the playbook pointer to your agent instructions file.
+Then run playbook setup (see [Start with playbook](#start-with-playbook)).
 
 ## Settings
 
@@ -93,13 +92,13 @@ Two JSON files, the repo's first: `<repo>/.agents/config.json` (this repo only) 
 
 | Setting | Default | What it does |
 |---|---|---|
-| `models.cheap` / `models.mid` / `models.strong` | ask | Per harness (anything your CLI accepts). The router (`route.js`) picks a tier per task: cheap for small, mechanical or read-only work, mid for most features, strong for risky, hard or large work and the last fix round. |
+| `models.<harness>.cheap` / `.mid` / `.strong` | suggested or ask | Stored per harness (`config.sh set-model <tier> <name>`); on Claude the agent suggests haiku, sonnet, opus. The router (`route.js`) picks a tier per task: cheap for small, mechanical or read-only work, mid for most features, strong for risky, hard or large work and the last fix round. |
 | `foreman.worker_model` | `route` | `route`: a tier per task; `session`: the parent's model; or one model name for every worker. |
 | `tasks.commit` | ask | Commit specs and tasks (`docs/specs/`) or keep them out of git (`.docs/specs/`). |
 | `tasks.ignore` | ask | When not committed: a committed `.gitignore` line, or `.git/info/exclude` (this machine only). |
 | `tasks.location` | `repo` | `repo`, `local` (`~/.agents/plans`) or `board`. |
 | `foreman.merge` / `foreman.cleanup` | `auto` / `auto` | Merge green PRs; end finished workers and remove their worktrees and branches without asking. |
-| `foreman.max` / `foreman.mode` | `3` / `forge fast` | Parallel workers; how workers build. |
+| `foreman.max` / `foreman.mode` | `3` / `forge fast` | Parallel workers; how workers build: `forge fast`, `forge normal`, `forge full` or `plain`. |
 | `tend.watch` / `tend.label` | `prs` / `agent` | What `/tend watch` follows; the issue label it may queue. |
 
 ## Hooks (all optional)
@@ -113,7 +112,8 @@ Two JSON files, the repo's first: `<repo>/.agents/config.json` (this repo only) 
 
 - Scripts used by several skills live in `shared/`; edit them there and run
   `scripts/sync-shared.sh`, which copies them into each skill (each skill installs on its own).
-- `tests/run.sh` runs every offline test (shared scripts, skill lint, per-skill tests); CI runs it.
+- `tests/run.sh` runs every offline test (shared scripts, skill lint, and the docs, foreman,
+  scout and tend scripts); CI runs it.
 - `scripts/drill.sh` pressure-tests skills against a real agent CLI (`tests/drill/*.md`); it
   costs tokens, so run it by hand per harness.
 

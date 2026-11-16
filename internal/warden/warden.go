@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Zovaris/smithy/internal/agents"
 	"github.com/Zovaris/smithy/internal/cards"
 	"github.com/Zovaris/smithy/internal/config"
 	"github.com/Zovaris/smithy/internal/harness"
@@ -152,15 +153,6 @@ func (r *report) bad(msg, fix string) {
 
 func have(name string) bool { _, err := exec.LookPath(name); return err == nil }
 
-func self(args ...string) (string, error) {
-	exe, err := os.Executable()
-	if err != nil {
-		return "", err
-	}
-	out, err := exec.Command(exe, args...).Output()
-	return strings.TrimSpace(string(out)), err
-}
-
 type claudeSettings struct {
 	Hooks struct {
 		PermissionRequest []struct {
@@ -188,6 +180,8 @@ func readSettings(f string) (claudeSettings, bool) {
 	}
 	return s, json.Unmarshal(b, &s) == nil
 }
+
+var findSkill = agents.FindSkill
 
 var allowRe = regexp.MustCompile(`"behavior"\s*:\s*"allow"`)
 
@@ -233,7 +227,7 @@ func Doctor(args []string) int {
 		}
 	}
 	for _, s := range []string{"smelt", "hush", "scout", "tend", "use-smithy"} {
-		if p, err := self("skills", s); err == nil && p != "" {
+		if p, ok := findSkill(s); ok {
 			r.ok(s + " skill: " + p)
 		} else {
 			r.warn(s+" skill not installed", "npx skills add Zovaris/smithy -g --skill "+s)

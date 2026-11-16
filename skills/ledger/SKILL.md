@@ -6,9 +6,10 @@ argument-hint: "[init|adr <title>|module <path>|map|sync [base]|comments [paths]
 
 # ledger
 
-Docs live in the repo, next to the code they explain, and are reviewed in the same PR. Scripts
-are in `scripts/`, details in `references/` (paths relative to this file's folder); read a
-reference only when its mode runs. Outside `init`, files are created only when there is something to write.
+Docs live in the repo, next to the code they explain, and are reviewed in the same PR. Details
+are in `references/` (paths relative to this file's folder); read a reference only when its mode
+runs. `smithy <command>` in this skill means `<skill-dir>/scripts/smithy <command>`
+(`<skill-dir>` is this file's folder); run it by that path, nothing needs to be on PATH. Outside `init`, files are created only when there is something to write.
 
 ## Where things live
 
@@ -32,8 +33,8 @@ line, and pointers to the files above.
   standards file collects judgement rules the reviewers enforce). Add to AGENTS.md (or CLAUDE.md if
   that is what the repo uses) a short block: where docs live and the comment policy. Detect the
   stack and offer the matching lint config from `references/COMMENTS.md`; write it only on yes.
-- **adr `<title>`** — only when the ADR test below passes. `scripts/smithy adr "<title>"` creates the
-  next numbered file from `references/ADR-FORMAT.md`; fill it from the conversation and the code,
+- **adr `<title>`** — only when the ADR test below passes. `smithy adr "<title>"` creates the
+  next numbered file from its built-in template (the shape in `references/ADR-FORMAT.md`); fill it from the conversation and the code,
   status `proposed` until the user accepts it. Superseding: new ADR, then change only the old
   one's status line to `superseded by NNNN`.
 - **module `<path>`** — write `<path>/README.md`: purpose, public entry points, invariants, the
@@ -42,12 +43,12 @@ line, and pointers to the files above.
   whose content now lives in the README.
 - **map** — write `docs/agents/MAP.md` per `references/MAP.md`, so agents stop re-exploring the
   repo. Refresh it when entry points or layout change.
-- **sync `[base]`** — `references/DRIFT.md`: `scripts/smithy drift <base>` first (deterministic),
+- **sync `[base]`** — `references/DRIFT.md`: `smithy drift [base]` first (deterministic),
   then judge what it flags. Update the docs in the same branch; report what changed.
-- **comments `[paths]`** — `scripts/smithy comments <paths>` (or `--diff <base>`). For each finding:
+- **comments `[paths]`** — `smithy comments <paths>` (or `--diff <base>`). For each finding:
   move the content to the module README or an ADR, turn it into a doc comment if it documents
   public API, or delete it. Re-run until clean.
-- **search `<query>`** — `scripts/smithy search "<query>"`: ADRs first, then glossary, module
+- **search `<query>`** — `smithy search "<query>"`: ADRs first, then glossary, module
   READMEs, other docs. Read the hits you need; quote file:line when you use them.
 
 ## ADR test
@@ -70,7 +71,7 @@ Code carries no explanatory comments. Allowed:
 
 Forbidden: explanatory inline or block comments, commented-out code, TODO/FIXME/HACK/XXX (open
 an issue), bare directives without a reason. Enforce with the stack's linter
-(`references/COMMENTS.md`) plus `scripts/smithy comments` in pre-commit and CI.
+(`references/COMMENTS.md`) plus `smithy comments` in pre-commit and CI.
 
 ## Always
 

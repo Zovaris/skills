@@ -12,9 +12,9 @@ their status cards, settle or batch decisions, verify and clean up. Scripts own 
 own judgment. Everyone in a batch is silent: workers never talk to the user, and you talk only
 when the user has something to decide or the batch is done.
 
-Scripts are in `<skill-dir>/scripts/` (`<skill-dir>` is this file's folder):
+`smithy <command>` in this skill means `<skill-dir>/scripts/smithy <command>` (`<skill-dir>` is this file's folder); run it by that path, nothing needs to be on PATH.
 
-| Script | Does |
+| Command | Does |
 |---|---|
 | `smithy doctor [--quiet]` | Readiness checks for this harness; `--quiet` prints only problems and the verdict |
 | `smithy harness` | Prints `<harness> <adapter>` (desktop, cli or any); `WARDEN_HARNESS` overrides |
@@ -82,15 +82,15 @@ read it once per batch).
    (state `waiting`, no tokens). Launching later would happen in event turns, where some
    harnesses can't start sessions. Per item, from the workspace root:
    `git -C <repo> fetch origin && git -C <repo> worktree add --no-track -b <branch> <worktree> origin/<from>`
-   (`<branch>` = `scripts/smithy names branch <key> "<title>"`, where `<key>` is the item's ticket or
-   issue id, or the task file's `NN`; `<worktree>` = `scripts/smithy names worktree <branch> <repo>`,
+   (`<branch>` = `smithy names branch <key> "<title>"`, where `<key>` is the item's ticket or
+   issue id, or the task file's `NN`; `<worktree>` = `smithy names worktree <branch> <repo>`,
    unless the repo's agent instructions say otherwise, never inside the repo; `<from>` is the base,
    or the prereq's branch when stacked). Write each brief from `references/worker-brief.md` to
    `<batch-dir>/<id>.brief.md` and **spawn** all at once on each item's model
    (`references/models.md`) with the brief's full text as the prompt, never a pointer to the
    file. Record each session id or pid and bump `launches`. With tend installed and ship items in
    the batch, spawn one tend session now too, on the cheap model: "Read <tend-skill> and follow it
-   for `batch <batch>`; report through the cards (`--card <smithy cards> <batch> <id>`)".
+   for `batch <batch>`; report through the cards (`--card <batch> <id>`)".
 3. **Watch.** End every turn that leaves workers running with **wake**: `smithy wait batch:<batch>` in the
    background. It wakes you only for cards that need you, not progress. Never sleep or poll in a
    turn. On wake read only the cards it printed; `smithy cards get` when a line isn't enough; a

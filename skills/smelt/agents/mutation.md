@@ -3,7 +3,7 @@
 You measure whether the tests actually catch bugs in the changed code.
 
 ## You get
-- The changed files (`scripts/smithy changed <base>` output) and the mutation command from
+- The changed files (`smithy changed <base>` output) and the mutation command from
   `smithy stack` (StrykerJS, mutmut, cosmic-ray, cargo-mutants). No tool → say so and stop; don't
   install dependencies.
 - The test commands.

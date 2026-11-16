@@ -9,14 +9,14 @@ argument-hint: "[brainstorm|plan|spec|build [next|all]|test|review|ship|debug|ad
 
 One workflow in phases with exit gates. Start wherever the user already is, run only what the
 speed calls for, and read a reference only when its phase starts. Paths are relative to
-`<skill-dir>` (this file's folder). Works in any agent harness: where this file says
+`<skill-dir>` (this file's folder), and `smithy <command>` in this skill means `<skill-dir>/scripts/smithy <command>` (`<skill-dir>` is this file's folder); run it by that path, nothing needs to be on PATH. Works in any agent harness: where this file says
 **subagent**, use your harness's subagent tool with a fresh context; without one, write the
-prompt to a file and run `scripts/smithy agent [--readonly] <prompt-file>` (any agent CLI). An
+prompt to a file and run `smithy agent [--readonly] <prompt-file>` (any agent CLI). An
 **agent** is such a subagent given one of the prompts in `agents/` (implementer, test agents,
 reviewers); it sees only what that prompt lists.
-Subagent models: `scripts/smithy route` picks cheap, mid or strong per job from the task itself
+Subagent models: `smithy route` picks cheap, mid or strong per job from the task itself
 (read-only agents and reviews cheap, risky or hard work strong); unset tiers → propose
-`scripts/smithy config suggest-models` (or ask for each tier when there are none) and save the
+`smithy config suggest-models` (or ask for each tier when there are none) and save the
 user's yes.
 
 ## Pick the entry point
@@ -26,12 +26,12 @@ user's yes.
 | `/smelt <task>` | infer: no agreed plan → `plan`; plan/spec/task exists → `build`; a bug → `debug` |
 | `/smelt brainstorm <idea>` | `references/BRAINSTORM.md` only: the why, approaches, a draft design |
 | `/smelt plan <idea>` | brainstorm → grill → spec → builder check → task list → ask how to run it |
-| `/smelt build next [dir]` | `scripts/smithy tasks next`, mark it `doing`, build it to `ship`, mark it `done` |
+| `/smelt build next [dir]` | `smithy tasks next`, mark it `doing`, build it to `ship`, mark it `done` |
 | `/smelt build all [dir]` | `references/EXECUTE.md`: every task here, one implementer subagent each |
 | `/smelt <phase> <task>` | that phase only: `spec`, `build`, `test`, `review`, `ship`, `retro` |
 | `/smelt from <phase> <task>` | that phase to the end, e.g. `from test` on code you already wrote |
 | `/smelt debug <bug>` | `references/DEBUG.md` → build (fix) → test (`agents/regression.md`) → review → ship |
-| `/smelt adr <title>` · `/smelt init` | with the ledger skill installed (`scripts/smithy skills ledger`), follow its `adr` / `init` mode; else `references/DOCS.md`. **Done:** the files are written and listed |
+| `/smelt adr <title>` · `/smelt init` | with the ledger skill installed (`smithy skills ledger`), follow its `adr` / `init` mode; else `references/DOCS.md`. **Done:** the files are written and listed |
 
 Already have a plan in your head or in the chat? That *is* the spec: start at `build` and treat
 the agreed points as the acceptance criteria; don't re-plan.
@@ -46,7 +46,7 @@ Say the speed and the phases you'll run in one line before starting.
 | Plan / spec | skipped; criteria from the task | spec if none exists | brainstorm + grill + spec + builder check + tasks |
 | Build | TDD on the acceptance criteria only | TDD on every behaviour | TDD on every behaviour |
 | Test agents | regression (bugs) | + adversary; property or e2e when the change fits | + 2 adversaries, property, mutation, e2e when applicable |
-| Review | self-check against `agents/spec-check.md`; security only if the change is risky | spec-check + standards (+ security if risky) | spec-check + standards + security |
+| Review | a fresh spec-check agent (self-check against `agents/spec-check.md` only without a subagent tool); security only if the change is risky | spec-check + standards (+ security if risky) | spec-check + standards + security |
 | Verify gate | always | always | always |
 | Docs | ADR only if forced | glossary/ADR when they apply | glossary/ADR when they apply + retro |
 
@@ -60,8 +60,8 @@ or secrets. Under `/hush`, never ask: pick the speed yourself and say which at t
 **0 · Context** (always). Read, if they exist: the repo's agent instructions (AGENTS.md /
 CLAUDE.md), `docs/GLOSSARY.md`, titles of `docs/adr/*` (open the ones that touch the task),
 `docs/agents/STANDARDS.md`, and the spec/task given. With the ledger skill installed
-(`scripts/smithy skills ledger`), follow its context rules; else `references/DOCS.md`.
-Run `scripts/smithy stack` once and use its commands instead of guessing. Note whether you're in a
+(`smithy skills ledger`), follow its context rules; else `references/DOCS.md`.
+Run `smithy stack` once and use its commands instead of guessing. Note whether you're in a
 worktree (`git rev-parse --git-dir` differs from `--git-common-dir`) and run the suite once as a
 baseline: failures that exist before you start aren't yours, but say so.
 **Done:** you can name the seams the change touches and the baseline result.
@@ -80,7 +80,7 @@ and Interfaces, self-reviewed, where the user picks; then ask how to run them: h
 time (`build next`), here all at once (`build all`), in parallel with warden (if installed),
 or later. **Done:** spec + tasks written, each fits one fresh context; the user chose.
 
-**build · TDD** — `references/TDD.md`. From a task file: `scripts/smithy tasks set <file> status=doing`
+**build · TDD** — `references/TDD.md`. From a task file: `smithy tasks set <file> status=doing`
 first, `status=done pr=<url>` after ship. One test at a time at the agreed seams; each fails
 for the right reason before any code; never edit a test to go green (if it contradicts the
 spec, stop and say so). Single test files while working, typecheck often, full suite at the
@@ -98,25 +98,25 @@ gate on the suite.
 never merge or rerank their reports. Findings and human PR comments: `references/RECEIVING.md`.
 **Done:** no open blocking finding; every high security finding shown to the user.
 
-**ship.** Docs first: with the ledger skill installed, its `sync` mode on the diff and its
-`comments` check on the changed files (API doc comments only, the why goes to docs); else update
-the docs the change touched (`references/DOCS.md`). Then:
-- **Branch:** still on the base? `git switch -c "$(scripts/smithy names branch <key|-> "<title>")"`
+**ship.** Docs first: `smithy comments --diff <base>` on the changed files (API doc comments
+only, the why goes to docs); with the ledger skill installed, also its `sync` mode on the diff,
+else update the docs the change touched (`references/DOCS.md`). Then:
+- **Branch:** still on the base? `git switch -c "$(smithy names branch <key|-> "<title>")"`
   (`<key>`: the ticket, issue or task `NN`). Never invent another naming scheme.
 - **Integrate:** full suite on the tree you're about to ship (after rebasing or merging the
   base), VERIFY gate. Red → back to build.
-- **Atomic commits** with `scripts/smithy commit`: `smithy commit style` once, then one commit per
+- **Atomic commits** with `smithy commit`: `smithy commit style` once, then one commit per
   concern (`smithy commit "<msg>" <paths>`), each building and passing on its own. Never
   `git add -A`, never `--no-verify`.
-- **Close, one of three.** (1) **PR**, the default, with `scripts/smithy pr`: if `smithy pr template`
+- **Close, one of three.** (1) **PR**, the default, with `smithy pr`: if `smithy pr template`
   finds one, fill every heading (N/A when one doesn't apply); otherwise what and why, tests
   added, commands run with results, agents run and what they found, "Decided without you" (from
   `rulings.md` if any), ADRs added. Title in the commit style:
   `smithy pr create --base <b> --title "<t>" --body-file <f>`; then wait for its checks with
-  `scripts/smithy wait pr:<n>` (background where the harness wakes on exit), never sleep loops. (2) **Merge locally** into the base
+  `smithy wait pr:<n>` (background where the harness wakes on exit), never sleep loops. (2) **Merge locally** into the base
   only when the user asks. (3) **Keep** the branch for later. Discard work only when the user
   explicitly says to.
-- **Clean up** once merged or discarded: `scripts/smithy cleanup <repo> <branch> [<worktree>]`,
+- **Clean up** once merged or discarded: `smithy cleanup <repo> <branch> [<worktree>]`,
   only for worktrees and branches smelt created. It refuses to drop unpushed work; never force it.
 **Done:** VERIFY gate for "PR ready" (or committed when there's no remote); no stray worktrees
 or local branches from this task.
@@ -130,7 +130,7 @@ listed; the rest are named as dropped.
 
 - Ask only for decisions that are the user's. When you'd otherwise stop to ask (under
   `/hush`, in `build all`, or the user is away): low impact → decide; medium → one
-  `scripts/smithy consult` call to the user's strong model; high → the user. Record each in the PR's
+  `smithy consult` call to the user's strong model; high → the user. Record each in the PR's
   "Decided without you".
 - No claim without fresh evidence (`references/VERIFY.md`): every "passes" names the command
   and its result; every "an agent did it" comes with its diff.

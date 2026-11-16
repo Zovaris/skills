@@ -8,7 +8,7 @@ Treat the plan as a design tree. Each round:
    it. One line of trade-off when the choice isn't obvious.
 3. Anything answerable from the code, docs or the web is a fact, not a decision: look it up and
    state it instead of asking. Wide or external questions go to the `scout` skill when installed
-   (`scripts/smithy skills scout`; read its SKILL.md and follow it), else a read-only subagent.
+   (`smithy skills scout`; read its SKILL.md and follow it), else a read-only subagent.
 4. Challenge vague terms against `docs/GLOSSARY.md`; invent one concrete edge-case scenario per
    risky decision ("a user with two accounts cancels mid-payment: what happens?").
 5. Record settled terms in the glossary immediately; note ADR candidates.

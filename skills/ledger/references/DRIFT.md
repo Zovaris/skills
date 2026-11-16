@@ -2,7 +2,7 @@
 
 ## 1 · Deterministic checks first
 
-`scripts/smithy drift <base>` reports:
+`smithy drift [base]` (default: the merge-base with the default branch) reports:
 - **Changed files and the docs that mention them** (by path or by exported symbol name): each
   pairing is a doc to re-read.
 - **Missing references:** paths and backticked symbols named in docs that no longer exist in the
@@ -12,7 +12,7 @@
 
 Then run the stack's doc generator in strict mode when it exists (`typedoc --treatWarningsAsErrors`,
 `RUSTDOCFLAGS="-D warnings" cargo doc`, `pdoc --fail-on-warning` or mkdocs `--strict`), and the
-comment check: `scripts/smithy comments --diff <base>`.
+comment check: `smithy comments --diff <base>`.
 
 ## 2 · Then judgement
 

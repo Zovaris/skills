@@ -2,7 +2,7 @@
 name: tend
 description: Keeps someone else's PRs mergeable: fixes red CI, rebases or merges the base, answers review comments, and stops at merged, closed or needs-you. Use for /tend with PR numbers, a warden batch, or watch mode.
 disable-model-invocation: true
-argument-hint: "<pr-url|number|branch> [...] | batch <warden batch> | watch [prs|issues|all] [--label <l>] [--model <m>] [--fix-model <m>] [--card <smithy cards> <batch> <id>]"
+argument-hint: "<pr-url|number|branch> [...] | batch <warden batch> | watch [prs|issues|all] [--label <l>] [--model <m>] [--fix-model <m>] [--card <batch> <id>] [--max-hours <h>]"
 ---
 
 # tend
@@ -11,9 +11,9 @@ You look after PRs someone else opened (a person, a smelt session, a warden work
 can merge. You fix what blocks them; you don't add scope. Work silently (the `hush` skill's
 rules if installed): no talk between tool calls, one line per PR at the end.
 
-Scripts are in `<skill-dir>/scripts/` (run them, don't read them):
+`smithy <command>` in this skill means `<skill-dir>/scripts/smithy <command>` (`<skill-dir>` is this file's folder); run it by that path, nothing needs to be on PATH.
 
-| Script | Does |
+| Command | Does |
 |---|---|
 | `smithy pr-state <pr>` | Compact PR state: checks, mergeable, review, unresolved threads, behind |
 | `smithy verify` | Pushed head, checks, mergeable |
@@ -25,24 +25,22 @@ Scripts are in `<skill-dir>/scripts/` (run them, don't read them):
 | `smithy config` | The user's models and tend settings |
 | `smithy agent` · `smithy harness` · `smithy route` | Run a fix subagent on any CLI (when the harness has no subagent tool), detect the harness, pick a tier |
 
-`<warden-dir>` below is the warden skill's folder: the one holding the `smithy cards` that the
-`--card` argument points to.
-
 ## Input
 
 - PR urls, numbers or branch names: one loop per PR, then stop.
 - `batch <name>`: the items of that warden batch, each as it reaches `pr_open` or `ready`
-  (`<warden-dir>/scripts/smithy cards board <name> --json`). Warden starts you with the workers,
-  so between PRs wait with `scripts/smithy wait batch:<name>`; stop when every item is
+  (`smithy cards board <name> --json`). Warden starts you with the workers,
+  so between PRs wait with `smithy wait batch:<name>`; stop when every item is
   final (merged, dropped, reported).
-- `watch [scope]`: keep going. Tend the PRs that match, then wait with `scripts/smithy wait watch[:scope]` and
+- `watch [scope]`: keep going. Tend the PRs that match, then wait with `smithy wait watch[:scope]` and
   adopt what appears, until the user stops it or `--max-hours` (default 8) passes. Scope:
   - `prs` (default): open PRs by the user (warden and smelt open them as the user) or with
     `--label`.
   - `issues`: new issues with `--label` (default `agent`); see "Issues" below. Never builds them.
   - `all`: both.
   The default scope is `smithy config get tend.watch` when set, else `prs`.
-- `--card <smithy cards> <batch> <id>`: when warden launched you, mirror your state on that card.
+- `--card <batch> <id>`: when warden launched you, mirror your state on that card
+  (`smithy cards set <batch> <id> key=value…`; cards are shared through `~/.smithy/warden`).
 
 ## Models
 
@@ -58,10 +56,10 @@ Scripts are in `<skill-dir>/scripts/` (run them, don't read them):
 ## Loop, per PR
 
 Check out the PR's branch in its existing worktree if there is one (`git worktree list`), else a
-new one at `scripts/smithy names worktree <pr-branch>`; never in the user's main checkout or inside
+new one at `smithy names worktree <pr-branch>`; never in the user's main checkout or inside
 the repo. Then repeat:
 
-1. `scripts/smithy pr-state <pr>` → `{state, checks, mergeable, review, unresolved, behind}`.
+1. `smithy pr-state <pr>` → `{state, checks, mergeable, review, unresolved, behind}`.
 2. Act on the first thing that applies:
    - **merged / closed** → stop this PR; remove the worktree you created.
    - **checks fail** → `gh run view <run> --log-failed`. Same test passes on a plain rerun and
@@ -75,12 +73,12 @@ the repo. Then repeat:
      with "needs you". Conflicts you can't resolve from both sides' intent → "needs you".
    - **unresolved review threads** (human or bot) → `references/RECEIVING.md`. At most 3 rounds
      per PR; the count lives in the card's `review_rounds` or `.tend/<pr>.rounds`.
-   - **checks pending** → `scripts/smithy wait pr:<pr>` in the background (foreground where the
+   - **checks pending** → `smithy wait pr:<pr>` in the background (foreground where the
      harness can't wake on exit); it returns one line when checks finish, the PR merges or closes,
      or a review lands. Never sleep-then-check turns.
    - **green, mergeable, approved or no review required** → `green`. Merge only if the user or
      warden said this PR is `merge auto`, and never into the production branch.
-3. Commit fixes with `scripts/smithy commit` (style once, one concern per commit); push without force
+3. Commit fixes with `smithy commit` (style once, one concern per commit); push without force
    unless the rebase rule above allows it.
 
 ## When a PR doesn't get green
@@ -90,7 +88,7 @@ Tend fixes red PRs itself; it hands a PR back only when it hits something it mus
 | Situation | Card (warden launched you) | Without warden |
 |---|---|---|
 | Red twice after real fixes, or a conflict it can't resolve safely | `state=blocked note=<why>` | `needs you <url>: <why>` |
-| A technical choice inside the PR's scope (which fix, which approach) | settled with `scripts/smithy consult` (the user's strong model), noted in the commit or reply; `ESCALATE` → next row | same |
+| A technical choice inside the PR's scope (which fix, which approach) | settled with `smithy consult` (the user's strong model), noted in the commit or reply; `ESCALATE` → next row | same |
 | A decision the user owns (scope, API, data, security) | `state=needs_decision` with question, options, recommendation, `impact=high` | `needs you <url>: <question>` |
 | 3 review rounds used, or a force push it isn't allowed to do | `state=blocked note=<why>` | `needs you <url>: <why>` |
 | Green | `state=pr_open` (or `ready` for manual merge), `ci=green` | `green <url>` |

@@ -3,10 +3,12 @@
 Launch each as a fresh **subagent**: prompt = the agent file's text followed by an `## Inputs`
 block with exactly what the file lists. Agents that write tests work in their own git worktree
 (the harness's isolation option, or `git worktree add` yourself and pass the path); once their
-tests are merged into yours, remove those worktrees and branches (`scripts/smithy cleanup`). Launch them
+tests are merged into yours, remove those worktrees and branches (`smithy cleanup`). Launch them
 together so they run in parallel. Without a subagent tool: write each prompt to a file and run
-`scripts/smithy agent --bg --cwd <worktree> --log <file> <prompt-file>` per agent, then read the logs.
+`smithy agent --bg --cwd <worktree> --log <file> <prompt-file>` per agent, then read the logs.
 Read-only agents (spec-check, standards, security, builder) use `smithy agent --readonly`.
+Give every agent the absolute path of this skill's `scripts/smithy` as `<smithy>`: agents run in the
+repo, not in the skill folder.
 
 Which ones run depends on the speed (table in SKILL.md); within it, use this to choose.
 

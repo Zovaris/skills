@@ -11,7 +11,7 @@
 set -euo pipefail
 DIR="$(cd "$(dirname "$0")" && pwd -P)"
 BLOCK="$DIR/../references/AGENTS-BLOCK.md"
-harness() { "$DIR/harness.sh" | awk '{print $1}'; }
+harness() { "$DIR/smithy" harness | awk '{print $1}'; }
 default_file() {
   case "$(harness)" in
     claude-*) echo "$HOME/.claude/CLAUDE.md" ;; codex) echo "${CODEX_HOME:-$HOME/.codex}/AGENTS.md" ;;
@@ -27,9 +27,9 @@ case "${1:-}" in
   status)
     echo "harness: $(harness)"
     echo "installed:"; "$DIR/find-skill.sh" --list | awk '{printf "  %-9s %s\n", $1, $2}'
-    echo "settings (repo, then user, then default):"; "$DIR/config.sh" list | sed 's/^/  /'
-    sug="$("$DIR/config.sh" suggest-models 2>/dev/null | paste -sd, - || true)"
-    [ -n "$sug" ] && echo "model suggestions for $(harness): $sug (config.sh accept-models after the user says yes)"
+    echo "settings (repo, then user, then default):"; "$DIR/smithy" config list | sed 's/^/  /'
+    sug="$("$DIR/smithy" config suggest-models 2>/dev/null | paste -sd, - || true)"
+    [ -n "$sug" ] && echo "model suggestions for $(harness): $sug (smithy config accept-models after the user says yes)"
     f="$(default_file)"; has_block "$f" && echo "block: present in $f" || echo "block: missing in $f (setup.sh block add)"
     ;;
   block)

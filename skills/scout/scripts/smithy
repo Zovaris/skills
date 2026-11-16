@@ -1,0 +1,55 @@
+#!/bin/sh
+# smithy launcher: runs the smithy binary for this skills version, so skills need no Node, bash
+# features or other runtime. Order:
+#   1. $SMITHY_BIN, when set (your own build);
+#   2. a source checkout of the skills repo with Go installed: builds it once into
+#      ~/.smithy/bin/dev and rebuilds when a .go file changes (development);
+#   3. ~/.smithy/bin/<VERSION>/smithy, downloaded once (gzipped, ~1.5 MB) from the GitHub
+#      release v<VERSION>, checked against the release's checksums.txt and, where gh supports it, its build
+#      attestation. ~/.smithy/bin/smithy always points at the last one used: put ~/.smithy/bin
+#      on PATH to run `smithy status` yourself.
+set -eu
+here=$(cd "$(dirname "$0")" && pwd -P)
+export SMITHY_SKILL_DIR="$here"
+[ -n "${SMITHY_BIN:-}" ] && exec "$SMITHY_BIN" "$@"
+home=${SMITHY_HOME:-$HOME/.smithy}
+repo=Zovaris/skills
+version=$(cat "$here/VERSION" 2>/dev/null || echo dev)
+
+link() { ln -sfn "$1" "$home/bin/smithy" 2>/dev/null || true; }
+
+# Development: the skill folder is inside a checkout of the repo (skills/<name>/scripts or shared).
+for root in "$here/../../.." "$here/.."; do
+  if [ -f "$root/go.mod" ] && grep -q "^module github.com/$repo\$" "$root/go.mod" && command -v go >/dev/null 2>&1; then
+    root=$(cd "$root" && pwd -P); bin="$home/bin/dev/smithy"
+    if [ ! -x "$bin" ] || [ -n "$(find "$root/cmd" "$root/internal" "$root/go.mod" -newer "$bin" -print 2>/dev/null | head -n 1)" ]; then
+      mkdir -p "$home/bin/dev"
+      (cd "$root" && go build -trimpath -ldflags "-s -w -X main.version=dev" -o "$bin" ./cmd/smithy) >&2
+    fi
+    link "$bin"; exec "$bin" "$@"
+  fi
+done
+
+bin="$home/bin/$version/smithy"
+if [ ! -x "$bin" ]; then
+  case "$(uname -s)" in Darwin) os=darwin ;; Linux) os=linux ;; *) echo "smithy: unsupported OS $(uname -s)" >&2; exit 3 ;; esac
+  case "$(uname -m)" in arm64|aarch64) arch=arm64 ;; x86_64|amd64) arch=amd64 ;; *) echo "smithy: unsupported CPU $(uname -m)" >&2; exit 3 ;; esac
+  asset="smithy-$os-$arch.gz"; tmp=$(mktemp -d "${TMPDIR:-/tmp}/smithy.XXXXXX"); trap 'rm -rf "$tmp"' EXIT
+  echo "smithy: downloading v$version ($asset), once" >&2
+  if command -v gh >/dev/null 2>&1; then
+    gh release download "v$version" -R "$repo" -p "$asset" -p checksums.txt -D "$tmp" >&2
+  else
+    url="https://github.com/$repo/releases/download/v$version"
+    curl -fsSL -o "$tmp/$asset" "$url/$asset" && curl -fsSL -o "$tmp/checksums.txt" "$url/checksums.txt"
+  fi
+  want=$(awk -v a="$asset" '$2 == a || $2 == "*"a {print $1}' "$tmp/checksums.txt")
+  got=$( (command -v sha256sum >/dev/null 2>&1 && sha256sum "$tmp/$asset" || shasum -a 256 "$tmp/$asset") | awk '{print $1}')
+  [ -n "$want" ] && [ "$want" = "$got" ] || { echo "smithy: checksum mismatch for $asset, not installed" >&2; exit 3; }
+  if command -v gh >/dev/null 2>&1 && gh attestation verify --help >/dev/null 2>&1; then
+    gh attestation verify "$tmp/$asset" -R "$repo" >/dev/null 2>&1 || { echo "smithy: $asset has no valid build attestation for $repo, not installed" >&2; exit 3; }
+  fi
+  gunzip -f "$tmp/$asset"; chmod +x "$tmp/${asset%.gz}"
+  mkdir -p "$home/bin/$version"; mv "$tmp/${asset%.gz}" "$bin"
+fi
+link "$bin"
+exec "$bin" "$@"

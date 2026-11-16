@@ -3,6 +3,13 @@
 set -uo pipefail
 cd "$(dirname "$0")/.."
 rc=0
+# One build of the smithy binary for every test (the launcher would build or download it per call).
+if [ -z "${SMITHY_BIN:-}" ]; then
+  out="$(mktemp -d)"; trap 'rm -rf "$out"' EXIT
+  go build -trimpath -o "$out/smithy" ./cmd/smithy || exit 1
+  export SMITHY_BIN="$out/smithy"
+fi
+go test ./... >/dev/null || { go test ./...; rc=1; }
 scripts/sync-shared.sh --check || rc=1
 tests/skills.sh || rc=1
 for t in tests/*/run.sh; do bash "$t" || rc=1; done

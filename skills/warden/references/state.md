@@ -14,7 +14,7 @@ feature slug). No secrets or client data in it.
 - `hold`: set when the user says wait/stop for an item, cleared only by the user. A held item is
   never launched, relaunched or nudged.
 
-## Cards (`<id>.json`, the worker's, through `status.js set`)
+## Cards (`<id>.json`, the worker's, through `smithy cards set`)
 
 Fields: `state`, `phase`, `progress` (`3/7`, the worker's own task list), `branch`, `pr`, `ci`,
 `decision_key`, `question`, `options`, `recommendation`, `impact`, `tests_run`, `risks`,
@@ -30,7 +30,7 @@ Fields: `state`, `phase`, `progress` (`3/7`, the worker's own task list), `branc
 | `ready` | Green and waiting for a manual merge (or `note=merge-blocked`) |
 | `merged` · `reported` · `dropped` | Final: PR merged, scout report written, nothing to do |
 
-`status.js board` adds a **stage** per item (what you do with it): `waiting`, `working`, `decide`
+`smithy cards board` adds a **stage** per item (what you do with it): `waiting`, `working`, `decide`
 (needs_decision), `verify` (pr_open, ready), `stuck` (blocked, failed, or working with no update
 for 45 min), `merged`, `reported`, `dropped`, and `held` / `queued` / `starting` for items without
 a running worker.

@@ -1,0 +1,26 @@
+@echo off
+rem smithy launcher for Windows shells without sh: same order as the `smithy` script beside it
+rem ($SMITHY_BIN, then %USERPROFILE%\.smithy\bin\<VERSION>\smithy.exe, downloaded once with gh
+rem from the GitHub release and checked against its checksums.txt).
+setlocal enabledelayedexpansion
+set "SMITHY_SKILL_DIR=%~dp0"
+if defined SMITHY_BIN ( "%SMITHY_BIN%" %* & exit /b !errorlevel! )
+if defined SMITHY_HOME ( set "home=%SMITHY_HOME%" ) else ( set "home=%USERPROFILE%\.smithy" )
+set /p version=<"%~dp0VERSION"
+set "bin=%home%\bin\%version%\smithy.exe"
+if not exist "%bin%" (
+  set "asset=smithy-windows-amd64.exe"
+  set "tmp=%TEMP%\smithy-%RANDOM%"
+  mkdir "!tmp!" >nul
+  echo smithy: downloading v%version% ^(!asset!^), once 1>&2
+  gh release download "v%version%" -R Zovaris/skills -p "!asset!" -p checksums.txt -D "!tmp!" 1>&2 || exit /b 3
+  for /f "tokens=1,2" %%a in (!tmp!\checksums.txt) do if "%%b"=="!asset!" set "want=%%a"
+  for /f "skip=1 tokens=*" %%h in ('certutil -hashfile "!tmp!\!asset!" SHA256 ^| findstr /v ":"') do if not defined got set "got=%%h"
+  set "got=!got: =!"
+  if /i not "!want!"=="!got!" ( echo smithy: checksum mismatch for !asset!, not installed 1>&2 & exit /b 3 )
+  mkdir "%home%\bin\%version%" >nul 2>&1
+  move /y "!tmp!\!asset!" "%bin%" >nul
+  rmdir /s /q "!tmp!"
+)
+"%bin%" %*
+exit /b %errorlevel%

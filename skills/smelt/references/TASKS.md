@@ -1,14 +1,14 @@
 # Tasks
 
 The task list is the hand-off between planning and building, and between smelt and warden.
-Whoever wrote it, either skill (or you, by hand) can pick it up. `scripts/tasks.js` reads and
+Whoever wrote it, either skill (or you, by hand) can pick it up. `scripts/smithy tasks` reads and
 updates it; never hand-edit status lines when the script can.
 
 ## Where it lives
 
 Run `scripts/task-dir.sh <slug>`: it reads the user's settings, creates the dir and prints it.
 When it exits 3 it prints `ask <key>: <question>`: ask the user that (your recommendation first),
-save the answer for this repo with `scripts/config.sh set --repo <key> <value>`, run it again.
+save the answer for this repo with `scripts/smithy config set --repo <key> <value>`, run it again.
 It asks at most twice per repo, ever:
 
 1. `tasks.commit` — commit the specs and tasks to git? `true` → `docs/specs/<slug>/`, reviewed
@@ -20,9 +20,9 @@ It asks at most twice per repo, ever:
 `tasks.location` (default `repo`) switches the whole thing: `local` puts plans in
 `~/.smithy/plans/<repo>/<slug>/` (`$SMELT_PLANS`), `board` puts tasks on the user's tracker
 (GitHub Issues via `gh`, or Linear/Jira through the harness's tools) and keeps the spec where
-`tasks.commit` says. `scripts/config.sh list` shows the current values.
+`tasks.commit` says. `scripts/smithy config list` shows the current values.
 
-Other places: list them in `$SMELT_TASKS_DIRS` (colon-separated) so `tasks.js` finds them.
+Other places: list them in `$SMELT_TASKS_DIRS` (colon-separated) so `smithy tasks` finds them.
 
 Board tasks still get the same fields (status, blocked by, PR) in the issue body or labels; the
 spec stays in the repo or local dir and the issues link to it.
@@ -82,19 +82,19 @@ updated directly.
 ## Commands
 
 ```
-scripts/tasks.js list  [dir]          # the board: status, blockers, PR per task
-scripts/tasks.js next  [dir]          # first todo whose blockers are done
-scripts/tasks.js ready [dir]          # every todo that can start now (what warden launches)
-scripts/tasks.js set <file> status=doing|done pr=<url>
-scripts/tasks.js where                # task dirs for this repo (repo and local)
-scripts/tasks.js add [dir] "<title>" [--blocked-by 01] [--key PROJ-12]   # next NN file from the template
-scripts/tasks.js board [--all]        # one line per task list and batch: this repo, or every repo
+scripts/smithy tasks list  [dir]          # the board: status, blockers, PR per task
+scripts/smithy tasks next  [dir]          # first todo whose blockers are done
+scripts/smithy tasks ready [dir]          # every todo that can start now (what warden launches)
+scripts/smithy tasks set <file> status=doing|done pr=<url>
+scripts/smithy tasks where                # task dirs for this repo (repo and local)
+scripts/smithy tasks add [dir] "<title>" [--blocked-by 01] [--key PROJ-12]   # next NN file from the template
+scripts/smithy tasks board [--all]        # one line per task list and batch: this repo, or every repo
 ```
 
 ## After the list is written
 
 Ask how to run it, recommendation first, only offering what is installed:
-- **Here, one at a time:** `/smelt build next` (repeat until `tasks.js next` says all done).
+- **Here, one at a time:** `/smelt build next` (repeat until `smithy tasks next` says all done).
 - **In parallel:** `/warden <task dir>` when the warden skill is installed (it is listed among
   your skills, or `<skill-dir>/../warden/SKILL.md` exists). Mixing is fine: build some here,
   hand the rest over; both read and write the same status lines.

@@ -13,7 +13,7 @@ HOME_DIR="${WARDEN_HOME:-${SMITHY_HOME:-$HOME/.smithy}/warden}"
 batch="$1"; id="$2"; max_min="${3:-9}"; bdir="$HOME_DIR/$batch"
 [ -f "$bdir/batch.json" ] || { echo "no batch $batch" >&2; exit 2; }
 jq -e --arg id "$id" '.items[] | select(.id == $id)' "$bdir/batch.json" >/dev/null || { echo "no item $id" >&2; exit 2; }
-node "$DIR/status.js" set "$batch" "$id" state=waiting phase=waiting >/dev/null
+"$DIR/smithy" cards set "$batch" "$id" state=waiting phase=waiting >/dev/null
 end=$(( $(date +%s) + max_min * 60 ))
 card_state() { jq -r '.state // ""' "$bdir/$1.json" 2>/dev/null; }
 while :; do
@@ -23,7 +23,7 @@ while :; do
   for p in $(jq -r --arg id "$id" '.items[] | select(.id == $id) | (.prereqs // [])[]' "$bdir/batch.json"); do
     st="$(card_state "$p")"
     if [ "$st" = merged ] || { [ "$stack" = true ] && { [ "$st" = pr_open ] || [ "$st" = ready ]; }; }; then :; else ready=0; fi
-    [ "$st" = dropped ] && { node "$DIR/status.js" set "$batch" "$id" state=blocked "note=prereq $p was dropped" >/dev/null; exit 0; }
+    [ "$st" = dropped ] && { "$DIR/smithy" cards set "$batch" "$id" state=blocked "note=prereq $p was dropped" >/dev/null; exit 0; }
   done
   if [ $ready -eq 1 ] && mkdir "$bdir/.slot.lock" 2>/dev/null; then
     working=0
@@ -32,7 +32,7 @@ while :; do
       [ "$(jq -r '.state // ""' "$f")" = working ] && working=$((working + 1))
     done
     if [ "$working" -lt "$max" ]; then
-      node "$DIR/status.js" set "$batch" "$id" state=working phase=start >/dev/null
+      "$DIR/smithy" cards set "$batch" "$id" state=working phase=start >/dev/null
       rmdir "$bdir/.slot.lock"; echo "go $id"; exit 0
     fi
     rmdir "$bdir/.slot.lock"

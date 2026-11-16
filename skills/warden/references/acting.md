@@ -18,7 +18,7 @@ By `impact` (you may raise it, never lower it):
   that still meets the intent, and your recommendation. Wait.
 
 Relay answers with **tell**, quoting the user's words when they decided, and close the question
-yourself: `status.js set <batch> <id> state=working decision_key=`. Log low and medium ones in
+yourself: `smithy cards set <batch> <id> state=working decision_key=`. Log low and medium ones in
 `decisions.md`.
 
 ## verify (`pr_open`, `ready`)

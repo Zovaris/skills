@@ -17,26 +17,26 @@ Scripts are in `<skill-dir>/scripts/` (`<skill-dir>` is this file's folder):
 | Script | Does |
 |---|---|
 | `doctor.sh [--quiet]` | Readiness checks for this harness; `--quiet` prints only problems and the verdict |
-| `harness.sh` | Prints `<harness> <adapter>` (desktop, cli or any); `WARDEN_HARNESS` overrides |
-| `status.js board\|get\|set\|live` | Status cards: the board with each item's `stage`, one card, writes (workers), a live view for the user |
+| `smithy harness` | Prints `<harness> <adapter>` (desktop, cli or any); `WARDEN_HARNESS` overrides |
+| `smithy cards board\|get\|set\|live` | Status cards: the board with each item's `stage`, one card, writes (workers), a live view for the user |
 | `watch.sh [batch] [max-min]` | Blocks without tokens until a card needs you or goes stale |
-| `wait-for.js <target>…` | Same waiter for GitHub: `pr:<n>`, `run:<id>`, `branch:<name>`, `prs`, `issues:<label>`, `batch:<name>`, any mix |
+| `smithy wait <target>…` | Same waiter for GitHub: `pr:<n>`, `run:<id>`, `branch:<name>`, `prs`, `issues:<label>`, `batch:<name>`, any mix |
 | `wait-turn.sh <batch> <id>` | A launched worker waits here until its prereqs merge and a running slot frees |
 | `verify.sh <repo> <branch> [pr]` | Proof for a PR claim: pushed head matches, checks, mergeable |
 | `route.js` | Picks a model tier (cheap, mid, strong) per task |
 | `consult.sh "<question>" "<options>" [--context <f>]` | One tool-less call to the user's strong model through the current harness's CLI |
-| `config.sh` | Settings and per-harness models (`get`, `set`, `model`, `suggest-models`, `list`) |
+| `smithy config` | Settings and per-harness models (`get`, `set`, `model`, `suggest-models`, `list`) |
 | `agent.sh` | Runs any headless agent CLI (claude, codex, opencode, gemini, cursor, pi, dsh, `$AGENT_CMD`) |
-| `task-dir.sh <slug>` · `tasks.js list\|ready\|set\|add\|board\|where` | Where a new task list goes; the shared task list (same format as smelt) |
+| `task-dir.sh <slug>` · `smithy tasks list\|ready\|set\|add\|board\|where` | Where a new task list goes; the shared task list (same format as smelt) |
 | `commit.sh` · `pr.sh` · `cleanup.sh` | Atomic commits, PRs from the template, removing a finished worktree and local branch |
-| `names.sh` | Branch and worktree names (`branch <key> "<title>"`, `worktree <branch>`), from `git.branch` / `git.worktree` |
+| `smithy names` | Branch and worktree names (`branch <key> "<title>"`, `worktree <branch>`), from `git.branch` / `git.worktree` |
 | `find-skill.sh <name>` | Absolute path of an installed skill's SKILL.md (smelt, hush, scout, tend) |
 
 ## Usage
 
 - `/warden <input>`: tasks, a task dir or file, board ids, or an idea (`references/intake.md`).
   One task is fine: it still gets a worktree, a silent worker and verification.
-- `/warden status [batch]`: `status.js board`, shown as is. `/warden status all`: `tasks.js board --all`
+- `/warden status [batch]`: `smithy cards board`, shown as is. `/warden status all`: `smithy tasks board --all`
   (every task list and batch on this machine, no tracker needed).
 - `/warden cleanup [batch]`: `verify.sh` every `pr_open` / `ready` item and apply the merged and
   closed actions (`references/acting.md`); for batches that finished while PRs waited.
@@ -49,7 +49,7 @@ Scripts are in `<skill-dir>/scripts/` (`<skill-dir>` is this file's folder):
 
 First match wins: the user's words for this batch, the repo's agent instructions (AGENTS.md /
 CLAUDE.md), `<repo>/.smithy/config.json`, `~/.smithy/config.json`, then the built-in value below
-(`config.sh get <key>` applies the last three).
+(`smithy config get <key>` applies the last three).
 
 | Setting | Built-in | Meaning |
 |---|---|---|
@@ -82,18 +82,18 @@ read it once per batch).
    (state `waiting`, no tokens). Launching later would happen in event turns, where some
    harnesses can't start sessions. Per item, from the workspace root:
    `git -C <repo> fetch origin && git -C <repo> worktree add --no-track -b <branch> <worktree> origin/<from>`
-   (`<branch>` = `scripts/names.sh branch <key> "<title>"`, where `<key>` is the item's ticket or
-   issue id, or the task file's `NN`; `<worktree>` = `scripts/names.sh worktree <branch> <repo>`,
+   (`<branch>` = `scripts/smithy names branch <key> "<title>"`, where `<key>` is the item's ticket or
+   issue id, or the task file's `NN`; `<worktree>` = `scripts/smithy names worktree <branch> <repo>`,
    unless the repo's agent instructions say otherwise, never inside the repo; `<from>` is the base,
    or the prereq's branch when stacked). Write each brief from `references/worker-brief.md` to
    `<batch-dir>/<id>.brief.md` and **spawn** all at once on each item's model
    (`references/models.md`) with the brief's full text as the prompt, never a pointer to the
    file. Record each session id or pid and bump `launches`. With tend installed and ship items in
    the batch, spawn one tend session now too, on the cheap model: "Read <tend-skill> and follow it
-   for `batch <batch>`; report through the cards (`--card <status.js> <batch> <id>`)".
+   for `batch <batch>`; report through the cards (`--card <smithy cards> <batch> <id>`)".
 3. **Watch.** End every turn that leaves workers running with **wake**: `watch.sh <batch>` in the
    background. It wakes you only for cards that need you, not progress. Never sleep or poll in a
-   turn. On wake read only the cards it printed; `status.js get` when a line isn't enough; a
+   turn. On wake read only the cards it printed; `smithy cards get` when a line isn't enough; a
    worker's transcript or log only when its card is missing or contradicts itself.
 4. **Act** on each card whose stage isn't final (`references/acting.md`): decide by impact,
    verify PRs, clean up merged, reported and dropped items, recover stuck ones.

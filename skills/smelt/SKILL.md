@@ -16,7 +16,7 @@ prompt to a file and run `scripts/agent.sh [--readonly] <prompt-file>` (any agen
 reviewers); it sees only what that prompt lists.
 Subagent models: `scripts/route.js` picks cheap, mid or strong per job from the task itself
 (read-only agents and reviews cheap, risky or hard work strong); unset tiers → propose
-`scripts/config.sh suggest-models` (or ask for each tier when there are none) and save the
+`scripts/smithy config suggest-models` (or ask for each tier when there are none) and save the
 user's yes.
 
 ## Pick the entry point
@@ -26,7 +26,7 @@ user's yes.
 | `/smelt <task>` | infer: no agreed plan → `plan`; plan/spec/task exists → `build`; a bug → `debug` |
 | `/smelt brainstorm <idea>` | `references/BRAINSTORM.md` only: the why, approaches, a draft design |
 | `/smelt plan <idea>` | brainstorm → grill → spec → builder check → task list → ask how to run it |
-| `/smelt build next [dir]` | `scripts/tasks.js next`, mark it `doing`, build it to `ship`, mark it `done` |
+| `/smelt build next [dir]` | `scripts/smithy tasks next`, mark it `doing`, build it to `ship`, mark it `done` |
 | `/smelt build all [dir]` | `references/EXECUTE.md`: every task here, one implementer subagent each |
 | `/smelt <phase> <task>` | that phase only: `spec`, `build`, `test`, `review`, `ship`, `retro` |
 | `/smelt from <phase> <task>` | that phase to the end, e.g. `from test` on code you already wrote |
@@ -80,7 +80,7 @@ and Interfaces, self-reviewed, where the user picks; then ask how to run them: h
 time (`build next`), here all at once (`build all`), in parallel with warden (if installed),
 or later. **Done:** spec + tasks written, each fits one fresh context; the user chose.
 
-**build · TDD** — `references/TDD.md`. From a task file: `scripts/tasks.js set <file> status=doing`
+**build · TDD** — `references/TDD.md`. From a task file: `scripts/smithy tasks set <file> status=doing`
 first, `status=done pr=<url>` after ship. One test at a time at the agreed seams; each fails
 for the right reason before any code; never edit a test to go green (if it contradicts the
 spec, stop and say so). Single test files while working, typecheck often, full suite at the
@@ -101,7 +101,7 @@ never merge or rerank their reports. Findings and human PR comments: `references
 **ship.** Docs first: with the ledger skill installed, its `sync` mode on the diff and its
 `comments` check on the changed files (API doc comments only, the why goes to docs); else update
 the docs the change touched (`references/DOCS.md`). Then:
-- **Branch:** still on the base? `git switch -c "$(scripts/names.sh branch <key|-> "<title>")"`
+- **Branch:** still on the base? `git switch -c "$(scripts/smithy names branch <key|-> "<title>")"`
   (`<key>`: the ticket, issue or task `NN`). Never invent another naming scheme.
 - **Integrate:** full suite on the tree you're about to ship (after rebasing or merging the
   base), VERIFY gate. Red → back to build.
@@ -113,7 +113,7 @@ the docs the change touched (`references/DOCS.md`). Then:
   added, commands run with results, agents run and what they found, "Decided without you" (from
   `rulings.md` if any), ADRs added. Title in the commit style:
   `pr.sh create --base <b> --title "<t>" --body-file <f>`; then wait for its checks with
-  `scripts/wait-for.js pr:<n>` (background where the harness wakes on exit), never sleep loops. (2) **Merge locally** into the base
+  `scripts/smithy wait pr:<n>` (background where the harness wakes on exit), never sleep loops. (2) **Merge locally** into the base
   only when the user asks. (3) **Keep** the branch for later. Discard work only when the user
   explicitly says to.
 - **Clean up** once merged or discarded: `scripts/cleanup.sh <repo> <branch> [<worktree>]`,

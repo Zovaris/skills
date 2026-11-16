@@ -14,8 +14,10 @@ have() { command -v "$1" >/dev/null 2>&1; }
 for t in git gh jq node; do
   have "$t" && ok "$t found" || bad "$t missing" "install $t (brew install $t)"
 done
+# The smithy binary (settings, cards, tasks, waiting): built from source or downloaded once.
+if v="$("$(dirname "$0")/smithy" version 2>&1)"; then ok "smithy $v"; else bad "smithy binary unavailable: $v" "check network and gh, or set SMITHY_BIN to a build of cmd/smithy"; fi
 # Harness: decides which adapter applies and which checks are relevant (no false alarms).
-read -r HARNESS ADAPTER <<<"$("$(dirname "$0")/harness.sh")"
+read -r HARNESS ADAPTER <<<"$("$(dirname "$0")/smithy" harness)"
 ok "harness: $HARNESS (adapter: $ADAPTER; override with WARDEN_HARNESS)"
 
 # Headless agent CLI: required to spawn workers with the 'any' adapter; else only consult.sh uses it.
@@ -35,8 +37,8 @@ done
 
 # The user's model choices (asked once, never hard-coded).
 for m in cheap strong; do
-  v="$("$(dirname "$0")/config.sh" model "$m" 2>/dev/null || true)"
-  [ -n "$v" ] && ok "model $m: $v" || warn "no $m model set for $HARNESS" "ask the user, then: config.sh set-model $m <name>"
+  v="$("$(dirname "$0")/smithy" config model "$m" 2>/dev/null || true)"
+  [ -n "$v" ] && ok "model $m: $v" || warn "no $m model set for $HARNESS" "ask the user, then: smithy config set-model $m <name>"
 done
 
 # Claude Code desktop only: start_session auto-approved (no 'Allow' card per worker).

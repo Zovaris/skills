@@ -6,12 +6,12 @@ State is always the batch dir and git, so the same batch can be run from any har
 
 | Operation | Claude Code desktop | Claude Code CLI | Any harness |
 |---|---|---|---|
-| **spawn** worker | `start_session` (below) | `claude --bg -n "warden <batch> <id>" [--model <m>] "<brief>"` | `agent.sh --bg [--model <m>] --cwd <worktree> --log <batch-dir>/<id>.log <batch-dir>/<id>.brief.md` |
+| **spawn** worker | `start_session` (below) | `claude --bg -n "warden <batch> <id>" [--model <m>] "<brief>"` | `smithy agent --bg [--model <m>] --cwd <worktree> --log <batch-dir>/<id>.log <batch-dir>/<id>.brief.md` |
 | **tell** worker | `SendMessage` to its `local_…` id | `SendMessage` to its address | append to `<batch-dir>/<id>.inbox.md`, then **respawn** it |
-| **wake** warden | `watch.sh` with `run_in_background` | same | `watch.sh` as a background job; if the harness can't wake on exit, run it in the foreground (it returns within `max-min`) |
+| **wake** warden | `smithy wait batch:<batch>` with `run_in_background` | same | `smithy wait batch:<batch>` as a background job; if the harness can't wake on exit, run it in the foreground (it returns within `--max` minutes) |
 | **end** worker | `archive_session` | `claude stop <id>` + `claude rm <id>` | `kill <pid>` if alive |
 | auto-end on PR close | the worker turns on the app's auto-archive for its PR (if your harness supports it) | none: `/warden cleanup` | none: `/warden cleanup` |
-| **subagent** (short read-only job) | Agent tool | Agent tool | the harness's own (Codex `spawn_agent`, OpenCode, Gemini, Cursor and DeepSeek subagents); Pi has none: `agent.sh --readonly [--model <m>] <prompt-file>` |
+| **subagent** (short read-only job) | Agent tool | Agent tool | the harness's own (Codex `spawn_agent`, OpenCode, Gemini, Cursor and DeepSeek subagents); Pi has none: `smithy agent --readonly [--model <m>] <prompt-file>` |
 
 Always write the brief to `<batch-dir>/<id>.brief.md` before spawning, whatever the adapter: a
 respawn reuses it.
@@ -21,7 +21,7 @@ respawn reuses it.
 The app refuses `start_session` in a turn that an event started (the watcher exiting, a worker's
 message, CI): it only lets you propose a card there. A `PermissionRequest` hook removes the
 approval click but not this rule. That is why the loop launches every worker in the user's turn
-and lets dependents wait in their own session (`wait-turn.sh`). Work that appears later (a
+and lets dependents wait in their own session (`smithy wait-turn`). Work that appears later (a
 follow-up item) is proposed as a card, or listed for the user. When the user starts a proposed
 card, its session id doesn't come back to you: find it with `list_sessions {"linked": true}` and
 record it in `batch.json`. A relaunch from an event turn (the third rung of the stuck ladder) is
@@ -41,25 +41,25 @@ the batch goal; all launches in one message. Record each session id.
 Your name: `ListAgents` prints "This session is <name>"; put "Message the warden with
 SendMessage, to: \"<name>\"" in the brief. Launch from the workspace root (a trusted folder),
 `--permission-mode` = this session's mode. `claude agents --json` lists workers. No PR auto-fix:
-`verify.sh` the `pr_open` items on each wake and tell a red one to fix CI.
+`smithy verify` the `pr_open` items on each wake and tell a red one to fix CI.
 
-## Any harness (agent.sh)
+## Any harness (smithy agent)
 
-`agent.sh` picks the installed CLI (or `AGENT_CLI`) and passes the flags it needs to work
+`smithy agent` picks the installed CLI (or `AGENT_CLI`) and passes the flags it needs to work
 unattended: `codex exec` with the git dir writable and network on, `opencode run --standalone
 --auto`, `gemini --approval-mode yolo`, `agent -p --force` (Cursor), `pi -p`, `dsh headless
 --approval-policy never`, `claude -p --permission-mode auto`. Workers get `WARDEN_HARNESS` set
 to their CLI. **wake**: OpenCode and DeepSeek Harness resume the session when a background
 command ends; Gemini only with `tools.shell.backgroundCompletionBehavior: "inject"`; Codex, Pi and
-Cursor don't, so run `watch.sh` in the foreground there (it returns within `max-min`).
+Cursor don't, so run `smithy wait batch:<batch>` in the foreground there (it returns within `--max` minutes).
 
 Workers are one-shot headless runs of whatever agent CLI is installed (`AGENT_CMD` overrides:
 codex, opencode, gemini, aider, a custom wrapper). They can't receive messages mid-run, so:
 - A worker that needs a decision writes its card and exits.
 - To answer, append the answer to `<id>.inbox.md` and respawn it in the same worktree. The brief's
   relaunch line plus "Read <id>.inbox.md first" lets it continue from what exists.
-- Record `pid` and `log` from `agent.sh --bg` in the item; `kill -0 <pid>` tells you if it is
+- Record `pid` and `log` from `smithy agent --bg` in the item; `kill -0 <pid>` tells you if it is
   alive. A dead pid with a non-final card is `stuck`.
 - The worker's closing line goes to its card's `note`; there is no message channel.
-- No PR auto-fix: on each wake `verify.sh` the `pr_open` items; respawn a red one with
+- No PR auto-fix: on each wake `smithy verify` the `pr_open` items; respawn a red one with
   "fix CI on <pr>" in its inbox.

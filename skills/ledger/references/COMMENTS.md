@@ -1,6 +1,6 @@
 # Enforcing the comment policy
 
-Linters do most of the work; `scripts/comments.sh` is the cross-language catch-all for what they
+Linters do most of the work; `scripts/smithy comments` is the cross-language catch-all for what they
 can't express (a blanket ban on explanatory comments). Offer the snippet for the repo's stack and
 merge it into the existing config; never replace a config wholesale.
 
@@ -32,7 +32,7 @@ convention = "google"
 
 `D` covers docstrings on public modules, classes and functions; `ERA001` commented-out code;
 `FIX`/`TD` TODO-style comments; `PGH003/004` blanket `type: ignore` / `noqa`; `RUF100` unused
-`noqa`. Ruff has no rule banning all comments: `scripts/comments.sh` covers that.
+`noqa`. Ruff has no rule banning all comments: `scripts/smithy comments` covers that.
 
 ## Go (golangci-lint)
 
@@ -87,5 +87,5 @@ style:
 
 ## Everywhere
 
-Run `scripts/comments.sh --diff <base>` in a pre-commit hook and in CI so the policy holds
+Run `scripts/smithy comments --diff <base>` in a pre-commit hook and in CI so the policy holds
 whatever editor or agent wrote the code.

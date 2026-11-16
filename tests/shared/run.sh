@@ -55,28 +55,28 @@ t "board shows the list" '"$S/smithy" tasks board | grep -q "0/2 done, 0 doing, 
 t "board --all finds it from elsewhere" '(cd / && "$S/smithy" tasks board --all) | grep -q "repo/b"'
 rm -rf docs/specs/b
 
-# commit.sh
-t "style is conventional" '[ "$($S/commit.sh style | head -1)" = "style: conventional" ]'
-t "rejects trailing period" '! $S/commit.sh check "feat: add x."'
-t "rejects non-conventional" '! $S/commit.sh check "Added stuff"'
-t "rejects > 72 chars" '! $S/commit.sh check "feat: $(printf "a%.0s" {1..80})"'
-t "accepts good message" '$S/commit.sh check "feat(api): add pagination"'
+# smithy commit
+t "style is conventional" '[ "$($S/smithy commit style | head -1)" = "style: conventional" ]'
+t "rejects trailing period" '! $S/smithy commit check "feat: add x."'
+t "rejects non-conventional" '! $S/smithy commit check "Added stuff"'
+t "rejects > 72 chars" '! $S/smithy commit check "feat: $(printf "a%.0s" {1..80})"'
+t "accepts good message" '$S/smithy commit check "feat(api): add pagination"'
 echo a > a.txt; echo b > b.txt
-t "requires paths" '! $S/commit.sh "feat(api): add a"'
-t "commits only given paths" '$S/commit.sh "feat(api): add a" a.txt && [ "$(git status --short)" = "?? b.txt" ]'
+t "requires paths" '! $S/smithy commit "feat(api): add a"'
+t "commits only given paths" '$S/smithy commit "feat(api): add a" a.txt && [ "$(git status --short)" = "?? b.txt" ]'
 
-# pr.sh
-t "no template → exit 1" '! $S/pr.sh template'
+# smithy pr
+t "no template → exit 1" '! $S/smithy pr template'
 mkdir -p .github; printf '## Summary\n\n## Testing\n' > .github/pull_request_template.md
-t "template found once" '[ "$($S/pr.sh template | wc -l | tr -d " ")" = 1 ]'
+t "template found once" '[ "$($S/smithy pr template | wc -l | tr -d " ")" = 1 ]'
 
-# cleanup.sh
+# smithy cleanup
 git worktree add -q -b t1 "$T/wt1" main; (cd "$T/wt1" && git commit -q --allow-empty -m "feat(x): wip")
-t "keeps unpushed branch" '! $S/cleanup.sh . t1 && git show-ref -q --verify refs/heads/t1'
+t "keeps unpushed branch" '! $S/smithy cleanup . t1 && git show-ref -q --verify refs/heads/t1'
 git push -q origin t1 2>/dev/null
-t "cleans pushed branch" '$S/cleanup.sh . t1 && ! git show-ref -q --verify refs/heads/t1'
+t "cleans pushed branch" '$S/smithy cleanup . t1 && ! git show-ref -q --verify refs/heads/t1'
 git worktree add -q -b t2 "$T/wt2" main; echo dirty > "$T/wt2/x"
-t "keeps dirty worktree" '! $S/cleanup.sh . t2 && [ -d "$T/wt2" ]'
+t "keeps dirty worktree" '! $S/smithy cleanup . t2 && [ -d "$T/wt2" ]'
 
 # smithy tasks
 mkdir -p docs/specs/pay
@@ -104,8 +104,8 @@ t "model saved per harness" '[ "$($S/smithy config model cheap)" = mini ] && jq 
 t "repo setting overrides, false kept as false" '[ "$(cd "$T/repo" && $S/smithy config get tasks.commit)" = false ]'
 t "default applies when unset" '[ "$(cd "$T/repo" && $S/smithy config get warden.merge)" = auto ]'
 t "no default → exit 3" '(cd "$T/repo" && $S/smithy config get tasks.ignore); [ $? -eq 3 ]'
-t "task-dir asks for tasks.ignore" 'o="$(cd "$T/repo" && $S/task-dir.sh pay)"; [ $? -eq 3 ] && grep -q "^ask tasks.ignore" <<<"$o"'
-(cd "$T/repo" && $S/smithy config set --repo tasks.ignore exclude >/dev/null && $S/task-dir.sh pay >/dev/null && $S/task-dir.sh pay >/dev/null)
+t "task-dir asks for tasks.ignore" 'o="$(cd "$T/repo" && $S/smithy task-dir pay)"; [ $? -eq 3 ] && grep -q "^ask tasks.ignore" <<<"$o"'
+(cd "$T/repo" && $S/smithy config set --repo tasks.ignore exclude >/dev/null && $S/smithy task-dir pay >/dev/null && $S/smithy task-dir pay >/dev/null)
 t "exclude adds .docs/ once" '[ "$(grep -c "^.docs/$" "$(cd "$T/repo" && git rev-parse --git-path info/exclude)")" = 1 ] && [ -d "$T/repo/.docs/specs/pay" ]'
 
 # model suggestions
@@ -114,34 +114,34 @@ t "claude suggests haiku/sonnet/opus" '[ "$(WARDEN_HARNESS=claude-cli $S/smithy 
 WARDEN_HARNESS=claude-cli $S/smithy config accept-models >/dev/null
 t "accept saves them for that harness" '[ "$(WARDEN_HARNESS=claude-cli $S/smithy config model strong)" = opus ]'
 
-# route.js
+# smithy route
 $S/smithy config set-model mid midm >/dev/null
-t "router: typo is cheap" '[ "$($S/route.js --text "fix typo in README" | cut -d" " -f1)" = cheap ]'
-t "router: auth is strong" '[ "$($S/route.js --text "add OAuth login with tokens" | cut -d" " -f1)" = strong ]'
-t "router: plain feature is mid, model from config" '[ "$($S/route.js --text "add CSV export to reports" | cut -d" " -f1-2)" = "mid midm" ]'
-t "router: full speed is strong" '[ "$($S/route.js --text "add CSV export" --speed full | cut -d" " -f1)" = strong ]'
-t "router: review is cheap" '[ "$($S/route.js --kind review | cut -d" " -f1)" = cheap ]'
-t "router: unset tier prints -" '[ "$($S/route.js --text "add OAuth login" | cut -d" " -f2)" = - ]'
-t "router: needs input" '$S/route.js; [ $? -eq 2 ]'
+t "router: typo is cheap" '[ "$($S/smithy route --text "fix typo in README" | cut -d" " -f1)" = cheap ]'
+t "router: auth is strong" '[ "$($S/smithy route --text "add OAuth login with tokens" | cut -d" " -f1)" = strong ]'
+t "router: plain feature is mid, model from config" '[ "$($S/smithy route --text "add CSV export to reports" | cut -d" " -f1-2)" = "mid midm" ]'
+t "router: full speed is strong" '[ "$($S/smithy route --text "add CSV export" --speed full | cut -d" " -f1)" = strong ]'
+t "router: review is cheap" '[ "$($S/smithy route --kind review | cut -d" " -f1)" = cheap ]'
+t "router: unset tier prints -" '[ "$($S/smithy route --text "add OAuth login" | cut -d" " -f2)" = - ]'
+t "router: needs input" '$S/smithy route; [ $? -eq 2 ]'
 
-# consult.sh
-t "consult builds a tool-less prompt" 'CONSULT_CMD=cat $S/consult.sh "Q1" "A; B" | grep -q "Question: Q1"'
+# smithy consult
+t "consult builds a tool-less prompt" 'CONSULT_CMD=cat $S/smithy consult "Q1" "A; B" | grep -q "Question: Q1"'
 echo "ctx-line" > "$T/ctx.md"
-t "consult adds context" 'CONSULT_CMD=cat $S/consult.sh "Q1" "A; B" --context "$T/ctx.md" | grep -q ctx-line'
-t "consult falls back when the harness CLI is missing" 'WARDEN_HARNESS=pi AGENT_CMD="grep -c Question" PATH="/usr/bin:/bin:$(dirname "$(command -v node)")" $S/consult.sh "Q" "A; B" | grep -q 1'
+t "consult adds context" 'CONSULT_CMD=cat $S/smithy consult "Q1" "A; B" --context "$T/ctx.md" | grep -q ctx-line'
+t "consult falls back when the harness CLI is missing" 'WARDEN_HARNESS=pi AGENT_CMD="grep -c Question" PATH="/usr/bin:/bin:$(dirname "$(command -v node)")" $S/smithy consult "Q" "A; B" | grep -q 1'
 
-# use-smithy setup.sh block
+# use-smithy smithy setup block
 printf '# Rules\n' > "$T/AGENTS.md"
-t "block missing" '! $P/setup.sh block status "$T/AGENTS.md"'
-$P/setup.sh block add "$T/AGENTS.md" >/dev/null; $P/setup.sh block add "$T/AGENTS.md" >/dev/null
+t "block missing" '! $P/smithy setup block status "$T/AGENTS.md"'
+$P/smithy setup block add "$T/AGENTS.md" >/dev/null; $P/smithy setup block add "$T/AGENTS.md" >/dev/null
 t "block added once" '[ "$(grep -c use-smithy:start "$T/AGENTS.md")" = 1 ]'
-$P/setup.sh block remove "$T/AGENTS.md" >/dev/null
+$P/smithy setup block remove "$T/AGENTS.md" >/dev/null
 t "block removed, rest kept" '! grep -q use-smithy "$T/AGENTS.md" && grep -q "# Rules" "$T/AGENTS.md"'
 
-# agent.sh with a fake CLI
+# smithy agent with a fake CLI
 echo hi > "$T/p.md"
-t "agent.sh strips parent harness vars" '[ "$(CLAUDECODE=1 WARDEN_HARNESS=pi AGENT_CMD="echo \${CLAUDECODE:-none} \$WARDEN_HARNESS" $S/agent.sh "$T/p.md")" = "none pi" ]'
+t "smithy agent strips parent harness vars" '[ "$(CLAUDECODE=1 WARDEN_HARNESS=pi AGENT_CMD="echo \${CLAUDECODE:-none} \$WARDEN_HARNESS" $S/smithy agent "$T/p.md")" = "none pi" ]'
 t "harness ignores CODEX_HOME" '[ "$(env -i PATH=/usr/bin:/bin CODEX_HOME=/x SMITHY_BIN="$SMITHY_BIN" $S/smithy harness)" = "unknown any" ]'
-t "agent.sh pipes prompt to AGENT_CMD" '[ "$(AGENT_CMD=cat $S/agent.sh "$T/p.md")" = hi ]'
+t "smithy agent pipes prompt to AGENT_CMD" '[ "$(AGENT_CMD=cat $S/smithy agent "$T/p.md")" = hi ]'
 
 echo "shared: $pass passed, $fail failed"; [ $fail -eq 0 ]

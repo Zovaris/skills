@@ -15,7 +15,7 @@ it. User instructions win over this file, and the repo's AGENTS.md / CLAUDE.md w
 
 ## 1 · See what is installed
 
-Run `scripts/find-skill.sh --list` once per session (`<skill-dir>` is this file's folder). Only
+Run `scripts/smithy skills --list` once per session (`<skill-dir>` is this file's folder). Only
 offer skills that are listed. To use a user-invoked skill yourself, read the SKILL.md path it
 prints and follow it: you can't run it as a slash command.
 
@@ -42,19 +42,19 @@ Not installed? Do the work the plain way and, once, mention the skill that would
   costs no tokens and returns one line when something happens.
 - Evidence over claims: "done", "passes", "fixed" always name the command and its result.
 - Commits are atomic in the repo's style, PRs follow its template, finished worktrees and local
-  branches are removed (the `commit.sh`, `pr.sh`, `cleanup.sh` scripts in smelt and warden).
+  branches are removed (the `smithy commit`, `smithy pr`, `smithy cleanup` scripts in smelt and warden).
 - Decisions that pass ledger's ADR test (hard to reverse, surprising, a real trade-off) go to an ADR. No explanatory code comments: API doc
   comments only, the "why" lives in docs.
-- Models come in three tiers per harness (cheap, mid, strong); `route.js` picks the tier per job
+- Models come in three tiers per harness (cheap, mid, strong); `smithy route` picks the tier per job
   and `smithy config model <tier>` gives the model. When a tier is unset (exit 3, or `-` from
-  route.js): run `scripts/smithy config suggest-models`. If it prints suggestions, propose them in
+  smithy route): run `scripts/smithy config suggest-models`. If it prints suggestions, propose them in
   one line ("cheap <model>, mid <model>, strong <model> for this harness, ok?") and on a yes run
   `smithy config accept-models`. If it prints none, ask the user to name each tier and save them with
   `smithy config set-model <tier> <name>`. Ask once per harness; until then use the session's model.
   Under `/hush`, don't ask: use the session's model and say so at the end.
 - Ask only for decisions that are the user's: scope, money, prod, data, security, irreversible
   actions, pushing, merging. Other decisions that would stop the work: low impact, decide;
-  medium, one `consult.sh` call to the user's strong model (smelt, warden, tend ship it; it
+  medium, one `smithy consult` call to the user's strong model (smelt, warden, tend ship it; it
   uses the current harness's CLI, no tools); log what was decided and why.
 
 ## 4 · Turn repeated work into scripts
@@ -95,9 +95,9 @@ changes one. Nobody has to edit JSON by hand.
 
 Two ways to fill them:
 - **Up front** — when the user says "use-smithy setup" (or `/use-smithy setup`): run
-  `scripts/setup.sh status`, then ask every unset setting in one message (numbered, each with your
+  `scripts/smithy setup status`, then ask every unset setting in one message (numbered, each with your
   recommendation, "yes" accepts all), save the answers, and offer the agent-instructions block
-  (`setup.sh block add <file>`, only with a yes, after showing `references/AGENTS-BLOCK.md`).
+  (`smithy setup block add <file>`, only with a yes, after showing `references/AGENTS-BLOCK.md`).
 - **On first use** — any skill that needs an unset setting asks just that one, once, and saves
   it: `--repo` when the answer is about this repo (where specs go), user-level otherwise
   (models, merge and cleanup defaults).

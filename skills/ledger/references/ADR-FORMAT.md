@@ -32,7 +32,7 @@ Chosen option: "<option>", because <the reason that tipped it>.
 ```
 
 Rules:
-- Number with `scripts/adr.sh`; never reuse a number, even for rejected ADRs.
+- Number with `scripts/smithy adr`; never reuse a number, even for rejected ADRs.
 - Status changes are the only edit allowed after `accepted`. A changed decision is a new ADR that
   supersedes the old one.
 - Link the PR or issue where the decision was made instead of copying the discussion.

@@ -6,7 +6,7 @@ Files are created only when there is something to write in them.
 |---|---|---|
 | Domain terms | `docs/GLOSSARY.md` | everyone, phase 0 |
 | Hard decisions | `docs/adr/NNNN-<slug>.md` | phase 0 when relevant |
-| Specs and tasks | `docs/specs/<slug>/`, `.docs/specs/<slug>/` (out of git) or `~/.smithy/plans/<repo>/<slug>/` (`scripts/task-dir.sh` decides) | build, review |
+| Specs and tasks | `docs/specs/<slug>/`, `.docs/specs/<slug>/` (out of git) or `~/.smithy/plans/<repo>/<slug>/` (`scripts/smithy task-dir` decides) | build, review |
 | Judgement rules for agents | `docs/agents/STANDARDS.md` | standards reviewer |
 | Mechanical rules | lint rules, hooks, scripts | CI, hooks |
 | Facts about the user, their preferences | the harness's memory | every session |
@@ -18,7 +18,7 @@ files above.
 
 Create `docs/adr/` with `0000-record-decisions.md` (status accepted: we use ADRs), an empty
 `docs/GLOSSARY.md` header, and a pointer block in the repo's agent instructions file (AGENTS.md
-if none exists). Run `scripts/stack.sh` and offer to add its commands there.
+if none exists). Run `scripts/smithy stack` and offer to add its commands there.
 
 ## Glossary
 
@@ -30,7 +30,7 @@ term, alphabetical, no implementation detail. Update inline the moment a term is
 Write one only when all three hold: **hard to reverse**, **surprising without context**, and a
 **real trade-off** was made. Otherwise a line in the spec's Decisions is enough.
 
-`scripts/adr.sh "<title>"` creates the next numbered file:
+`scripts/smithy adr "<title>"` creates the next numbered file:
 
 ```markdown
 # NNNN · <title>
@@ -51,7 +51,7 @@ Superseding: new ADR, then set the old one's status line. Never edit an accepted
 ## Retro
 
 From the session just finished, list lessons and route each:
-- Same mechanical mistake twice → an automated check (lint rule, hook, `stack.sh`-level script).
+- Same mechanical mistake twice → an automated check (lint rule, hook, `smithy stack`-level script).
 - Judgement call the reviewer should enforce → one line in `docs/agents/STANDARDS.md`.
 - About the user or how they work → the harness's memory (one fact per entry).
 - About the project → the right doc above.

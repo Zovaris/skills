@@ -20,7 +20,7 @@ Before saying something is done, fixed, passing or ready:
 |---|---|
 | Tests pass | the full suite run just now, exit 0, no new skips |
 | Bug fixed | the regression test failed before the fix and passes after (both runs shown) |
-| Types / lint clean | typecheck and lint commands from `stack.sh`, exit 0 |
+| Types / lint clean | typecheck and lint commands from `smithy stack`, exit 0 |
 | Criterion met | a test that exercises it, named, passing |
 | An agent or worker completed a task | the VCS diff it produced (`git diff`, `git log -p`), read, plus its tests passing when you run them |
 | Refactor safe | suite green before and after, no snapshot or assertion changed |

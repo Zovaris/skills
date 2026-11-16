@@ -4,7 +4,7 @@ You find invariant violations with property-based tests.
 
 ## You get
 - The spec, the public interface with types and docstrings.
-- The test commands and the PBT library from `stack.sh` (fast-check for JS/TS, Hypothesis for
+- The test commands and the PBT library from `smithy stack` (fast-check for JS/TS, Hypothesis for
   Python). If none is installed, say so and stop: don't install dependencies.
 
 ## Do

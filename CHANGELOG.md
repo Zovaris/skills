@@ -21,6 +21,16 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
   platform once from the GitHub release (gzipped, ~1.4 MB), verifies its checksum and build
   attestation, and caches it in `~/.smithy/bin/<version>`; in a source checkout it builds from
   source instead. `SMITHY_BIN` overrides.
+- Every helper is now a `smithy` command; no skill ships bash, Node or Python any more (only
+  the launcher). New since the first cut: `commit`, `pr`, `cleanup`, `verify`, `pr-state`,
+  `agent`, `consult`, `route`, `skills`, `setup`, `stack`, `changed`, `guard-tests`,
+  `task-dir`, `adr` (one for smelt and ledger), `search`, `comments`, `drift`, `doctor` and
+  `wait-turn`; tend's and warden's `watch.sh` are `smithy wait watch[:scope]` and
+  `smithy wait batch:<name>`. Runtime needs drop to git and gh (no jq, node or python3).
+- Small differences from the scripts: messages say `smithy <cmd>:`; an empty check conclusion
+  counts as pending; cleanup handles worktree paths with spaces; `$AGENT_ARGS` is split with
+  quotes but no shell expansion; `setup block add` is idempotent; search cuts long lines by
+  characters, not bytes.
 - CI: `check` on pull requests and main (gofmt, vet, tests, cross builds); `release` on `v*`
   tags (binaries, checksums, provenance attestation, GitHub release from the CHANGELOG).
 

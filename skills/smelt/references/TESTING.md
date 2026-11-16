@@ -3,10 +3,10 @@
 Launch each as a fresh **subagent**: prompt = the agent file's text followed by an `## Inputs`
 block with exactly what the file lists. Agents that write tests work in their own git worktree
 (the harness's isolation option, or `git worktree add` yourself and pass the path); once their
-tests are merged into yours, remove those worktrees and branches (`scripts/cleanup.sh`). Launch them
+tests are merged into yours, remove those worktrees and branches (`scripts/smithy cleanup`). Launch them
 together so they run in parallel. Without a subagent tool: write each prompt to a file and run
-`scripts/agent.sh --bg --cwd <worktree> --log <file> <prompt-file>` per agent, then read the logs.
-Read-only agents (spec-check, standards, security, builder) use `agent.sh --readonly`.
+`scripts/smithy agent --bg --cwd <worktree> --log <file> <prompt-file>` per agent, then read the logs.
+Read-only agents (spec-check, standards, security, builder) use `smithy agent --readonly`.
 
 Which ones run depends on the speed (table in SKILL.md); within it, use this to choose.
 
@@ -15,7 +15,7 @@ Which ones run depends on the speed (table in SKILL.md); within it, use this to 
 | `agents/adversary.md` | any non-trivial logic; run 2 when the logic is risky | medium | yes |
 | `agents/regression.md` | every bug fix | low | yes |
 | `agents/property.md` | parsers, serializers, math, money, sorting, state machines, invariants | medium | yes |
-| `agents/mutation.md` | before merge on core logic, when `stack.sh` shows a mutation tool | high CPU | proposes |
+| `agents/mutation.md` | before merge on core logic, when `smithy stack` shows a mutation tool | high CPU | proposes |
 | `agents/e2e.md` | UI flows or HTTP endpoints changed and the app can run locally | high | yes |
 | `agents/spec-check.md` | always in review | low | no |
 | `agents/standards.md` | always in review | low | no |
@@ -27,7 +27,7 @@ Never update snapshots in the same pass.
 ## What each agent must not get
 
 Your conversation, plan, reasoning or opinion of the code. Give the spec/criteria, the public
-interface (signatures, types, routes), the test commands from `stack.sh`, and the changed files
+interface (signatures, types, routes), the test commands from `smithy stack`, and the changed files
 list only where the file says so. Independence is the point: an agent that knows how you thought
 shares your blind spots.
 

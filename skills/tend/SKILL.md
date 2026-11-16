@@ -15,15 +15,15 @@ Scripts are in `<skill-dir>/scripts/` (run them, don't read them):
 
 | Script | Does |
 |---|---|
-| `pr-state.sh <pr>` | Compact PR state: checks, mergeable, review, unresolved threads, behind |
-| `verify.sh` | Pushed head, checks, mergeable |
-| `commit.sh` | Commits in the repo's style |
+| `smithy pr-state <pr>` | Compact PR state: checks, mergeable, review, unresolved threads, behind |
+| `smithy verify` | Pushed head, checks, mergeable |
+| `smithy commit` | Commits in the repo's style |
 | `smithy names` | Worktree path for a PR branch |
 | `smithy wait <target>…` | Zero-token wait on GitHub: `pr:<n>`, `run:<id>`, `branch:<name>`, `prs`, `issues:<label>` |
-| `watch.sh` | `smithy wait` preset for watch mode (new or updated PRs / issues) |
-| `consult.sh` | One tool-less call to the user's strong model for a technical choice |
+| `smithy wait watch[:prs\|issues\|all]` | Watch mode: wait for new or updated PRs / labeled issues (scope from `tend.watch`) |
+| `smithy consult` | One tool-less call to the user's strong model for a technical choice |
 | `smithy config` | The user's models and tend settings |
-| `agent.sh` · `smithy harness` · `route.js` | Run a fix subagent on any CLI (when the harness has no subagent tool), detect the harness, pick a tier |
+| `smithy agent` · `smithy harness` · `smithy route` | Run a fix subagent on any CLI (when the harness has no subagent tool), detect the harness, pick a tier |
 
 `<warden-dir>` below is the warden skill's folder: the one holding the `smithy cards` that the
 `--card` argument points to.
@@ -33,9 +33,9 @@ Scripts are in `<skill-dir>/scripts/` (run them, don't read them):
 - PR urls, numbers or branch names: one loop per PR, then stop.
 - `batch <name>`: the items of that warden batch, each as it reaches `pr_open` or `ready`
   (`<warden-dir>/scripts/smithy cards board <name> --json`). Warden starts you with the workers,
-  so between PRs wait with `<warden-dir>/scripts/watch.sh <name>`; stop when every item is
+  so between PRs wait with `scripts/smithy wait batch:<name>`; stop when every item is
   final (merged, dropped, reported).
-- `watch [scope]`: keep going. Tend the PRs that match, then wait with `scripts/watch.sh` and
+- `watch [scope]`: keep going. Tend the PRs that match, then wait with `scripts/smithy wait watch[:scope]` and
   adopt what appears, until the user stops it or `--max-hours` (default 8) passes. Scope:
   - `prs` (default): open PRs by the user (warden and smelt open them as the user) or with
     `--label`.
@@ -61,7 +61,7 @@ Check out the PR's branch in its existing worktree if there is one (`git worktre
 new one at `scripts/smithy names worktree <pr-branch>`; never in the user's main checkout or inside
 the repo. Then repeat:
 
-1. `scripts/pr-state.sh <pr>` → `{state, checks, mergeable, review, unresolved, behind}`.
+1. `scripts/smithy pr-state <pr>` → `{state, checks, mergeable, review, unresolved, behind}`.
 2. Act on the first thing that applies:
    - **merged / closed** → stop this PR; remove the worktree you created.
    - **checks fail** → `gh run view <run> --log-failed`. Same test passes on a plain rerun and
@@ -80,7 +80,7 @@ the repo. Then repeat:
      or a review lands. Never sleep-then-check turns.
    - **green, mergeable, approved or no review required** → `green`. Merge only if the user or
      warden said this PR is `merge auto`, and never into the production branch.
-3. Commit fixes with `scripts/commit.sh` (style once, one concern per commit); push without force
+3. Commit fixes with `scripts/smithy commit` (style once, one concern per commit); push without force
    unless the rebase rule above allows it.
 
 ## When a PR doesn't get green
@@ -90,7 +90,7 @@ Tend fixes red PRs itself; it hands a PR back only when it hits something it mus
 | Situation | Card (warden launched you) | Without warden |
 |---|---|---|
 | Red twice after real fixes, or a conflict it can't resolve safely | `state=blocked note=<why>` | `needs you <url>: <why>` |
-| A technical choice inside the PR's scope (which fix, which approach) | settled with `scripts/consult.sh` (the user's strong model), noted in the commit or reply; `ESCALATE` → next row | same |
+| A technical choice inside the PR's scope (which fix, which approach) | settled with `scripts/smithy consult` (the user's strong model), noted in the commit or reply; `ESCALATE` → next row | same |
 | A decision the user owns (scope, API, data, security) | `state=needs_decision` with question, options, recommendation, `impact=high` | `needs you <url>: <question>` |
 | 3 review rounds used, or a force push it isn't allowed to do | `state=blocked note=<why>` | `needs you <url>: <why>` |
 | Green | `state=pr_open` (or `ready` for manual merge), `ci=green` | `green <url>` |

@@ -6,7 +6,7 @@ Fill the `<…>` slots and drop the lines that don't apply. `<intent>` is copied
 
 What workers are:
 - They can't run `/smelt` or `/hush` as commands (user-invoked skills). `<hush-skill>` and
-  `<smelt-skill>` are the absolute paths `scripts/find-skill.sh hush|smelt` prints: workers read
+  `<smelt-skill>` are the absolute paths `scripts/smithy skills hush|smelt` prints: workers read
   those files and follow them, which works in any harness.
 - Silent: their only outputs are the status card and one closing line; they never address the
   user.
@@ -47,7 +47,7 @@ requirements from the intent and the code"; out of scope if the user named it>
   (`<warden-dir>/scripts/smithy tasks set <file> status=done pr=<url>`) so it lands with the PR.">
 - First step: check `pwd -P` and `git rev-parse --show-toplevel` equal <worktree> and the branch
   is <branch>. If not: state=blocked note=wrong-worktree, stop.
-<has prereqs or the batch is full: "- Then wait for your turn: run `<warden-dir>/scripts/wait-turn.sh
+<has prereqs or the batch is full: "- Then wait for your turn: run `<warden-dir>/scripts/smithy wait-turn
   <batch> <id>` (one blocking call; exit 4 means run it again, exit 0 means go). When it says go,
   `git fetch origin && git merge origin/<base>` (or the prereq's branch when stacked) so you
   start from the merged prereqs.">
@@ -57,9 +57,9 @@ requirements from the intent and the code"; out of scope if the user named it>
 - Stay current with the base: `git fetch origin && git merge origin/<base>` (resolve, run the
   tests) before opening the PR and again right before merging. Other workers merge into the same
   base while you work.
-- Commits: `<warden-dir>/scripts/commit.sh style` once, then one atomic commit per concern with
-  `commit.sh "<msg>" <paths>` in that style. PR: `<warden-dir>/scripts/pr.sh template`; fill
-  every heading of the template if there is one, then `pr.sh create --base <base> --title "<t>"
+- Commits: `<warden-dir>/scripts/smithy commit style` once, then one atomic commit per concern with
+  `smithy commit "<msg>" <paths>` in that style. PR: `<warden-dir>/scripts/smithy pr template`; fill
+  every heading of the template if there is one, then `smithy pr create --base <base> --title "<t>"
   --body-file <f>`. Never `git add -A` or `--no-verify`; skip any preview, nobody answers.
 - One rigor path: CI green; bot review comments at most 3 rounds total, counted in
   `review_rounds` (read it back after a restart). A bot review is not a completion gate.

@@ -4,9 +4,9 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"sort"
-	"strings"
 
 	"github.com/Zovaris/skills/internal/config"
 )
@@ -31,8 +31,8 @@ func init() {
 	register("engine-probe", "", func([]string) int { fmt.Println("smithy-engine", version); return 0 })
 }
 
-func usage() {
-	fmt.Fprintf(os.Stderr, "smithy %s: the binary behind the smithy skills\n", version)
+func usage(w io.Writer) {
+	fmt.Fprintf(w, "smithy %s: the binary behind the smithy skills\n", version)
 	names := make([]string, 0, len(commands))
 	for n, c := range commands {
 		if c.help != "" {
@@ -41,15 +41,20 @@ func usage() {
 	}
 	sort.Strings(names)
 	for _, n := range names {
-		fmt.Fprintf(os.Stderr, "  smithy %-12s %s\n", n, commands[n].help)
+		fmt.Fprintf(w, "  smithy %-12s %s\n", n, commands[n].help)
 	}
-	fmt.Fprintln(os.Stderr, "Run any command without arguments (or with --help) for its usage.")
+	fmt.Fprintln(w, "Run any command without arguments for its usage. Not on PATH? smithy setup path.")
 }
 
 func main() {
-	if len(os.Args) < 2 || strings.HasPrefix(os.Args[1], "-") && os.Args[1] != "--version" {
-		usage()
+	if len(os.Args) < 2 {
+		usage(os.Stderr)
 		os.Exit(2)
+	}
+	switch os.Args[1] {
+	case "help", "--help", "-h":
+		usage(os.Stdout)
+		os.Exit(0)
 	}
 	name := os.Args[1]
 	if name == "--version" || name == "-v" {
@@ -58,7 +63,7 @@ func main() {
 	c, ok := commands[name]
 	if !ok {
 		fmt.Fprintf(os.Stderr, "unknown command %s\n", name)
-		usage()
+		usage(os.Stderr)
 		os.Exit(2)
 	}
 	config.AutoMigrate()

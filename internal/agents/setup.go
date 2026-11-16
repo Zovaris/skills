@@ -19,6 +19,7 @@ const setupUsage = `use-smithy setup: what is installed, model settings, and the
   smithy setup block status [file]    is the block in <file> (default: this harness's user file)?
   smithy setup block add [file]       add or refresh the block (between use-smithy:start/end markers)
   smithy setup block remove [file]    remove it
+  smithy setup path [status|add]      is smithy on PATH; add ~/.smithy/bin to the shell's startup file
 Default file per harness: claude-* → ~/.claude/CLAUDE.md, codex → $CODEX_HOME/AGENTS.md,
 opencode → $XDG_CONFIG_HOME/opencode/AGENTS.md, gemini → ~/.gemini/GEMINI.md,
 pi → $PI_CODING_AGENT_DIR/AGENTS.md, dsh → $DSH_HOME/AGENTS.md, else ./AGENTS.md (Cursor has
@@ -198,6 +199,7 @@ func status() int {
 	if len(sug) > 0 {
 		fmt.Printf("model suggestions for %s: %s (smithy config accept-models after the user says yes)\n", h, strings.Join(sug, ","))
 	}
+	pathCmd(nil)
 	f := defaultFile()
 	if fileHasBlock(f) {
 		fmt.Println("block: present in", f)
@@ -215,6 +217,8 @@ func SetupMain(args []string) int {
 			return status()
 		case "block":
 			return block(args[1:])
+		case "path":
+			return pathCmd(args[1:])
 		}
 	}
 	fmt.Println(setupUsage)

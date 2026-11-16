@@ -107,8 +107,9 @@ warden cards, waiting on GitHub). You don't install it yourself: each skill ship
 launcher (`scripts/smithy`, and `smithy.cmd` for Windows) that, the first time it runs,
 downloads the binary for your platform from the matching GitHub release (~1.5 MB gzipped),
 checks it against the release's `checksums.txt` and its build attestation, and keeps it in
-`~/.smithy/bin/<version>/`. `~/.smithy/bin/smithy` points at the current one; add `~/.smithy/bin`
-to your `PATH` to run `smithy status` (every task list and batch) yourself. `SMITHY_BIN` points
+`~/.smithy/bin/<version>/`. `~/.smithy/bin/smithy` points at the current one. To run it yourself (`smithy --help`,
+`smithy status` for every task list and batch), let use-smithy setup add `~/.smithy/bin` to your
+`PATH`, or run `scripts/smithy setup path add` from any installed skill. `SMITHY_BIN` points
 the launcher at your own build.
 
 ## Settings

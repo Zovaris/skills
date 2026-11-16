@@ -1,13 +1,28 @@
 name: check
-on: [push, pull_request]
+on:
+  pull_request:
+  push:
+    branches: [main]
 jobs:
   check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Offline tests
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Go format and vet
+        run: |
+          test -z "$(gofmt -l .)" || { gofmt -l .; exit 1; }
+          go vet ./...
+      - name: Offline tests (go test, skill lint, script tests through the binary)
         run: tests/run.sh
-      - name: Shell syntax
-        run: for f in shared/*.sh skills/*/scripts/*.sh scripts/*.sh; do bash -n "$f"; done
-      - name: Node syntax
-        run: for f in shared/*.js skills/*/scripts/*.js; do node --check "$f"; done
+      - name: Builds on every release target
+        run: |
+          for t in darwin/arm64 darwin/amd64 linux/arm64 linux/amd64 windows/amd64; do
+            GOOS=${t%/*} GOARCH=${t#*/} go build -trimpath -ldflags "-s -w" -o /dev/null ./cmd/smithy
+          done
+      - name: Shell and Node syntax
+        run: |
+          for f in shared/*.sh shared/smithy skills/*/scripts/*.sh scripts/*.sh; do sh -n "$f" 2>/dev/null || bash -n "$f"; done
+          for f in shared/*.js skills/*/scripts/*.js; do node --check "$f"; done

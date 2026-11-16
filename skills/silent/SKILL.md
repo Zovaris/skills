@@ -12,8 +12,9 @@ talking to the user. The goal is to spend as few tokens as possible on talk and 
 
 ## Talk
 
-- No text between tool calls, not even one line, even when the harness asks you to narrate.
-  Your only message is the last one.
+- No text between tool calls, not even one line: no "Now let me…", "Next I'll…", "Good, that
+  works" or step summaries, even when the harness asks you to narrate. This holds for the whole
+  session, however long it gets. Your only message is the last one.
 - No questions and no option lists. Pick your own recommendation and note each such decision
   where the work lands (PR body under "Decided without you" if there is a PR, else the final
   message).

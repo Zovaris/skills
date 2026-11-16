@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Resolves (and creates) the task dir for a new plan from the user's settings, so forge and
-# foreman put specs and tasks in the same place.
+# Resolves (and creates) the task dir for a new plan from the user's settings, so smelt and
+# warden put specs and tasks in the same place.
 #   task-dir.sh <slug>
 # Prints the absolute dir. Exit 3 with `ask <key>: <question>` when a setting it needs is unset:
 # ask the user, save it (`config.sh set --repo <key> <value>`), run it again.
@@ -16,7 +16,7 @@ slug="$1"; cfg="$DIR/config.sh"
 top="$(git rev-parse --show-toplevel 2>/dev/null)" || { echo "not a git repo" >&2; exit 2; }
 loc="$("$cfg" get tasks.location 2>/dev/null || echo repo)"
 if [ "$loc" = local ]; then
-  d="${FORGE_PLANS:-$HOME/.agents/plans}/$(basename "$top")/$slug"; mkdir -p "$d"; echo "$d"; exit 0
+  d="${SMELT_PLANS:-${SMITHY_HOME:-$HOME/.smithy}/plans}/$(basename "$top")/$slug"; mkdir -p "$d"; echo "$d"; exit 0
 fi
 commit="$("$cfg" get tasks.commit 2>/dev/null)" || { echo "ask tasks.commit: commit the specs and tasks to git (docs/specs), or keep them out of git (.docs/specs)?"; exit 3; }
 if [ "$commit" = true ]; then

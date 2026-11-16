@@ -24,7 +24,7 @@ eq "red: mergeable"  "$(jq -r .mergeable <<<"$o")" CONFLICTING
 eq "red: review"     "$(jq -r .review <<<"$o")" CHANGES_REQUESTED
 eq "red: unresolved" "$(jq -r .unresolved <<<"$o")" 2
 eq "red: behind"     "$(jq -r .behind <<<"$o")" 3
-eq "red: head"       "$(jq -r .head <<<"$o")" foreman/t1
+eq "red: head"       "$(jq -r .head <<<"$o")" warden/t1
 o="$(st view-green.json threads-none.json compare-even.json)"
 eq "green: checks"     "$(jq -r .checks <<<"$o")" pass
 eq "green: review"     "$(jq -r .review <<<"$o")" none
@@ -54,9 +54,9 @@ echo '[{"number":1,"url":"u1","headRefName":"feat/x","author":{"login":"me"},"la
 echo '[{"number":9,"url":"i9","updatedAt":"t1"}]' > "$W/issues.json"
 export TEND_HOME="$W/state" GH_PRS="$W/prs.json" GH_ISSUES="$W/issues.json"
 PATH="$W/bin:$PATH" "$S/scripts/watch.sh" prs --every 1 --max-min 0 >/dev/null 2>&1; eq "watch: no change → heartbeat" "$?" 4
-echo '[{"number":1,"url":"u1","headRefName":"feat/x","author":{"login":"me"},"labels":[],"updatedAt":"t1"},{"number":2,"url":"u2","headRefName":"foreman/b-02","author":{"login":"bot"},"labels":[],"updatedAt":"t2"},{"number":3,"url":"u3","headRefName":"other","author":{"login":"x"},"labels":[],"updatedAt":"t2"}]' > "$W/prs.json"
+echo '[{"number":1,"url":"u1","headRefName":"feat/x","author":{"login":"me"},"labels":[],"updatedAt":"t1"},{"number":2,"url":"u2","headRefName":"warden/b-02","author":{"login":"bot"},"labels":[],"updatedAt":"t2"},{"number":3,"url":"u3","headRefName":"other","author":{"login":"x"},"labels":[],"updatedAt":"t2"}]' > "$W/prs.json"
 o="$(PATH="$W/bin:$PATH" "$S/scripts/watch.sh" prs --every 1 --max-min 1)"
-eq "watch: new foreman PR reported, others' ignored" "$o" "pr 2 u2"
+eq "watch: new warden PR reported, others' ignored" "$o" "pr 2 u2"
 PATH="$W/bin:$PATH" "$S/scripts/watch.sh" all --every 1 --max-min 0 >/dev/null 2>&1
 echo '[{"number":9,"url":"i9","updatedAt":"t1"},{"number":10,"url":"i10","updatedAt":"t3"}]' > "$W/issues.json"
 o="$(PATH="$W/bin:$PATH" "$S/scripts/watch.sh" all --every 1 --max-min 1)"

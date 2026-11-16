@@ -5,9 +5,9 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 # skill: shared files it ships
-MAP="forge:consult.sh route.js task-dir.sh agent.sh tasks.js commit.sh pr.sh cleanup.sh find-skill.sh config.sh harness.sh
-foreman:consult.sh route.js task-dir.sh agent.sh tasks.js commit.sh pr.sh cleanup.sh find-skill.sh config.sh harness.sh verify.sh
-playbook:find-skill.sh config.sh harness.sh
+MAP="smelt:consult.sh route.js task-dir.sh agent.sh tasks.js commit.sh pr.sh cleanup.sh find-skill.sh config.sh harness.sh
+warden:consult.sh route.js task-dir.sh agent.sh tasks.js commit.sh pr.sh cleanup.sh find-skill.sh config.sh harness.sh verify.sh
+use-smithy:find-skill.sh config.sh harness.sh
 scout:agent.sh config.sh harness.sh
 tend:consult.sh agent.sh route.js verify.sh commit.sh config.sh harness.sh"
 check=0; [ "${1:-}" = --check ] && check=1; bad=0

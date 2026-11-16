@@ -2,11 +2,11 @@
 # Offline tests for shared/ scripts. Builds throwaway repos; needs git, node, jq.
 set -uo pipefail
 S="$(cd "$(dirname "$0")/../../shared" && pwd -P)"
-P="$(cd "$(dirname "$0")/../../skills/playbook/scripts" && pwd -P)"
+P="$(cd "$(dirname "$0")/../../skills/use-smithy/scripts" && pwd -P)"
 pass=0; fail=0
 t() { if eval "$2" >/dev/null 2>&1; then pass=$((pass+1)); else fail=$((fail+1)); echo "FAIL: $1"; fi; }
 T="$(mktemp -d)"; trap 'rm -rf "$T"' EXIT
-export AGENTS_CONFIG="$T/config.json" FOREMAN_HARNESS=codex
+export SMITHY_CONFIG="$T/config.json" WARDEN_HARNESS=codex
 
 git init -q --bare "$T/remote.git"; git clone -q "$T/remote.git" "$T/repo" 2>/dev/null; cd "$T/repo"
 git config user.email t@t; git config user.name t
@@ -51,27 +51,27 @@ mkdir -p .docs/specs/priv elsewhere/x
 printf '# 01 · P\nStatus: todo\nBlocked by: none\n' > .docs/specs/priv/01-p.md
 printf '# 01 · E\nStatus: todo\nBlocked by: none\n' > elsewhere/x/01-e.md
 t "where finds .docs/specs" 'node $S/tasks.js where | grep -q "/.docs/specs/priv$"'
-t "where honours FORGE_TASKS_DIRS" 'FORGE_TASKS_DIRS=elsewhere node $S/tasks.js where | grep -q "/elsewhere/x$"'
+t "where honours SMELT_TASKS_DIRS" 'SMELT_TASKS_DIRS=elsewhere node $S/tasks.js where | grep -q "/elsewhere/x$"'
 
 # config.sh + harness.sh
 t "harness override" '[ "$($S/harness.sh)" = "codex any" ]'
 t "model unset → exit 3" '$S/config.sh model cheap; [ $? -eq 3 ]'
 $S/config.sh set-model cheap mini >/dev/null
-t "model saved per harness" '[ "$($S/config.sh model cheap)" = mini ] && jq -e ".models.codex.cheap" "$AGENTS_CONFIG"'
+t "model saved per harness" '[ "$($S/config.sh model cheap)" = mini ] && jq -e ".models.codex.cheap" "$SMITHY_CONFIG"'
 
 (cd "$T/repo" && $S/config.sh set --repo tasks.commit false >/dev/null)
 t "repo setting overrides, false kept as false" '[ "$(cd "$T/repo" && $S/config.sh get tasks.commit)" = false ]'
-t "default applies when unset" '[ "$(cd "$T/repo" && $S/config.sh get foreman.merge)" = auto ]'
+t "default applies when unset" '[ "$(cd "$T/repo" && $S/config.sh get warden.merge)" = auto ]'
 t "no default → exit 3" '(cd "$T/repo" && $S/config.sh get tasks.ignore); [ $? -eq 3 ]'
 t "task-dir asks for tasks.ignore" 'o="$(cd "$T/repo" && $S/task-dir.sh pay)"; [ $? -eq 3 ] && grep -q "^ask tasks.ignore" <<<"$o"'
 (cd "$T/repo" && $S/config.sh set --repo tasks.ignore exclude >/dev/null && $S/task-dir.sh pay >/dev/null && $S/task-dir.sh pay >/dev/null)
 t "exclude adds .docs/ once" '[ "$(grep -c "^.docs/$" "$(cd "$T/repo" && git rev-parse --git-path info/exclude)")" = 1 ] && [ -d "$T/repo/.docs/specs/pay" ]'
 
 # model suggestions
-t "suggestions only where aliases are stable" 'FOREMAN_HARNESS=codex $S/config.sh suggest-models; [ $? -eq 3 ]'
-t "claude suggests haiku/sonnet/opus" '[ "$(FOREMAN_HARNESS=claude-cli $S/config.sh suggest-models | paste -sd, -)" = "cheap haiku,mid sonnet,strong opus" ]'
-FOREMAN_HARNESS=claude-cli $S/config.sh accept-models >/dev/null
-t "accept saves them for that harness" '[ "$(FOREMAN_HARNESS=claude-cli $S/config.sh model strong)" = opus ]'
+t "suggestions only where aliases are stable" 'WARDEN_HARNESS=codex $S/config.sh suggest-models; [ $? -eq 3 ]'
+t "claude suggests haiku/sonnet/opus" '[ "$(WARDEN_HARNESS=claude-cli $S/config.sh suggest-models | paste -sd, -)" = "cheap haiku,mid sonnet,strong opus" ]'
+WARDEN_HARNESS=claude-cli $S/config.sh accept-models >/dev/null
+t "accept saves them for that harness" '[ "$(WARDEN_HARNESS=claude-cli $S/config.sh model strong)" = opus ]'
 
 # route.js
 $S/config.sh set-model mid midm >/dev/null
@@ -87,19 +87,19 @@ t "router: needs input" '$S/route.js; [ $? -eq 2 ]'
 t "consult builds a tool-less prompt" 'CONSULT_CMD=cat $S/consult.sh "Q1" "A; B" | grep -q "Question: Q1"'
 echo "ctx-line" > "$T/ctx.md"
 t "consult adds context" 'CONSULT_CMD=cat $S/consult.sh "Q1" "A; B" --context "$T/ctx.md" | grep -q ctx-line'
-t "consult falls back when the harness CLI is missing" 'FOREMAN_HARNESS=pi AGENT_CMD="grep -c Question" PATH="/usr/bin:/bin:$(dirname "$(command -v node)")" $S/consult.sh "Q" "A; B" | grep -q 1'
+t "consult falls back when the harness CLI is missing" 'WARDEN_HARNESS=pi AGENT_CMD="grep -c Question" PATH="/usr/bin:/bin:$(dirname "$(command -v node)")" $S/consult.sh "Q" "A; B" | grep -q 1'
 
-# playbook setup.sh block
+# use-smithy setup.sh block
 printf '# Rules\n' > "$T/AGENTS.md"
 t "block missing" '! $P/setup.sh block status "$T/AGENTS.md"'
 $P/setup.sh block add "$T/AGENTS.md" >/dev/null; $P/setup.sh block add "$T/AGENTS.md" >/dev/null
-t "block added once" '[ "$(grep -c playbook:start "$T/AGENTS.md")" = 1 ]'
+t "block added once" '[ "$(grep -c use-smithy:start "$T/AGENTS.md")" = 1 ]'
 $P/setup.sh block remove "$T/AGENTS.md" >/dev/null
-t "block removed, rest kept" '! grep -q playbook "$T/AGENTS.md" && grep -q "# Rules" "$T/AGENTS.md"'
+t "block removed, rest kept" '! grep -q use-smithy "$T/AGENTS.md" && grep -q "# Rules" "$T/AGENTS.md"'
 
 # agent.sh with a fake CLI
 echo hi > "$T/p.md"
-t "agent.sh strips parent harness vars" '[ "$(CLAUDECODE=1 FOREMAN_HARNESS=pi AGENT_CMD="echo \${CLAUDECODE:-none} \$FOREMAN_HARNESS" $S/agent.sh "$T/p.md")" = "none pi" ]'
+t "agent.sh strips parent harness vars" '[ "$(CLAUDECODE=1 WARDEN_HARNESS=pi AGENT_CMD="echo \${CLAUDECODE:-none} \$WARDEN_HARNESS" $S/agent.sh "$T/p.md")" = "none pi" ]'
 t "harness ignores CODEX_HOME" '[ "$(env -i PATH=/usr/bin:/bin CODEX_HOME=/x bash $S/harness.sh)" = "unknown any" ]'
 t "agent.sh pipes prompt to AGENT_CMD" '[ "$(AGENT_CMD=cat $S/agent.sh "$T/p.md")" = hi ]'
 

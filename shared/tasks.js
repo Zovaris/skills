@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Task files shared by forge and foreman: one Markdown file per task in a task dir.
+// Task files shared by smelt and warden: one Markdown file per task in a task dir.
 //   tasks.js list  [dir]                 table of tasks with status
 //   tasks.js next  [dir]                 path of the first todo task whose blockers are done (exit 3 if none)
 //   tasks.js ready [dir]                 every todo task whose blockers are done, one path per line
@@ -8,7 +8,7 @@
 // A task file starts with `# NN · <title>` followed by `Key: value` header lines:
 //   Status: todo | doing | done | dropped     Blocked by: 01, 03 | none     PR: <url> | -
 // Task dirs: docs/specs/<slug>/ (committed), .docs/specs/<slug>/ (in the repo, never committed),
-// ~/.agents/plans/<repo>/<slug>/ ($FORGE_PLANS), plus any colon-separated $FORGE_TASKS_DIRS.
+// ~/.smithy/plans/<repo>/<slug>/ ($SMELT_PLANS), plus any colon-separated $SMELT_TASKS_DIRS.
 // [dir] defaults to the only task dir found, else the most recently changed one.
 const fs = require('fs');
 const os = require('os');
@@ -20,11 +20,11 @@ const die = (m, code = 1) => { process.stderr.write(m + '\n'); process.exit(code
 const isTask = (f) => /^\d{2,}-.*\.md$/.test(f);
 
 const repoRoot = () => { try { return execSync('git rev-parse --show-toplevel', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim(); } catch { return process.cwd(); } };
-const plansHome = () => process.env.FORGE_PLANS || path.join(os.homedir(), '.agents', 'plans');
+const plansHome = () => process.env.SMELT_PLANS || path.join(process.env.SMITHY_HOME || path.join(os.homedir(), '.smithy'), 'plans');
 
 const taskDirs = () => {
   const root = repoRoot();
-  const extra = (process.env.FORGE_TASKS_DIRS || '').split(':').filter(Boolean).map((d) => path.resolve(root, d));
+  const extra = (process.env.SMELT_TASKS_DIRS || '').split(':').filter(Boolean).map((d) => path.resolve(root, d));
   const bases = [path.join(root, 'docs', 'specs'), path.join(root, '.docs', 'specs'), path.join(plansHome(), path.basename(root)), ...extra];
   const dirs = [];
   for (const b of bases) {
@@ -40,7 +40,7 @@ const taskDirs = () => {
 const resolveDir = (dir) => {
   if (dir) { if (!fs.existsSync(dir)) die(`no task dir ${dir}`); return path.resolve(dir); }
   const dirs = taskDirs();
-  if (!dirs.length) die('no task dir found (docs/specs/, .docs/specs/, ~/.agents/plans/<repo>/ or $FORGE_TASKS_DIRS); pass one');
+  if (!dirs.length) die('no task dir found (docs/specs/, .docs/specs/, ~/.smithy/plans/<repo>/ or $SMELT_TASKS_DIRS); pass one');
   return dirs[0];
 };
 

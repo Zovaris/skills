@@ -12,7 +12,7 @@
 #   cursor      agent -p --force (Cursor CLI)
 #   pi          pi -p (--tools read when read-only)
 #   dsh         dsh headless --approval-policy never (DeepSeek Harness; model from its profile)
-# Extra flags for the chosen CLI: $AGENT_ARGS. Workers get FOREMAN_HARNESS set to the CLI and the
+# Extra flags for the chosen CLI: $AGENT_ARGS. Workers get WARDEN_HARNESS set to the CLI and the
 # parent harness's variables removed, so their own scripts detect the right harness.
 # --bg prints `<pid> <log>` and returns at once; otherwise prints the agent's output when it ends
 # and exits with its code (output goes through a file, so a server the CLI leaves running can't
@@ -67,8 +67,8 @@ case "$cli" in
 esac
 
 export AGENT_PROMPT_FILE="$pf" AGENT_MODEL="$model" AGENT_READONLY="$ro"
-case "$cli" in claude) h=claude-cli ;; custom) h="${FOREMAN_HARNESS:-unknown}" ;; *) h="$cli" ;; esac
-cmd="unset CLAUDECODE CLAUDE_CODE_ENTRYPOINT CODEX_THREAD_ID OPENCODE OPENCODE_SESSION_ID GEMINI_CLI PI_CODING_AGENT DSH_SESSION_ID AI_AGENT; export FOREMAN_HARNESS=$h; $cmd"
+case "$cli" in claude) h=claude-cli ;; custom) h="${WARDEN_HARNESS:-unknown}" ;; *) h="$cli" ;; esac
+cmd="unset CLAUDECODE CLAUDE_CODE_ENTRYPOINT CODEX_THREAD_ID OPENCODE OPENCODE_SESSION_ID GEMINI_CLI PI_CODING_AGENT DSH_SESSION_ID AI_AGENT; export WARDEN_HARNESS=$h; $cmd"
 cd "$cwd"
 if [ $bg -eq 1 ]; then
   log="${log:-$(mktemp "${TMPDIR:-/tmp}/agent.XXXXXX")}"

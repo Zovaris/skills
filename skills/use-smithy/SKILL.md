@@ -15,7 +15,9 @@ it. User instructions win over this file, and the repo's AGENTS.md / CLAUDE.md w
 
 ## 1 · See what is installed
 
-Run `scripts/smithy skills --list` once per session (`<skill-dir>` is this file's folder). Only
+`smithy <command>` in this skill means `<skill-dir>/scripts/smithy <command>` (`<skill-dir>` is this file's folder); run it by that path, nothing needs to be on PATH.
+
+Run `smithy skills --list` once per session. Only
 offer skills that are listed. To use a user-invoked skill yourself, read the SKILL.md path it
 prints and follow it: you can't run it as a slash command.
 
@@ -42,12 +44,12 @@ Not installed? Do the work the plain way and, once, mention the skill that would
   costs no tokens and returns one line when something happens.
 - Evidence over claims: "done", "passes", "fixed" always name the command and its result.
 - Commits are atomic in the repo's style, PRs follow its template, finished worktrees and local
-  branches are removed (the `smithy commit`, `smithy pr`, `smithy cleanup` scripts in smelt and warden).
+  branches are removed (the `smithy commit`, `smithy pr`, `smithy cleanup` commands).
 - Decisions that pass ledger's ADR test (hard to reverse, surprising, a real trade-off) go to an ADR. No explanatory code comments: API doc
   comments only, the "why" lives in docs.
 - Models come in three tiers per harness (cheap, mid, strong); `smithy route` picks the tier per job
   and `smithy config model <tier>` gives the model. When a tier is unset (exit 3, or `-` from
-  smithy route): run `scripts/smithy config suggest-models`. If it prints suggestions, propose them in
+  smithy route): run `smithy config suggest-models`. If it prints suggestions, propose them in
   one line ("cheap <model>, mid <model>, strong <model> for this harness, ok?") and on a yes run
   `smithy config accept-models`. If it prints none, ask the user to name each tier and save them with
   `smithy config set-model <tier> <name>`. Ask once per harness; until then use the session's model.
@@ -89,18 +91,18 @@ Never propose one the user declined, and not under `/hush`. Ideas from
 ## 6 · Settings and setup
 
 All settings live in two JSON files, repo first: `<repo>/.smithy/config.json` (this repo only)
-and `~/.smithy/config.json` (the user's defaults). `scripts/smithy config list` shows every setting
+and `~/.smithy/config.json` (the user's defaults). `smithy config list` shows every setting
 with its value, where it came from and what uses it; `smithy config set [--repo] <key> <value>`
 changes one. Nobody has to edit JSON by hand.
 
 Two ways to fill them:
 - **Up front** — when the user says "use-smithy setup" (or `/use-smithy setup`): run
-  `scripts/smithy setup status`, then ask every unset setting in one message (numbered, each with your
+  `smithy setup status`, then ask every unset setting in one message (numbered, each with your
   recommendation, "yes" accepts all), save the answers, and offer the agent-instructions block
   (`smithy setup block add <file>`, only with a yes, after showing `references/AGENTS-BLOCK.md`).
   Then, if `setup status` says smithy is not on PATH, offer once to make `smithy` a terminal
   command for the user (`smithy status`, `smithy tasks board --all`): on a yes,
-  `scripts/smithy setup path add` (one line in their shell's startup file).
+  `smithy setup path add` (one line in their shell's startup file).
 - **On first use** — any skill that needs an unset setting asks just that one, once, and saves
   it: `--repo` when the answer is about this repo (where specs go), user-level otherwise
   (models, merge and cleanup defaults).

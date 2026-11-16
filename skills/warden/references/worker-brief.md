@@ -2,7 +2,8 @@
 
 Fill the `<…>` slots and drop the lines that don't apply. `<intent>` is copied verbatim from
 `batch.json`: never summarize it or add requirements, plans or acceptance criteria to it.
-`<warden-dir>` is this skill's folder.
+`<warden-dir>` is this skill's folder (workers run `<warden-dir>/scripts/smithy`, never a bare
+`smithy`), `<batch-dir>` is `~/.smithy/warden/<batch>/` and `<repo>` the repo's absolute path.
 
 What workers are:
 - They can't run `/smelt` or `/hush` as commands (user-invoked skills). `<hush-skill>` and
@@ -58,7 +59,7 @@ requirements from the intent and the code"; out of scope if the user named it>
   tests) before opening the PR and again right before merging. Other workers merge into the same
   base while you work.
 - Commits: `<warden-dir>/scripts/smithy commit style` once, then one atomic commit per concern with
-  `smithy commit "<msg>" <paths>` in that style. PR: `<warden-dir>/scripts/smithy pr template`; fill
+  `<warden-dir>/scripts/smithy commit "<msg>" <paths>` in that style. PR: `<warden-dir>/scripts/smithy pr template`; fill
   every heading of the template if there is one, then `smithy pr create --base <base> --title "<t>"
   --body-file <f>`. Never `git add -A` or `--no-verify`; skip any preview, nobody answers.
 - One rigor path: CI green; bot review comments at most 3 rounds total, counted in
@@ -72,7 +73,7 @@ requirements from the intent and the code"; out of scope if the user named it>
   `branch:<name>`); it prints one line when something happens. No sleep-then-check turns.
 
 ## Status card
-`<skill-dir>/scripts/smithy cards set <batch> <id> key=value…` at every phase change and before
+`<warden-dir>/scripts/smithy cards set <batch> <id> key=value…` at every phase change and before
 every end of turn. Keep `progress` as <done>/<total> of your task list and `phase` as the
 current step, so the warden sees where you are without asking.
 - Decision needed: state=needs_decision with decision_key (short slug), question, options (JSON
@@ -83,7 +84,8 @@ current step, so the warden sees where you are without asking.
 - PR opened: state=pr_open. If your harness supports it, turn on PR watching, CI auto-fix and
   auto-archive of this session when the PR closes. A draft or unfinished PR is state=blocked,
   never pr_open.
-- Green and reviewed: tests_run=<commands actually run>, risks=<or none>. merge auto → merge into
+- Green and reviewed (`<warden-dir>/scripts/smithy verify <repo> <branch> <pr>` says so):
+  tests_run=<commands actually run>, risks=<or none>. merge auto → merge into
   <base>, state=merged; manual → state=ready. A PR into the production branch is manual unless
   the intent says to release it. If the merge itself
   is refused (permission rule, branch protection, a classifier): don't retry around it;

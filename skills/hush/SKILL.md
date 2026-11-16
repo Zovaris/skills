@@ -15,7 +15,7 @@ talking to the user. The goal is to spend as few tokens as possible on talk and 
 - No text between tool calls, not even one line: no "Now let me…", "Next I'll…", "Good, that
   works" or step summaries, even when the harness asks you to narrate. This holds for the whole
   session, however long it gets. Your only message is the last one.
-- No questions and no option lists. Pick your own recommendation and note each such decision
+- No questions and no option lists (the only exception is the `blocked:` line below). Pick your own recommendation and note each such decision
   where the work lands (PR body under "Decided without you" if there is a PR, else the final
   message).
 - Don't commit, push or open a PR unless the task or the workflow it runs asks for it. Hush

@@ -20,6 +20,7 @@ if not exist "%bin%" (
   if /i not "!want!"=="!got!" ( echo smithy: checksum mismatch for !asset!, not installed 1>&2 & exit /b 3 )
   mkdir "%home%\bin\%version%" >nul 2>&1
   move /y "!tmp!\!asset!" "%bin%" >nul
+  copy /y "%bin%" "%home%\bin\smithy.exe" >nul
   rmdir /s /q "!tmp!"
 )
 "%bin%" %*

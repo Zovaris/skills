@@ -1,14 +1,14 @@
 # Tasks
 
 The task list is the hand-off between planning and building, and between smelt and warden.
-Whoever wrote it, either skill (or you, by hand) can pick it up. `scripts/smithy tasks` reads and
+Whoever wrote it, either skill (or you, by hand) can pick it up. `smithy tasks` reads and
 updates it; never hand-edit status lines when the script can.
 
 ## Where it lives
 
-Run `scripts/smithy task-dir <slug>`: it reads the user's settings, creates the dir and prints it.
+Run `smithy task-dir <slug>`: it reads the user's settings, creates the dir and prints it.
 When it exits 3 it prints `ask <key>: <question>`: ask the user that (your recommendation first),
-save the answer for this repo with `scripts/smithy config set --repo <key> <value>`, run it again.
+save the answer for this repo with `smithy config set --repo <key> <value>`, run it again.
 It asks at most twice per repo, ever:
 
 1. `tasks.commit` — commit the specs and tasks to git? `true` → `docs/specs/<slug>/`, reviewed
@@ -20,7 +20,7 @@ It asks at most twice per repo, ever:
 `tasks.location` (default `repo`) switches the whole thing: `local` puts plans in
 `~/.smithy/plans/<repo>/<slug>/` (`$SMELT_PLANS`), `board` puts tasks on the user's tracker
 (GitHub Issues via `gh`, or Linear/Jira through the harness's tools) and keeps the spec where
-`tasks.commit` says. `scripts/smithy config list` shows the current values.
+`tasks.commit` says. `smithy config list` shows the current values.
 
 Other places: list them in `$SMELT_TASKS_DIRS` (colon-separated) so `smithy tasks` finds them.
 
@@ -82,13 +82,13 @@ updated directly.
 ## Commands
 
 ```
-scripts/smithy tasks list  [dir]          # the board: status, blockers, PR per task
-scripts/smithy tasks next  [dir]          # first todo whose blockers are done
-scripts/smithy tasks ready [dir]          # every todo that can start now (what warden launches)
-scripts/smithy tasks set <file> status=doing|done pr=<url>
-scripts/smithy tasks where                # task dirs for this repo (repo and local)
-scripts/smithy tasks add [dir] "<title>" [--blocked-by 01] [--key PROJ-12]   # next NN file from the template
-scripts/smithy tasks board [--all]        # one line per task list and batch: this repo, or every repo
+smithy tasks list  [dir]          # the board: status, blockers, PR per task
+smithy tasks next  [dir]          # first todo whose blockers are done
+smithy tasks ready [dir]          # every todo that can start now (what warden launches)
+smithy tasks set <file> status=doing|done pr=<url>
+smithy tasks where                # task dirs for this repo (repo and local)
+smithy tasks add [dir] "<title>" [--blocked-by 01] [--key PROJ-12]   # next NN file from the template
+smithy tasks board [--all]        # one line per task list and batch: this repo, or every repo
 ```
 
 ## After the list is written

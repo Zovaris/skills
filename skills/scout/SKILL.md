@@ -10,7 +10,7 @@ Answer one question from primary sources and stop. A scout never edits code, con
 or anything outside its report. A report may recommend an implementation; it never authorizes
 one.
 
-Scripts and files are relative to `<skill-dir>` (this file's folder).
+Files are relative to `<skill-dir>` (this file's folder); `smithy <command>` in this skill means `<skill-dir>/scripts/smithy <command>` (`<skill-dir>` is this file's folder); run it by that path, nothing needs to be on PATH.
 
 ## 1 · Frame
 
@@ -21,12 +21,12 @@ recommendation and the trade-off, not with the choice made.
 
 ## 2 · Pick the model
 
-`scripts/smithy config model cheap`:
+`smithy config model cheap`:
 - prints a name → use it.
-- exit 3 → propose `scripts/smithy config suggest-models` and save on a yes (`smithy config
-  accept-models`); with no suggestions, ask "Which cheap model should scouts use in this
-  harness?" and save it with `smithy config set-model cheap <name>`. Under `/hush`, don't ask: use the harness
-  default and say so in the report.
+- exit 3 → propose `smithy config suggest-models` and save on a yes
+  (`smithy config accept-models`); with no suggestions, ask "Which cheap model should scouts use
+  in this harness?" and save it with `smithy config set-model cheap <name>`. Under `/hush`,
+  don't ask: use the harness default and say so in the report.
 
 Use the strong model (`smithy config model strong`) only when the user asks or the question is about
 security, money or data loss.
@@ -34,15 +34,15 @@ security, money or data loss.
 ## 3 · Investigate
 
 Run `references/INVESTIGATOR.md` as a **subagent** on that model, with the question, the
-sub-questions and the repo path filled in:
+sub-questions, the repo path and `references/FORMAT.md` filled in:
 - harness subagent tool with a model parameter, read-only tools; or
-- `scripts/smithy agent --readonly --model <m> <prompt-file>` (any agent CLI).
+- `smithy agent --readonly --model <m> <prompt-file>` (any agent CLI).
 
 Doing it inline is fine when the answer is one or two lookups; inline runs on the session's
 model, so say so in the report. Either way:
 - Sources, best first: the code (`path:line`), official docs, changelogs and release notes,
   issues and PRs, then everything else. Every claim gets a link or a `path:line`.
-- Run read-only commands only (`rg`, `git log`, `gh api`, `--help`, a REPL import). No installs,
+- Run read-only commands only (`rg`, `grep`, `git log`, `git show`, `gh api` GETs, `--help`, docs fetches). No installs,
   no writes, no network calls that change state.
 - Disagreeing sources: report both and which is newer.
 

@@ -95,7 +95,7 @@ Pick the skills and agents to install to; include `use-smithy`. Without prompts:
 npx skills add Zovaris/skills -g -y --skill '*' -a claude-code -a codex
 ```
 
-Pin a release with `Zovaris/skills@v0.7.0`; update with `npx skills update -g`; drop `-g` to
+Pin a release with `Zovaris/skills@v0.8.0`; update with `npx skills update -g`; drop `-g` to
 install into the current project only.
 
 Then run use-smithy setup (see [Start with use-smithy](#start-with-use-smithy)).
@@ -106,10 +106,12 @@ The scripts behind the skills are one Go binary, `smithy` (settings, branch name
 warden cards, waiting on GitHub). You don't install it yourself: each skill ships a small
 launcher (`scripts/smithy`, and `smithy.cmd` for Windows) that, the first time it runs,
 downloads the binary for your platform from the matching GitHub release (~1.5 MB gzipped),
-checks it against the release's `checksums.txt` and its build attestation, and keeps it in
+checks it against the release's `checksums.txt` (and its build attestation when `gh` is
+installed), and keeps it in
 `~/.smithy/bin/<version>/`. `~/.smithy/bin/smithy` points at the current one. To run it yourself (`smithy --help`,
 `smithy status` for every task list and batch), let use-smithy setup add `~/.smithy/bin` to your
-`PATH`, or run `scripts/smithy setup path add` from any installed skill. `SMITHY_BIN` points
+`PATH`, or run `scripts/smithy setup path add` from any installed skill. On Windows,
+add `%USERPROFILE%\.smithy\bin` to your user PATH in System settings instead. `SMITHY_BIN` points
 the launcher at your own build.
 
 ## Settings
@@ -156,9 +158,9 @@ Coming from 0.7 (`~/.agents/`): the first run moves your settings, plans and bat
   `shared/VERSION`, builds darwin, linux (arm64, amd64) and windows binaries, gzips them,
   writes `checksums.txt`, attests the build and publishes the GitHub release with the
   CHANGELOG section as notes.
-- Scripts used by several skills live in `shared/`; edit them there and run
+- `shared/` holds the launcher (`smithy`, `smithy.cmd`) and `VERSION`; edit them there and run
   `go run ./tools/sync-shared`, which copies them into each skill (each skill installs on its own).
-- `tests/run.sh` runs every offline test (shared scripts, skill lint, and the ledger, warden,
+- `tests/run.sh` runs every offline test (`go test`, skill lint, and the ledger, warden,
   scout and tend scripts); CI runs it.
 - `scripts/drill.sh` pressure-tests skills against a real agent CLI (`tests/drill/*.md`); it
   costs tokens, so run it by hand per harness.

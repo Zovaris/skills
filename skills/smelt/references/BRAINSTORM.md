@@ -10,7 +10,7 @@ what they want is usually thinner than it feels.
 
 Look before you ask: read what the user pointed at and the code it touches until you can say
 how it works today and what the change would touch. Questions about libraries, APIs or other
-systems go to the `scout` skill when installed (`scripts/smithy skills scout`), else a read-only
+systems go to the `scout` skill when installed (`smithy skills scout`), else a read-only
 subagent. Never ask what the project already answers
 or reopen what they already decided.
 

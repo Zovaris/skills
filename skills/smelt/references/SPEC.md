@@ -1,6 +1,6 @@
 # Spec
 
-## Spec — `spec.md` in the task dir (`scripts/smithy task-dir <slug>` gives it)
+## Spec — `spec.md` in the task dir (`smithy task-dir <slug>` gives it)
 
 Explore the code first. Propose the test seams (public entry points where behaviour is observable;
 ideally one, as high-level as possible) and confirm them with the user before writing.

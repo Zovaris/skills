@@ -59,7 +59,7 @@ Codex); Gemini has no such switch.
   builds it one task at a time (`build next`, `build all`); warden runs the ready tasks in
   parallel and tend keeps their PRs green.
 - Start with smelt and hand the rest to warden, or start with warden and let it ask for a plan.
-- No tracker? `tasks.js board --all` (or `/warden status all`) lists every task list and batch on
+- No tracker? `smithy tasks board --all` (or `/warden status all`) lists every task list and batch on
   your machine.
 - Branches are named one way everywhere: `<type>/<key>-<slug>` (`feat/PROJ-123-add-login`,
   `fix/42-null-crash`), with the ticket, issue or task number as the key; worktrees sit next to
@@ -69,14 +69,14 @@ Codex); Gemini has no such switch.
 
 ## Waiting without tokens
 
-Agents never sleep and re-check. They run `wait-for.js` in the background; it polls GitHub with
+Agents never sleep and re-check. They run `smithy wait` in the background; it polls GitHub with
 `gh` and exits with one line when something happens, which wakes the agent:
 
 ```bash
-wait-for.js pr:42                 # checks finished (green/red + failed names), merged, closed, conflict, review, comment
-wait-for.js run:123 branch:main   # a workflow run, or every run on the branch's latest commit
-wait-for.js prs issues:agent      # new or updated PRs (yours or a batch's) and labeled issues
-wait-for.js batch:20261115-1030   # a warden card that needs the warden
+smithy wait pr:42                 # checks finished (green/red + failed names), merged, closed, conflict, review, comment
+smithy wait run:123 branch:main   # a workflow run, or every run on the branch's latest commit
+smithy wait prs issues:agent      # new or updated PRs (yours or a batch's) and labeled issues
+smithy wait batch:20261115-1030   # a warden card that needs the warden
 ```
 
 Mix targets in one call; pick events with `--events` or the `watch.events` setting.
@@ -100,6 +100,17 @@ install into the current project only.
 
 Then run use-smithy setup (see [Start with use-smithy](#start-with-use-smithy)).
 
+### The smithy binary
+
+The scripts behind the skills are one Go binary, `smithy` (settings, branch names, task lists,
+warden cards, waiting on GitHub). You don't install it yourself: each skill ships a small
+launcher (`scripts/smithy`, and `smithy.cmd` for Windows) that, the first time it runs,
+downloads the binary for your platform from the matching GitHub release (~1.5 MB gzipped),
+checks it against the release's `checksums.txt` and its build attestation, and keeps it in
+`~/.smithy/bin/<version>/`. `~/.smithy/bin/smithy` points at the current one; add `~/.smithy/bin`
+to your `PATH` to run `smithy status` (every task list and batch) yourself. `SMITHY_BIN` points
+the launcher at your own build.
+
 ## Settings
 
 Two JSON files, the repo's first: `<repo>/.smithy/config.json` (this repo only) and
@@ -107,12 +118,12 @@ Two JSON files, the repo's first: `<repo>/.smithy/config.json` (this repo only) 
 
 - **use-smithy setup** asks everything up front, or each skill asks a setting the first time it
   needs it and saves your answer;
-- `config.sh list` (in any skill's `scripts/`) shows each setting, its value and where it came
-  from; `config.sh set [--repo] <key> <value>` changes one.
+- `smithy config list` (in any skill's `scripts/`) shows each setting, its value and where it came
+  from; `smithy config set [--repo] <key> <value>` changes one.
 
 | Setting | Default | What it does |
 |---|---|---|
-| `models.<harness>.cheap` / `.mid` / `.strong` | suggested or ask | Stored per harness (`config.sh set-model <tier> <name>`); on Claude the agent suggests haiku, sonnet, opus. The router (`route.js`) picks a tier per task: cheap for small, mechanical or read-only work, mid for most features, strong for risky, hard or large work and the last fix round. |
+| `models.<harness>.cheap` / `.mid` / `.strong` | suggested or ask | Stored per harness (`smithy config set-model <tier> <name>`); on Claude the agent suggests haiku, sonnet, opus. The router (`route.js`) picks a tier per task: cheap for small, mechanical or read-only work, mid for most features, strong for risky, hard or large work and the last fix round. |
 | `warden.worker_model` | `route` | `route`: a tier per task; `session`: the parent's model; or one model name for every worker. |
 | `tasks.commit` | ask | Commit specs and tasks (`docs/specs/`) or keep them out of git (`.docs/specs/`). |
 | `tasks.ignore` | ask | When not committed: a committed `.gitignore` line, or `.git/info/exclude` (this machine only). |
@@ -120,12 +131,12 @@ Two JSON files, the repo's first: `<repo>/.smithy/config.json` (this repo only) 
 | `warden.merge` / `warden.cleanup` | `auto` / `auto` | Merge green PRs; end finished workers and remove their worktrees and branches without asking. |
 | `warden.max` / `warden.mode` | `3` / `smelt fast` | Parallel workers; how workers build: `smelt fast`, `smelt normal`, `smelt full` or `plain`. |
 | `tend.watch` / `tend.label` | `prs` / `agent` | What `/tend watch` follows; the issue label it may queue. |
-| `git.branch` | `{type}/{key}-{slug}` | Branch names (`names.sh`); e.g. `agent/{key}-{slug}`. |
+| `git.branch` | `{type}/{key}-{slug}` | Branch names (`smithy names`); e.g. `agent/{key}-{slug}`. |
 | `git.worktree` | `{parent}/worktrees/{repo}-{branch}` | Where worktrees go. |
 | `watch.events` / `watch.every` / `watch.max` | all / `30` / `50` | What wakes a waiting agent, seconds between polls, minutes before a heartbeat. |
 
 Coming from 0.7 (`~/.agents/`): the first run moves your settings, plans and batches to
-`~/.smithy/` (`config.sh migrate` does it by hand).
+`~/.smithy/` (`smithy config migrate` does it by hand).
 
 ## Hooks (all optional)
 
@@ -136,6 +147,14 @@ Coming from 0.7 (`~/.agents/`): the first run moves your settings, plans and bat
 
 ## Development
 
+- The binary's source is in `cmd/smithy` and `internal/` (Go, standard library only). Inside a
+  checkout the launcher builds it from source when a `.go` file changed, so symlinked skills
+  always run your working copy.
+- Pull requests run `check` (gofmt, vet, `go test`, every offline test through the binary, a
+  build per release target). A `v*` tag runs `release`: it checks the tag matches
+  `shared/VERSION`, builds darwin, linux (arm64, amd64) and windows binaries, gzips them,
+  writes `checksums.txt`, attests the build and publishes the GitHub release with the
+  CHANGELOG section as notes.
 - Scripts used by several skills live in `shared/`; edit them there and run
   `scripts/sync-shared.sh`, which copies them into each skill (each skill installs on its own).
 - `tests/run.sh` runs every offline test (shared scripts, skill lint, and the ledger, warden,

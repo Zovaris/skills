@@ -13,8 +13,19 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
   `<repo>/.smithy/config.json`; the first run moves the old `~/.agents/` files
   (`config.sh migrate` by hand). The repo's old `.agents/config.json` is still read until moved.
 
+### smithy binary
+- One Go binary, `smithy`, replaces the shell and Node helpers: `smithy config`, `harness`,
+  `names`, `tasks`, `cards` (warden status cards), `wait` and `status`. Same commands, flags,
+  output and exit codes as the scripts they replace; the old script tests now run through it.
+- Skills ship a launcher (`scripts/smithy`, `smithy.cmd`) that downloads the binary for the
+  platform once from the GitHub release (gzipped, ~1.4 MB), verifies its checksum and build
+  attestation, and caches it in `~/.smithy/bin/<version>`; in a source checkout it builds from
+  source instead. `SMITHY_BIN` overrides.
+- CI: `check` on pull requests and main (gofmt, vet, tests, cross builds); `release` on `v*`
+  tags (binaries, checksums, provenance attestation, GitHub release from the CHANGELOG).
+
 ### waiting
-- `wait-for.js`: one zero-token waiter for `pr:` (checks finished green/red with the failed
+- `smithy wait`: one zero-token waiter for `pr:` (checks finished green/red with the failed
   names, merged, closed, conflict, review, comment, push), `run:`, `branch:`, `prs`, `issues:`
   and `batch:` targets, any mix in one call. Already-finished checks return at once; a bad
   target fails fast. Settings `watch.events`, `watch.every`, `watch.max`.

@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Zovaris/skills/internal/config"
-	"github.com/Zovaris/skills/internal/ghx"
-	"github.com/Zovaris/skills/internal/tasks"
+	"github.com/Zovaris/smithy/internal/config"
+	"github.com/Zovaris/smithy/internal/ghx"
+	"github.com/Zovaris/smithy/internal/tasks"
 )
 
 const taskDirUsage = `usage: smithy task-dir <slug>

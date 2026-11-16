@@ -1,6 +1,6 @@
 package main
 
-import "github.com/Zovaris/skills/internal/plan"
+import "github.com/Zovaris/smithy/internal/plan"
 
 func init() {
 	register("stack", "the repo's test tooling as key: value lines", plan.StackMain)

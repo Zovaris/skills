@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/Zovaris/skills/internal/config"
+	"github.com/Zovaris/smithy/internal/config"
 )
 
 const routeUsage = `Model router: picks the cheapest model tier that can do a task well, from the task itself.

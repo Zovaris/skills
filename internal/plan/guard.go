@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"regexp"
 
-	"github.com/Zovaris/skills/internal/ghx"
+	"github.com/Zovaris/smithy/internal/ghx"
 )
 
 const guardUsage = `smelt: blocks edits to test files during the green phase of TDD.

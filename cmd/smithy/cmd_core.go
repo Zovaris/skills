@@ -3,12 +3,12 @@ package main
 import (
 	"fmt"
 
-	"github.com/Zovaris/skills/internal/cards"
-	"github.com/Zovaris/skills/internal/config"
-	"github.com/Zovaris/skills/internal/harness"
-	"github.com/Zovaris/skills/internal/names"
-	"github.com/Zovaris/skills/internal/tasks"
-	"github.com/Zovaris/skills/internal/wait"
+	"github.com/Zovaris/smithy/internal/cards"
+	"github.com/Zovaris/smithy/internal/config"
+	"github.com/Zovaris/smithy/internal/harness"
+	"github.com/Zovaris/smithy/internal/names"
+	"github.com/Zovaris/smithy/internal/tasks"
+	"github.com/Zovaris/smithy/internal/wait"
 )
 
 func init() {

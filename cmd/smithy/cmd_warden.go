@@ -1,6 +1,6 @@
 package main
 
-import "github.com/Zovaris/skills/internal/warden"
+import "github.com/Zovaris/smithy/internal/warden"
 
 func init() {
 	register("doctor", "check everything a warden batch needs (--quiet: problems only)", warden.Doctor)

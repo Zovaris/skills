@@ -8,8 +8,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/Zovaris/skills/internal/config"
-	"github.com/Zovaris/skills/internal/ghx"
+	"github.com/Zovaris/smithy/internal/config"
+	"github.com/Zovaris/smithy/internal/ghx"
 )
 
 var accents = strings.NewReplacer(

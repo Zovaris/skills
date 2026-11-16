@@ -13,9 +13,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Zovaris/skills/internal/cards"
-	"github.com/Zovaris/skills/internal/config"
-	"github.com/Zovaris/skills/internal/ghx"
+	"github.com/Zovaris/smithy/internal/cards"
+	"github.com/Zovaris/smithy/internal/config"
+	"github.com/Zovaris/smithy/internal/ghx"
 )
 
 var allEvents = []string{"checks", "merged", "closed", "conflict", "review", "comment", "push", "new", "updated"}

@@ -8,7 +8,7 @@ import (
 	"os"
 	"sort"
 
-	"github.com/Zovaris/skills/internal/config"
+	"github.com/Zovaris/smithy/internal/config"
 )
 
 // version is set at build time with -ldflags "-X main.version=<v>".

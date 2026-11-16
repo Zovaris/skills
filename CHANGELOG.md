@@ -6,6 +6,8 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 ## Unreleased
 
 ### smithy (breaking)
+- The repo is now `Zovaris/smithy` (GitHub redirects the old name): install with
+  `npx skills add Zovaris/smithy -g`.
 - The collection is now **smithy** and the generic names are gone: playbook → `use-smithy`,
   forge → `smelt`, foreman → `warden`, docs → `ledger`, silent → `hush`, direct → `simple`;
   `scout` and `tend` stay. Reinstall, and use the new commands (`/smelt`, `/warden`, `/hush`…).

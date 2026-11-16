@@ -8,7 +8,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/Zovaris/skills/internal/ghx"
+	"github.com/Zovaris/smithy/internal/ghx"
 )
 
 func die(prefix, format string, a ...any) int {

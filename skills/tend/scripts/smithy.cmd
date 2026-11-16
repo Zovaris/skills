@@ -13,7 +13,7 @@ if not exist "%bin%" (
   set "tmp=%TEMP%\smithy-%RANDOM%"
   mkdir "!tmp!" >nul
   echo smithy: downloading v%version% ^(!asset!^), once 1>&2
-  gh release download "v%version%" -R Zovaris/skills -p "!asset!" -p checksums.txt -D "!tmp!" 1>&2 || exit /b 3
+  gh release download "v%version%" -R Zovaris/smithy -p "!asset!" -p checksums.txt -D "!tmp!" 1>&2 || exit /b 3
   for /f "tokens=1,2" %%a in (!tmp!\checksums.txt) do if "%%b"=="!asset!" set "want=%%a"
   for /f "skip=1 tokens=*" %%h in ('certutil -hashfile "!tmp!\!asset!" SHA256 ^| findstr /v ":"') do if not defined got set "got=%%h"
   set "got=!got: =!"

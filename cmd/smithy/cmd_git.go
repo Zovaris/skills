@@ -1,6 +1,6 @@
 package main
 
-import "github.com/Zovaris/skills/internal/gitx"
+import "github.com/Zovaris/smithy/internal/gitx"
 
 func init() {
 	register("commit", "atomic commits in the repo's message style", gitx.CommitMain)

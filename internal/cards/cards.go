@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Zovaris/skills/internal/ghx"
+	"github.com/Zovaris/smithy/internal/ghx"
 )
 
 // States a worker may report.

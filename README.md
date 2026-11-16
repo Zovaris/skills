@@ -4,9 +4,9 @@
 
 **Agent skills for planned, test-first, parallel software work.**
 
-[![check](https://github.com/Zovaris/skills/actions/workflows/check.yml/badge.svg)](https://github.com/Zovaris/skills/actions/workflows/check.yml)
-[![release](https://img.shields.io/github/v/release/Zovaris/skills?sort=semver&label=release)](https://github.com/Zovaris/skills/releases)
-[![Go](https://img.shields.io/github/go-mod/go-version/Zovaris/skills?logo=go&logoColor=white&label=Go)](go.mod)
+[![check](https://github.com/Zovaris/smithy/actions/workflows/check.yml/badge.svg)](https://github.com/Zovaris/smithy/actions/workflows/check.yml)
+[![release](https://img.shields.io/github/v/release/Zovaris/smithy?sort=semver&label=release)](https://github.com/Zovaris/smithy/releases)
+[![Go](https://img.shields.io/github/go-mod/go-version/Zovaris/smithy?logo=go&logoColor=white&label=Go)](go.mod)
 [![license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 [![Agent Skills](https://img.shields.io/badge/format-SKILL.md-8b7fe0)](#skills)
@@ -27,7 +27,7 @@ DeepSeek Harness), and needs nothing but git and the GitHub CLI.
 ## Quick start
 
 ```bash
-npx skills add Zovaris/skills -g
+npx skills add Zovaris/smithy -g
 ```
 
 Pick every skill (at least `use-smithy`) and the agents to install to. Then, in your agent:
@@ -114,8 +114,8 @@ them, with defaults, are in [docs/settings.md](docs/settings.md).
 ## Install options
 
 ```bash
-npx skills add Zovaris/skills -g -y --skill '*' -a claude-code -a codex   # no prompts
-npx skills add Zovaris/skills@v0.8.0 -g                                   # pin a release
+npx skills add Zovaris/smithy -g -y --skill '*' -a claude-code -a codex   # no prompts
+npx skills add Zovaris/smithy@v0.8.0 -g                                   # pin a release
 npx skills update -g                                                      # update
 ```
 

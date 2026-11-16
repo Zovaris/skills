@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Zovaris/skills/internal/ghx"
+	"github.com/Zovaris/smithy/internal/ghx"
 )
 
 const agentUsage = `Harness-agnostic agent runner: runs one headless coding agent on a prompt file.

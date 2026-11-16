@@ -8,7 +8,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/Zovaris/skills/internal/ghx"
+	"github.com/Zovaris/smithy/internal/ghx"
 )
 
 const prUsage = `Pull requests that follow the repo's PR template.

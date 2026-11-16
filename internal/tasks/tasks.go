@@ -13,9 +13,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Zovaris/skills/internal/cards"
-	"github.com/Zovaris/skills/internal/ghx"
-	"github.com/Zovaris/skills/internal/names"
+	"github.com/Zovaris/smithy/internal/cards"
+	"github.com/Zovaris/smithy/internal/ghx"
+	"github.com/Zovaris/smithy/internal/names"
 )
 
 // Statuses a task may have.

@@ -11,8 +11,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Zovaris/skills/internal/ghx"
-	"github.com/Zovaris/skills/internal/harness"
+	"github.com/Zovaris/smithy/internal/ghx"
+	"github.com/Zovaris/smithy/internal/harness"
 )
 
 // Setting is one known key: its default ("ask" means no default, ask the user once), who uses

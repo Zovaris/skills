@@ -52,7 +52,7 @@ Pick the skills and agents to install to; include `playbook`. Without prompts:
 npx skills add Zovaris/skills -g -y --skill '*' -a claude-code -a codex
 ```
 
-Pin a release with `Zovaris/skills@v0.4.0`; update with `npx skills update -g`; drop `-g` to
+Pin a release with `Zovaris/skills@v0.5.0`; update with `npx skills update -g`; drop `-g` to
 install into the current project only.
 
 Then ask your agent to **run playbook setup**. It shows what is installed, asks every unset

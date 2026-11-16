@@ -2,7 +2,7 @@
 name: warden
 description: Runs a batch of tasks in parallel, one silent agent per task in its own worktree, each ending in a PR or report, supervised through status cards. Use for /warden with tasks, a task dir, board ids or an idea, or for status, cleanup and doctor.
 disable-model-invocation: true
-argument-hint: <tasks, one per line | task dir or .md | board ids | an idea> | status [batch] | cleanup [batch] | doctor
+argument-hint: <tasks, one per line | task dir or .md | board ids | an idea> | status [batch\|all] | cleanup [batch] | doctor
 ---
 
 # warden
@@ -27,7 +27,7 @@ Scripts are in `<skill-dir>/scripts/` (`<skill-dir>` is this file's folder):
 | `consult.sh "<question>" "<options>" [--context <f>]` | One tool-less call to the user's strong model through the current harness's CLI |
 | `config.sh` | Settings and per-harness models (`get`, `set`, `model`, `suggest-models`, `list`) |
 | `agent.sh` | Runs any headless agent CLI (claude, codex, opencode, gemini, cursor, pi, dsh, `$AGENT_CMD`) |
-| `task-dir.sh <slug>` · `tasks.js list\|ready\|set\|where` | Where a new task list goes; the shared task list (same format as smelt) |
+| `task-dir.sh <slug>` · `tasks.js list\|ready\|set\|add\|board\|where` | Where a new task list goes; the shared task list (same format as smelt) |
 | `commit.sh` · `pr.sh` · `cleanup.sh` | Atomic commits, PRs from the template, removing a finished worktree and local branch |
 | `names.sh` | Branch and worktree names (`branch <key> "<title>"`, `worktree <branch>`), from `git.branch` / `git.worktree` |
 | `find-skill.sh <name>` | Absolute path of an installed skill's SKILL.md (smelt, hush, scout, tend) |
@@ -36,7 +36,8 @@ Scripts are in `<skill-dir>/scripts/` (`<skill-dir>` is this file's folder):
 
 - `/warden <input>`: tasks, a task dir or file, board ids, or an idea (`references/intake.md`).
   One task is fine: it still gets a worktree, a silent worker and verification.
-- `/warden status [batch]`: `status.js board`, shown as is.
+- `/warden status [batch]`: `status.js board`, shown as is. `/warden status all`: `tasks.js board --all`
+  (every task list and batch on this machine, no tracker needed).
 - `/warden cleanup [batch]`: `verify.sh` every `pr_open` / `ready` item and apply the merged and
   closed actions (`references/acting.md`); for batches that finished while PRs waited.
 - `/warden doctor`: `doctor.sh`, shown as is; offer to fix what lives in the user's own files.

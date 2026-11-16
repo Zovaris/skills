@@ -47,6 +47,14 @@ echo '{"status":"completed","conclusion":"failure","name":"CI","url":"r1","jobs"
 t "run: finished with failed jobs" '[ "$(W run:9 --max 0)" = "run 9 failure failed=build r1" ]'
 t "unknown target exits 2" 'W nope:1 --max 0; [ $? -eq 2 ]'
 
+# tasks.js add / board
+export SMITHY_HOME="$T/home"
+t "add numbers the next task" '[ "$(basename "$(node $S/tasks.js add docs/specs/b "Add login")")" = 01-add-login.md ] && [ "$(basename "$(node $S/tasks.js add docs/specs/b "Rate limit" --blocked-by 01)")" = 02-rate-limit.md ]'
+t "added task is todo and blocked" 'grep -q "^Blocked by: 01" docs/specs/b/02-rate-limit.md && [ "$(basename "$(node $S/tasks.js next docs/specs/b)")" = 01-add-login.md ]'
+t "board shows the list" 'node $S/tasks.js board | grep -q "0/2 done, 0 doing, 1 ready"'
+t "board --all finds it from elsewhere" '(cd / && node $S/tasks.js board --all) | grep -q "repo/b"'
+rm -rf docs/specs/b
+
 # commit.sh
 t "style is conventional" '[ "$($S/commit.sh style | head -1)" = "style: conventional" ]'
 t "rejects trailing period" '! $S/commit.sh check "feat: add x."'

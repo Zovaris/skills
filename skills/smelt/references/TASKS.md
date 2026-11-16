@@ -87,6 +87,8 @@ scripts/tasks.js next  [dir]          # first todo whose blockers are done
 scripts/tasks.js ready [dir]          # every todo that can start now (what warden launches)
 scripts/tasks.js set <file> status=doing|done pr=<url>
 scripts/tasks.js where                # task dirs for this repo (repo and local)
+scripts/tasks.js add [dir] "<title>" [--blocked-by 01] [--key PROJ-12]   # next NN file from the template
+scripts/tasks.js board [--all]        # one line per task list and batch: this repo, or every repo
 ```
 
 ## After the list is written

@@ -103,9 +103,9 @@ it on the model of the tier it picks (cheap: small or read-only, mid: most featu
 risky, hard or large); `session` keeps the parent's model; any other value is one model for every
 worker. Look at each pick and move it one tier when you know better (say why); a `model` the user
 named, for the batch or one item, always wins. The plan line shows each item's tier and model.
-Unset tiers print `-`: ask the user once which cheap, mid and strong models to use in this
-harness and save them (`config.sh set-model <tier> <name>`); until then that item uses the
-session default. `consult.sh` uses `strong`; tend uses `cheap` with `strong` for code fixes.
+Unset tiers print `-`: in the plan line, propose `config.sh suggest-models` ("cheap haiku, mid
+sonnet, strong opus, ok?") and on a yes `config.sh accept-models`; with no suggestions, ask for
+each tier (`config.sh set-model <tier> <name>`); until then that item uses the session default. `consult.sh` uses `strong`; tend uses `cheap` with `strong` for code fixes.
 
 **Base branch** per task: the user's words, else inferred (a hotfix starts from and targets the
 production branch; anything else the integration branch, e.g. `develop`, else the default

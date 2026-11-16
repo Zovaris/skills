@@ -10,9 +10,9 @@ alternative.
 Each implementer gets the model `scripts/route.js --file <task file> --speed <speed>` picks
 (cheap, mid or strong, from the task's risk, difficulty and size); reviewers use
 `route.js --kind review`; the last fix round goes one tier up. You may move a pick one tier with
-a reason; a model the user named always wins. A tier whose model is unset prints `-`: ask the
-user once which cheap, mid and strong models to use in this harness, save them with
-`config.sh set-model <tier> <name>`, and until then use the session default.
+a reason; a model the user named always wins. A tier whose model is unset prints `-`: propose
+`scripts/config.sh suggest-models` and save on a yes (`config.sh accept-models`), or ask for each
+tier when there are no suggestions; until then use the session default.
 
 ## Loop
 

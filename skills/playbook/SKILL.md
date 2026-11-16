@@ -42,9 +42,13 @@ Not installed? Do the work the plain way and, once, mention the skill that would
   branches are removed (the `commit.sh`, `pr.sh`, `cleanup.sh` scripts in forge and foreman).
 - Decisions that are hard to reverse go to an ADR (docs). No explanatory code comments: API doc
   comments only, the "why" lives in docs.
-- Cheap work (scouting, reviews, simple workers) uses the user's cheap model:
-  `scripts/config.sh model cheap`. Exit 3 means unset: ask once which cheap and strong models to
-  use in this harness and save them with `config.sh set-model`.
+- Models come in three tiers per harness (cheap, mid, strong); `route.js` picks the tier per job
+  and `config.sh model <tier>` gives the model. When a tier is unset (exit 3, or `-` from
+  route.js): run `scripts/config.sh suggest-models`. If it prints suggestions, propose them in
+  one line ("cheap haiku, mid sonnet, strong opus for this harness, ok?") and on a yes run
+  `config.sh accept-models`. If it prints none, ask the user to name each tier and save them with
+  `config.sh set-model <tier> <name>`. Ask once per harness; until then use the session's model.
+  Under `/silent`, don't ask: use the session's model and say so at the end.
 - Ask only for decisions that are the user's: scope, money, prod, data, security, irreversible
   actions, pushing, merging. Other decisions that would stop the work: low impact, decide;
   medium, one `consult.sh` call to the user's strong model (forge, foreman, tend ship it; it

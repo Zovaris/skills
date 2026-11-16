@@ -23,8 +23,9 @@ recommendation and the trade-off, not with the choice made.
 
 `scripts/config.sh model cheap`:
 - prints a name → use it.
-- exit 3 → ask the user once: "Which cheap model should scouts use in this harness?" Save it
-  with `scripts/config.sh set-model cheap <name>`. Under `/silent`, don't ask: use the harness
+- exit 3 → propose `scripts/config.sh suggest-models` and save on a yes (`config.sh
+  accept-models`); with no suggestions, ask "Which cheap model should scouts use in this
+  harness?" and save it with `config.sh set-model cheap <name>`. Under `/silent`, don't ask: use the harness
   default and say so in the report.
 
 Use the strong model (`config.sh model strong`) only when the user asks or the question is about

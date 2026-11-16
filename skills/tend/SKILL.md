@@ -33,9 +33,10 @@ wait for new PRs or issues), `config.sh` (the user's models and tend settings).
 ## Models
 
 - Routine work (reading state, reruns, rebases, merging the base, replying to comments) runs on
-  `--model`, else `config.sh model cheap`. Exit 3 means unset: ask the user once which cheap
-  model to use here and save it with `config.sh set-model cheap <name>` (under `/silent` or when
-  foreman launched you, use the session default instead of asking).
+  `--model`, else `config.sh model cheap`. Exit 3 means unset: propose `config.sh
+  suggest-models` and save on a yes (`config.sh accept-models`), or ask for the cheap model when
+  there are no suggestions (under `/silent` or when foreman launched you, use the session
+  default instead of asking).
 - Code fixes (a real CI failure, a review comment that asks for a change) go to a fresh
   subagent on `--fix-model`, else `config.sh model strong`, else the session default, with only
   the failing output, the PR diff and the comment. You review its diff before committing.

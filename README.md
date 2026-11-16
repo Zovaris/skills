@@ -93,7 +93,8 @@ Two JSON files, the repo's first: `<repo>/.agents/config.json` (this repo only) 
 
 | Setting | Default | What it does |
 |---|---|---|
-| `models.cheap` / `models.strong` | ask | Per harness (Haiku, a GPT mini, anything your CLI accepts). Cheap: scouts, reviewers, tend's routine work. Strong: second opinions, real fixes, the last fix round. |
+| `models.cheap` / `models.mid` / `models.strong` | ask | Per harness (anything your CLI accepts). The router (`route.js`) picks a tier per task: cheap for small, mechanical or read-only work, mid for most features, strong for risky, hard or large work and the last fix round. |
+| `foreman.worker_model` | `route` | `route`: a tier per task; `session`: the parent's model; or one model name for every worker. |
 | `tasks.commit` | ask | Commit specs and tasks (`docs/specs/`) or keep them out of git (`.docs/specs/`). |
 | `tasks.ignore` | ask | When not committed: a committed `.gitignore` line, or `.git/info/exclude` (this machine only). |
 | `tasks.location` | `repo` | `repo`, `local` (`~/.agents/plans`) or `board`. |

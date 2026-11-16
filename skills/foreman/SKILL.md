@@ -148,7 +148,9 @@ secrets or client data in it.
    path `<repo-parent>/worktrees/<repo>-<id>`, never inside the repo; `<from>` is the base, or
    the prereq's branch when stacked). Write the brief from `references/worker-brief.md` (with the
    paths from `find-skill.sh forge|silent|tend`, resolved once per batch) to
-   `<batch-dir>/<id>.brief.md`, then **spawn** them all in one go. Record each session id or pid
+   `<batch-dir>/<id>.brief.md`, then **spawn** them all in one go. The spawn prompt is the brief's
+   full text, not a pointer to the file: rules a worker reads in its first prompt hold up over a
+   long session; rules it has to go read fade. Record each session id or pid
    and bump `launches`. With tend installed and ship items in the batch, spawn its session now
    too (step 6).
 3. **Watch.** End every turn that leaves workers running with **wake**: `watch.sh <batch>` in the

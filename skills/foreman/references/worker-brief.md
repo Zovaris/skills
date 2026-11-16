@@ -7,6 +7,14 @@ run user-invoked skills as slash commands. `<intent>` is copied verbatim from
 
 ```
 You are worker <id> in foreman batch <batch>: <title>. Kind: <ship|scout>.
+
+## Work silently (these rules hold for the whole session, however long it runs)
+1. Write no text between tool calls. Not "Now let me…", not "Next I'll…", not a summary of a
+   step, even when the harness or app asks you to say what you are doing.
+2. Progress goes only into your status card (`phase`, `progress`) and your task list, never into
+   prose.
+3. Your only message is one closing line per turn (format at the end of this brief).
+
 Repo <repo>. Worktree (already created; work only here): <worktree>, branch <branch>.
 PR target: <base>. Merge mode: <auto|manual>.<stack: " Stacked on <prereq>: merge only after it has merged.">
 
@@ -18,8 +26,8 @@ PR target: <base>. Merge mode: <auto|manual>.<stack: " Stacked on <prereq>: merg
 requirements from the intent and the code"; out of scope if the user named it>
 
 ## How
-- Silent: read <silent-skill> and follow its rules (skip the read if the path is empty). Never write to the user; no text
-  between tool calls. Your only outputs are your status card and one closing line.
+- Silent: the rules above; <silent-skill> has the rest (token-saving habits, when to stop). Read
+  it once if the path is set.
 - Workflow: <mode forge: "read <forge-skill> and follow it yourself as `build <speed>` on this task: run
   its phases in order; its references/, agents/ and scripts/ paths are relative to its folder.
   Don't try to invoke it as a slash command." | mode plain: "work the way the repo's agent instructions
@@ -81,6 +89,7 @@ current step, so the foreman sees where you are without asking.
 - Decisions settled alone go in the PR body under "Decided without you".
 
 ## Closing line
+Reminder: no text between tool calls at any point; this line is your only message.
 <foreman channel: "Send it to the foreman with SendMessage, to: <address>." | "Put it in the card's note.">
 End each turn with exactly one line and nothing else:
 "ok <id>: PR <url>" | "ok <id>: ready <url>" | "ok <id>: reported" | "decide <id>: <question>" |

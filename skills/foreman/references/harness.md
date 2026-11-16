@@ -28,7 +28,8 @@ record it in `batch.json`. A relaunch from an event turn (recovery rung 3) is pr
 way; prefer rung 2 (**tell**) there.
 
 `start_session` with `initiation "user_asked"`, `context "fresh"`, `use_worktree false`, no
-`cwd`, `name` = id, `model` if asked, `wake_when_done true`, `prompt` = the brief, `background` =
+`cwd`, `name` = id, `model` if asked, `wake_when_done true`, `prompt` = the brief's full text
+(never just its path: a brief the worker has to go read loses to the app's reminders), `background` =
 the batch goal; all launches in one message. Record each session id.
 - A `PermissionRequest` hook (matcher `mcp__ccd_session__start_session`, allow) removes the
   approval card per session; doctor checks it.

@@ -71,11 +71,11 @@ case "$cli" in claude) h=claude-cli ;; custom) h="${FOREMAN_HARNESS:-unknown}" ;
 cmd="unset CLAUDECODE CLAUDE_CODE_ENTRYPOINT CODEX_THREAD_ID OPENCODE OPENCODE_SESSION_ID GEMINI_CLI PI_CODING_AGENT DSH_SESSION_ID AI_AGENT; export FOREMAN_HARNESS=$h; $cmd"
 cd "$cwd"
 if [ $bg -eq 1 ]; then
-  log="${log:-$(mktemp -t agent).log}"
+  log="${log:-$(mktemp "${TMPDIR:-/tmp}/agent.XXXXXX")}"
   nohup bash -c "$cmd" >"$log" 2>&1 </dev/null &
   echo "$! $log"
 else
-  out="${log:-$(mktemp -t agent).log}"
+  out="${log:-$(mktemp "${TMPDIR:-/tmp}/agent.XXXXXX")}"
   set +e; bash -c "$cmd" >"$out" 2>&1 </dev/null; rc=$?; set -e
   cat "$out"; [ -n "$log" ] || rm -f "$out"
   exit $rc

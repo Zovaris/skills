@@ -96,10 +96,16 @@ plus the repo's agent instructions), no question. Store it as `mode` in `batch.j
 ends in `report.md` in the batch dir and no PR; with the scout skill installed
 (`find-skill.sh scout`) its worker follows that SKILL.md and writes the report there.
 
-**Models.** No model is hard-coded. Scout items and `consult.sh` read the user's choice with
-`config.sh model cheap|strong`; exit 3 means unset, so ask once ("which cheap and which strong
-model in this harness?") and save it with `config.sh set-model`. Ship workers use the session
-default unless the user named a `model`.
+**Models.** No model is hard-coded, and workers don't simply inherit yours.
+`config.sh get foreman.worker_model` decides: `route` (default) runs
+`route.js --file <task file or intent> --kind <ship|scout> --speed <speed>` per item and launches
+it on the model of the tier it picks (cheap: small or read-only, mid: most features, strong:
+risky, hard or large); `session` keeps the parent's model; any other value is one model for every
+worker. Look at each pick and move it one tier when you know better (say why); a `model` the user
+named, for the batch or one item, always wins. The plan line shows each item's tier and model.
+Unset tiers print `-`: ask the user once which cheap, mid and strong models to use in this
+harness and save them (`config.sh set-model <tier> <name>`); until then that item uses the
+session default. `consult.sh` uses `strong`; tend uses `cheap` with `strong` for code fixes.
 
 **Base branch** per task: the user's words, else inferred (a hotfix starts from and targets the
 production branch; anything else the integration branch, e.g. `develop`, else the default

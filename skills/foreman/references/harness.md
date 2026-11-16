@@ -6,12 +6,12 @@ State is always the batch dir and git, so the same batch can be foremaned from a
 
 | Operation | Claude Code desktop | Claude Code CLI | Any harness |
 |---|---|---|---|
-| **spawn** worker | `start_session` (below) | `claude --bg -n "foreman <batch> <id>" "<brief>"` | `agent.sh --bg --cwd <worktree> --log <batch-dir>/<id>.log <batch-dir>/<id>.brief.md` |
+| **spawn** worker | `start_session` (below) | `claude --bg -n "foreman <batch> <id>" [--model <m>] "<brief>"` | `agent.sh --bg [--model <m>] --cwd <worktree> --log <batch-dir>/<id>.log <batch-dir>/<id>.brief.md` |
 | **tell** worker | `SendMessage` to its `local_…` id | `SendMessage` to its address | append to `<batch-dir>/<id>.inbox.md`, then **respawn** it |
 | **wake** foreman | `watch.sh` with `run_in_background` | same | `watch.sh` as a background job; if the harness can't wake on exit, run it in the foreground (it returns within `max-min`) |
 | **end** worker | `archive_session` | `claude stop <id>` + `claude rm <id>` | `kill <pid>` if alive |
 | auto-end on PR close | the worker turns on the app's auto-archive for its PR | none: `/foreman cleanup` | none: `/foreman cleanup` |
-| **subagent** (short read-only job) | Agent tool | Agent tool | `agent.sh --readonly <prompt-file>` |
+| **subagent** (short read-only job) | Agent tool | Agent tool | the harness's own (Codex `spawn_agent`, OpenCode, Gemini, Cursor and DeepSeek subagents); Pi has none: `agent.sh --readonly [--model <m>] <prompt-file>` |
 
 Always write the brief to `<batch-dir>/<id>.brief.md` before spawning, whatever the adapter: a
 respawn reuses it.
@@ -28,7 +28,7 @@ record it in `batch.json`. A relaunch from an event turn (recovery rung 3) is pr
 way; prefer rung 2 (**tell**) there.
 
 `start_session` with `initiation "user_asked"`, `context "fresh"`, `use_worktree false`, no
-`cwd`, `name` = id, `model` if asked, `wake_when_done true`, `prompt` = the brief's full text
+`cwd`, `name` = id, `model` = the item's routed model (omit when `-`), `wake_when_done true`, `prompt` = the brief's full text
 (never just its path: a brief the worker has to go read loses to the app's reminders), `background` =
 the batch goal; all launches in one message. Record each session id.
 - A `PermissionRequest` hook (matcher `mcp__ccd_session__start_session`, allow) removes the

@@ -1,0 +1,157 @@
+package gitx
+
+import (
+	"encoding/json"
+	"os"
+	"path/filepath"
+	"strings"
+	"testing"
+)
+
+func TestStyle(t *testing.T) {
+	cases := []struct {
+		lint bool
+		subs []string
+		want string
+	}{
+		{false, nil, "conventional"},
+		{true, []string{"Added stuff"}, "conventional"},
+		{false, []string{"feat(core): init", "fix(api): handle nulls", "Update"}, "conventional"},
+		{false, []string{"✨ add x", ":bug: fix y", "Update"}, "gitmoji"},
+		{false, []string{"Add x", "Fix y", "feat: z"}, "plain"},
+	}
+	for _, c := range cases {
+		if got := Style(c.lint, c.subs); got != c.want {
+			t.Errorf("Style(%v, %q) = %s, want %s", c.lint, c.subs, got, c.want)
+		}
+	}
+}
+
+func TestCheck(t *testing.T) {
+	bad := map[string]string{
+		"":                                 "empty message",
+		"feat: add x.":                     "subject ends with a period",
+		"Added stuff":                      "not conventional",
+		"feat: " + strings.Repeat("a", 80): "subject is 86 chars",
+	}
+	for msg, want := range bad {
+		if err := Check(msg, "conventional"); err == nil || !strings.Contains(err.Error(), want) {
+			t.Errorf("Check(%q) = %v, want %q", msg, err, want)
+		}
+	}
+	for _, msg := range []string{"feat(api): add pagination", "fix!: drop v1\n\nbody."} {
+		if err := Check(msg, "conventional"); err != nil {
+			t.Errorf("Check(%q) = %v", msg, err)
+		}
+	}
+	if Check("add x", "gitmoji") == nil || Check(":sparkles: add x", "gitmoji") != nil || Check("🐛 fix y", "gitmoji") != nil {
+		t.Error("gitmoji checks")
+	}
+	if Check("Whatever goes", "plain") != nil {
+		t.Error("plain accepts any short subject")
+	}
+}
+
+func TestScopes(t *testing.T) {
+	got := Scopes([]string{"feat(api): a", "fix(api): b", "feat(core): c", "docs(cli): d", "plain"})
+	if strings.Join(got, " ") != "api core cli" {
+		t.Errorf("Scopes = %v", got)
+	}
+}
+
+func TestTemplatesAndHeadings(t *testing.T) {
+	top := t.TempDir()
+	if len(Templates(top)) != 0 {
+		t.Fatal("no template expected")
+	}
+	os.MkdirAll(filepath.Join(top, ".github", "PULL_REQUEST_TEMPLATE"), 0o755)
+	os.WriteFile(filepath.Join(top, ".github", "pull_request_template.md"), []byte("## Summary\n\n## Testing\n"), 0o644)
+	os.WriteFile(filepath.Join(top, ".github", "PULL_REQUEST_TEMPLATE", "b.md"), nil, 0o644)
+	os.WriteFile(filepath.Join(top, ".github", "PULL_REQUEST_TEMPLATE", "a.md"), nil, 0o644)
+	got := Templates(top)
+	if len(got) != 3 || !strings.HasSuffix(got[0], "pull_request_template.md") || !strings.HasSuffix(got[1], "a.md") {
+		t.Errorf("Templates = %v", got)
+	}
+	miss := MissingHeadings("# T\n## Summary\n## Testing\n##### deep\ntext", "## Summary\nfilled\n# T\n")
+	if strings.Join(miss, "|") != "## Testing" {
+		t.Errorf("MissingHeadings = %v", miss)
+	}
+}
+
+func TestWorktreeOf(t *testing.T) {
+	p := "worktree /r\nHEAD 1\nbranch refs/heads/main\n\nworktree /w/my wt\nHEAD 2\nbranch refs/heads/t1\n"
+	if got := WorktreeOf(p, "t1"); got != "/w/my wt" {
+		t.Errorf("WorktreeOf t1 = %q", got)
+	}
+	if got := WorktreeOf(p, "t"); got != "" {
+		t.Errorf("WorktreeOf t = %q", got)
+	}
+}
+
+func TestVerdict(t *testing.T) {
+	yes, no := func() bool { return true }, func() bool { return false }
+	cases := []struct {
+		state, checks, mergeable string
+		draft                    bool
+		local                    string
+		anc                      func() bool
+		want                     string
+	}{
+		{"MERGED", "fail", "", false, "x", no, "merged"},
+		{"CLOSED", "pass", "", false, "", no, "closed"},
+		{"OPEN", "pass", "MERGEABLE", false, "zzz", no, "unpushed"},
+		{"OPEN", "pass", "MERGEABLE", false, "old", yes, "green"},
+		{"OPEN", "pass", "MERGEABLE", true, "", no, "pending"},
+		{"OPEN", "fail", "MERGEABLE", false, "", no, "red"},
+		{"OPEN", "pending", "MERGEABLE", false, "", no, "pending"},
+		{"OPEN", "pass", "CONFLICTING", false, "", no, "red"},
+		{"OPEN", "none", "MERGEABLE", false, "head", no, "green"},
+	}
+	for _, c := range cases {
+		if got := Verdict(c.state, c.checks, c.mergeable, c.draft, c.local, "head", c.anc); got != c.want {
+			t.Errorf("Verdict(%+v) = %s, want %s", c, got, c.want)
+		}
+	}
+	if Checks([]Rollup{{Conclusion: "success"}, {Conclusion: "", State: ""}}, failRe, pendingRe) != "pending" {
+		t.Error("missing outcome counts as pending")
+	}
+}
+
+func fixture(t *testing.T, name string) []byte {
+	b, err := os.ReadFile(filepath.Join("..", "..", "tests", "tend", "fixtures", name))
+	if err != nil {
+		t.Fatal(err)
+	}
+	return b
+}
+
+func TestSummarize(t *testing.T) {
+	cases := []struct {
+		view, thr, cmp string
+		want           map[string]any
+	}{
+		{"view-red.json", "threads-2open.json", "compare-behind.json", map[string]any{"checks": "fail", "mergeable": "CONFLICTING", "review": "CHANGES_REQUESTED", "unresolved": 2.0, "behind": 3.0, "head": "warden/t1"}},
+		{"view-green.json", "threads-none.json", "compare-even.json", map[string]any{"checks": "pass", "review": "none", "unresolved": 0.0, "behind": 0.0}},
+		{"view-pending.json", "threads-none.json", "compare-even.json", map[string]any{"checks": "pending", "review": "none"}},
+		{"view-nochecks.json", "threads-none.json", "compare-even.json", map[string]any{"state": "MERGED", "checks": "none"}},
+	}
+	for _, c := range cases {
+		s, err := Summarize(fixture(t, c.view), fixture(t, c.thr), fixture(t, c.cmp))
+		if err != nil {
+			t.Fatal(err)
+		}
+		b, _ := json.Marshal(s)
+		var got map[string]any
+		json.Unmarshal(b, &got)
+		for k, v := range c.want {
+			if got[k] != v {
+				t.Errorf("%s: %s = %v, want %v", c.view, k, got[k], v)
+			}
+		}
+	}
+	s, _ := Summarize([]byte(`{"url":"u","state":"OPEN"}`), []byte(`{}`), []byte(`{}`))
+	b, _ := json.Marshal(s)
+	if string(b) != `{"url":"u","state":"OPEN","checks":"none","mergeable":"UNKNOWN","review":"none","unresolved":0,"behind":0,"head":null,"base":null}` {
+		t.Errorf("defaults: %s", b)
+	}
+}

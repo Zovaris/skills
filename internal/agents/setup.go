@@ -9,9 +9,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Zovaris/skills/internal/config"
-	"github.com/Zovaris/skills/internal/ghx"
-	"github.com/Zovaris/skills/internal/harness"
+	"github.com/Zovaris/smithy/internal/config"
+	"github.com/Zovaris/smithy/internal/ghx"
+	"github.com/Zovaris/smithy/internal/harness"
 )
 
 const setupUsage = `use-smithy setup: what is installed, model settings, and the agent instructions block.

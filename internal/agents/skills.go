@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/Zovaris/skills/internal/ghx"
+	"github.com/Zovaris/smithy/internal/ghx"
 )
 
 const skillsUsage = `Finds installed skills, so a skill or a worker can read another skill's SKILL.md directly.

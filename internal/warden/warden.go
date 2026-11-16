@@ -13,9 +13,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Zovaris/skills/internal/cards"
-	"github.com/Zovaris/skills/internal/config"
-	"github.com/Zovaris/skills/internal/harness"
+	"github.com/Zovaris/smithy/internal/cards"
+	"github.com/Zovaris/smithy/internal/config"
+	"github.com/Zovaris/smithy/internal/harness"
 )
 
 type plan struct {
@@ -236,7 +236,7 @@ func Doctor(args []string) int {
 		if p, err := self("skills", s); err == nil && p != "" {
 			r.ok(s + " skill: " + p)
 		} else {
-			r.warn(s+" skill not installed", "npx skills add Zovaris/skills -g --skill "+s)
+			r.warn(s+" skill not installed", "npx skills add Zovaris/smithy -g --skill "+s)
 		}
 	}
 	for _, m := range []string{"cheap", "strong"} {

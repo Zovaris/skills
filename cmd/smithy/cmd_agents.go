@@ -1,6 +1,6 @@
 package main
 
-import "github.com/Zovaris/skills/internal/agents"
+import "github.com/Zovaris/smithy/internal/agents"
 
 func init() {
 	register("agent", "run one headless agent CLI on a prompt file", agents.AgentMain)

@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Zovaris/skills/internal/config"
-	"github.com/Zovaris/skills/internal/harness"
+	"github.com/Zovaris/smithy/internal/config"
+	"github.com/Zovaris/smithy/internal/harness"
 )
 
 const consultUsage = `One cheap, tool-less call to the user's strongest model to settle a decision without the user.

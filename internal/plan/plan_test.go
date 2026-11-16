@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Zovaris/skills/internal/config"
+	"github.com/Zovaris/smithy/internal/config"
 )
 
 func git(t *testing.T, dir string, args ...string) string {

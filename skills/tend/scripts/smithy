@@ -13,7 +13,7 @@ here=$(cd "$(dirname "$0")" && pwd -P)
 export SMITHY_SKILL_DIR="$here"
 [ -n "${SMITHY_BIN:-}" ] && exec "$SMITHY_BIN" "$@"
 home=${SMITHY_HOME:-$HOME/.smithy}
-repo=Zovaris/skills
+repo=Zovaris/smithy
 version=$(cat "$here/VERSION" 2>/dev/null || echo dev)
 
 link() { ln -sfn "$1" "$home/bin/smithy" 2>/dev/null || true; }

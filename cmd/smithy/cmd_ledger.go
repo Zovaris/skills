@@ -1,6 +1,6 @@
 package main
 
-import "github.com/Zovaris/skills/internal/docs"
+import "github.com/Zovaris/smithy/internal/docs"
 
 func init() {
 	register("adr", `next numbered ADR (smithy adr "<title>" [adr-dir])`, docs.ADR)

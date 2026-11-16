@@ -1,22 +1,25 @@
 #!/usr/bin/env bash
-# foreman: prints the harness this shell runs in and the adapter to use (references/harness.md).
+# Prints the harness this shell runs in and the adapter to use (foreman references/harness.md).
 #   harness.sh            -> "<harness> <adapter>", e.g. "claude-desktop desktop"
-# Harness: claude-desktop | claude-cli | codex | opencode | gemini | cursor | unknown
+# Harness: claude-desktop | claude-cli | codex | opencode | gemini | pi | dsh | cursor | unknown
 # Adapter: desktop | cli | any
-# $FOREMAN_HARNESS overrides detection (same names). Detection uses only env vars each
-# harness sets for its child processes; AI_AGENT is the cross-tool convention, checked last.
+# $FOREMAN_HARNESS overrides detection (agent.sh sets it for workers). Detection uses only the
+# variables each harness sets for its own child processes, not user settings like CODEX_HOME;
+# AI_AGENT (a cross-tool convention) and Cursor's unreliable variables come last.
 h="${FOREMAN_HARNESS:-}"
 if [ -z "$h" ]; then
   if [ "${CLAUDE_CODE_ENTRYPOINT:-}" = "claude-desktop" ]; then h=claude-desktop
   elif [ -n "${CLAUDECODE:-}" ] || [ -n "${CLAUDE_CODE_ENTRYPOINT:-}" ]; then h=claude-cli
-  elif env | grep -q '^CODEX_'; then h=codex
-  elif [ -n "${OPENCODE:-}" ] || env | grep -q '^OPENCODE_'; then h=opencode
+  elif [ -n "${CODEX_THREAD_ID:-}${CODEX_CI:-}${CODEX_SANDBOX:-}${CODEX_SANDBOX_NETWORK_DISABLED:-}" ]; then h=codex
+  elif [ -n "${OPENCODE:-}${OPENCODE_SESSION_ID:-}" ]; then h=opencode
   elif [ -n "${GEMINI_CLI:-}" ]; then h=gemini
-  elif [ -n "${CURSOR_AGENT:-}" ] || [ -n "${CURSOR_TRACE_ID:-}" ]; then h=cursor
+  elif [ -n "${PI_CODING_AGENT:-}${PI_SESSION_ID:-}" ]; then h=pi
+  elif [ -n "${DSH_SESSION_ID:-}" ]; then h=dsh
   else
     case "${AI_AGENT:-}" in
-      claude*) h=claude-cli ;; codex*) h=codex ;; opencode*) h=opencode ;;
-      gemini*) h=gemini ;; cursor*) h=cursor ;; *) h=unknown ;;
+      claude*) h=claude-cli ;; codex*) h=codex ;; opencode*) h=opencode ;; gemini*) h=gemini ;;
+      pi*) h=pi ;; dsh*|deepseek*) h=dsh ;; cursor*) h=cursor ;;
+      *) if [ -n "${CURSOR_AGENT:-}${CURSOR_TRACE_ID:-}" ]; then h=cursor; else h=unknown; fi ;;
     esac
   fi
 fi

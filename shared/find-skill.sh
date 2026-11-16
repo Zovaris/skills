@@ -9,8 +9,12 @@ here="$(cd "$(dirname "$0")/.." && pwd -P)"
 KNOWN="playbook forge foreman docs scout tend silent direct"
 find_one() {
   local f
-  for f in "$here/../$1/SKILL.md" ~/.agents/skills/$1/SKILL.md ~/.claude/skills/$1/SKILL.md \
-           ~/.codex/skills/$1/SKILL.md ~/.config/opencode/skills/$1/SKILL.md; do
+  local top; top="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+  for f in "$here/../$1/SKILL.md" ${top:+"$top/.agents/skills/$1/SKILL.md" "$top/.claude/skills/$1/SKILL.md"} \
+           ~/.agents/skills/$1/SKILL.md ~/.claude/skills/$1/SKILL.md ~/.codex/skills/$1/SKILL.md \
+           "${XDG_CONFIG_HOME:-$HOME/.config}/opencode/skills/$1/SKILL.md" ~/.gemini/skills/$1/SKILL.md \
+           ~/.cursor/skills/$1/SKILL.md "${PI_CODING_AGENT_DIR:-$HOME/.pi/agent}/skills/$1/SKILL.md" \
+           "${DSH_HOME:-$HOME/.dsh}/skills/$1/SKILL.md"; do
     [ -f "$f" ] && { (cd "$(dirname "$f")" && echo "$(pwd -P)/SKILL.md"); return 0; }
   done
   return 1

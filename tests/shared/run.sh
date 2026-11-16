@@ -77,6 +77,8 @@ t "block removed, rest kept" '! grep -q playbook "$T/AGENTS.md" && grep -q "# Ru
 
 # agent.sh with a fake CLI
 echo hi > "$T/p.md"
+t "agent.sh strips parent harness vars" '[ "$(CLAUDECODE=1 FOREMAN_HARNESS=pi AGENT_CMD="echo \${CLAUDECODE:-none} \$FOREMAN_HARNESS" $S/agent.sh "$T/p.md")" = "none pi" ]'
+t "harness ignores CODEX_HOME" '[ "$(env -i PATH=/usr/bin:/bin CODEX_HOME=/x bash $S/harness.sh)" = "unknown any" ]'
 t "agent.sh pipes prompt to AGENT_CMD" '[ "$(AGENT_CMD=cat $S/agent.sh "$T/p.md")" = hi ]'
 
 echo "shared: $pass passed, $fail failed"; [ $fail -eq 0 ]

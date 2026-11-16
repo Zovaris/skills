@@ -38,5 +38,30 @@ eq "merged: state"  "$(jq -r .state <<<"$o")" MERGED
 eq "merged: checks" "$(jq -r .checks <<<"$o")" none
 $S/scripts/pr-state.sh >/dev/null 2>&1; eq "no args exits 2" "$?" 2
 
+# watch.sh with a fake gh: first snapshot is stored, a new PR shows up as a change.
+W="$(mktemp -d)"; mkdir -p "$W/bin"
+cat > "$W/bin/gh" <<'GH'
+#!/usr/bin/env bash
+case "$1 $2" in
+  "repo view") echo "acme/app" ;;
+  "api user") echo "me" ;;
+  "pr list") cat "$GH_PRS" ;;
+  "issue list") cat "$GH_ISSUES" ;;
+esac
+GH
+chmod +x "$W/bin/gh"
+echo '[{"number":1,"url":"u1","headRefName":"feat/x","author":{"login":"me"},"labels":[],"updatedAt":"t1"}]' > "$W/prs.json"
+echo '[{"number":9,"url":"i9","updatedAt":"t1"}]' > "$W/issues.json"
+export TEND_HOME="$W/state" GH_PRS="$W/prs.json" GH_ISSUES="$W/issues.json"
+PATH="$W/bin:$PATH" "$S/scripts/watch.sh" prs --every 1 --max-min 0 >/dev/null 2>&1; eq "watch: no change → heartbeat" "$?" 4
+echo '[{"number":1,"url":"u1","headRefName":"feat/x","author":{"login":"me"},"labels":[],"updatedAt":"t1"},{"number":2,"url":"u2","headRefName":"foreman/b-02","author":{"login":"bot"},"labels":[],"updatedAt":"t2"},{"number":3,"url":"u3","headRefName":"other","author":{"login":"x"},"labels":[],"updatedAt":"t2"}]' > "$W/prs.json"
+o="$(PATH="$W/bin:$PATH" "$S/scripts/watch.sh" prs --every 1 --max-min 1)"
+eq "watch: new foreman PR reported, others' ignored" "$o" "pr 2 u2"
+PATH="$W/bin:$PATH" "$S/scripts/watch.sh" all --every 1 --max-min 0 >/dev/null 2>&1
+echo '[{"number":9,"url":"i9","updatedAt":"t1"},{"number":10,"url":"i10","updatedAt":"t3"}]' > "$W/issues.json"
+o="$(PATH="$W/bin:$PATH" "$S/scripts/watch.sh" all --every 1 --max-min 1)"
+eq "watch all: new labeled issue reported" "$o" "issue 10 i10"
+rm -rf "$W"
+
 [ $fail -eq 0 ] && echo "tend: all passed" || echo "tend: FAILED"
 exit $fail

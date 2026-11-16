@@ -377,6 +377,9 @@ func (w *listWatcher) snapshot() ([]item, error) {
 }
 
 func (w *listWatcher) save(now []item) {
+	if now == nil {
+		now = []item{}
+	}
 	_ = os.MkdirAll(filepath.Dir(w.file), 0o755)
 	b, _ := json.Marshal(now)
 	_ = os.WriteFile(w.file, b, 0o644)

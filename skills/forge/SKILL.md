@@ -12,8 +12,9 @@ speed calls for, and read a reference only when its phase starts. Paths are rela
 `<skill-dir>` (this file's folder). Works in any agent harness: where this file says
 **subagent**, use your harness's subagent tool with a fresh context; without one, write the
 prompt to a file and run `scripts/agent.sh [--readonly] <prompt-file>` (any agent CLI).
-Subagent models: `scripts/config.sh model cheap|strong` (exit 3 → ask the user once, then
-`config.sh set-model`).
+Subagent models: `scripts/route.js` picks cheap, mid or strong per job from the task itself
+(read-only agents and reviews cheap, risky or hard work strong); unset tiers → ask the user once,
+then `config.sh set-model`.
 
 ## Pick the entry point
 

@@ -19,7 +19,8 @@ Scripts are in `<skill-dir>/scripts/` (run them, don't read them):
 | `verify.sh` | Pushed head, checks, mergeable |
 | `commit.sh` | Commits in the repo's style |
 | `names.sh` | Worktree path for a PR branch |
-| `watch.sh` | Zero-token wait for new PRs or issues |
+| `wait-for.js <target>…` | Zero-token wait on GitHub: `pr:<n>`, `run:<id>`, `branch:<name>`, `prs`, `issues:<label>` |
+| `watch.sh` | `wait-for.js` preset for watch mode (new or updated PRs / issues) |
 | `consult.sh` | One tool-less call to the user's strong model for a technical choice |
 | `config.sh` | The user's models and tend settings |
 | `agent.sh` · `harness.sh` · `route.js` | Run a fix subagent on any CLI (when the harness has no subagent tool), detect the harness, pick a tier |
@@ -74,8 +75,9 @@ the repo. Then repeat:
      with "needs you". Conflicts you can't resolve from both sides' intent → "needs you".
    - **unresolved review threads** (human or bot) → `references/RECEIVING.md`. At most 3 rounds
      per PR; the count lives in the card's `review_rounds` or `.tend/<pr>.rounds`.
-   - **checks pending** → wait with one blocking command (`gh pr checks <pr> --watch`, or an
-     `until …; do sleep 30; done` loop) with a 10-minute timeout. Never sleep-then-check turns.
+   - **checks pending** → `scripts/wait-for.js pr:<pr>` in the background (foreground where the
+     harness can't wake on exit); it returns one line when checks finish, the PR merges or closes,
+     or a review lands. Never sleep-then-check turns.
    - **green, mergeable, approved or no review required** → `green`. Merge only if the user or
      warden said this PR is `merge auto`, and never into the production branch.
 3. Commit fixes with `scripts/commit.sh` (style once, one concern per commit); push without force

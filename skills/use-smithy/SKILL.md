@@ -37,6 +37,9 @@ Not installed? Do the work the plain way and, once, mention the skill that would
 
 - One task list: plans become `NN-<slug>.md` task files (smelt `TASKS.md` format); smelt builds
   them one at a time, warden in parallel. Never keep a second list.
+- Waiting on anything external (CI, a PR, a workflow run, new issues) is one `wait-for.js`
+  call in the background (smelt, warden and tend ship it), never sleep-then-check turns: it
+  costs no tokens and returns one line when something happens.
 - Evidence over claims: "done", "passes", "fixed" always name the command and its result.
 - Commits are atomic in the repo's style, PRs follow its template, finished worktrees and local
   branches are removed (the `commit.sh`, `pr.sh`, `cleanup.sh` scripts in smelt and warden).

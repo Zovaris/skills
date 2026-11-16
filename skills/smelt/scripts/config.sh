@@ -43,6 +43,9 @@ warden.cleanup|auto|warden|auto: end finished workers and remove worktrees and l
 warden.max|3|warden|parallel workers (a token-cost cap)
 warden.mode|smelt fast|warden|worker mode: smelt fast, smelt normal, smelt full or plain
 warden.worker_model|route|warden|route: pick cheap/mid/strong per task (route.js); session: same model as the parent session; or one model name for every worker
+watch.events|checks,merged,closed,conflict,review,comment,push,new,updated|wait-for.js|which events wake an agent waiting on GitHub
+watch.every|30|wait-for.js|seconds between GitHub polls
+watch.max|50|wait-for.js|minutes before a heartbeat exit (4) when nothing happened
 tend.watch|prs|tend|what /tend watch looks at: prs, issues or all
 tend.label|agent|tend|label of issues tend may queue for warden'
 

@@ -54,13 +54,13 @@ echo '[{"number":1,"url":"u1","headRefName":"feat/x","author":{"login":"me"},"la
 echo '[{"number":9,"url":"i9","updatedAt":"t1"}]' > "$W/issues.json"
 export TEND_HOME="$W/state" GH_PRS="$W/prs.json" GH_ISSUES="$W/issues.json"
 PATH="$W/bin:$PATH" "$S/scripts/watch.sh" prs --every 1 --max-min 0 >/dev/null 2>&1; eq "watch: no change → heartbeat" "$?" 4
-echo '[{"number":1,"url":"u1","headRefName":"feat/x","author":{"login":"me"},"labels":[],"updatedAt":"t1"},{"number":2,"url":"u2","headRefName":"warden/b-02","author":{"login":"bot"},"labels":[],"updatedAt":"t2"},{"number":3,"url":"u3","headRefName":"other","author":{"login":"x"},"labels":[],"updatedAt":"t2"}]' > "$W/prs.json"
+echo '[{"number":1,"url":"u1","headRefName":"feat/x","author":{"login":"me"},"labels":[],"updatedAt":"t1"},{"number":2,"url":"u2","headRefName":"feat/b-02","author":{"login":"me"},"labels":[],"updatedAt":"t2"},{"number":3,"url":"u3","headRefName":"other","author":{"login":"x"},"labels":[],"updatedAt":"t2"}]' > "$W/prs.json"
 o="$(PATH="$W/bin:$PATH" "$S/scripts/watch.sh" prs --every 1 --max-min 1)"
-eq "watch: new warden PR reported, others' ignored" "$o" "pr 2 u2"
+eq "watch: new PR of mine reported, others' ignored" "$o" "pr 2 new u2"
 PATH="$W/bin:$PATH" "$S/scripts/watch.sh" all --every 1 --max-min 0 >/dev/null 2>&1
 echo '[{"number":9,"url":"i9","updatedAt":"t1"},{"number":10,"url":"i10","updatedAt":"t3"}]' > "$W/issues.json"
 o="$(PATH="$W/bin:$PATH" "$S/scripts/watch.sh" all --every 1 --max-min 1)"
-eq "watch all: new labeled issue reported" "$o" "issue 10 i10"
+eq "watch all: new labeled issue reported" "$o" "issue 10 new i10"
 rm -rf "$W"
 
 [ $fail -eq 0 ] && echo "tend: all passed" || echo "tend: FAILED"

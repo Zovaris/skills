@@ -1,6 +1,6 @@
 ---
 name: tend
-description: Keeps open pull requests mergeable after their author has ended — fixes red CI, rebases or merges the base when behind or conflicting, answers review comments — and stops when each PR is merged, closed or needs the user. Can keep watching for new PRs, and optionally for new labeled issues to queue for foreman. Run as /tend <pr…> | batch <foreman batch> | watch [prs|issues|all]; foreman also launches it.
+description: Keeps someone else's PRs mergeable: fixes red CI, rebases or merges the base, answers review comments, and stops at merged, closed or needs-you. Use for /tend with PR numbers, a foreman batch, or watch mode.
 disable-model-invocation: true
 argument-hint: "<pr-url|number|branch> [...] | batch <foreman batch> | watch [prs|issues|all] [--label <l>] [--model <m>] [--fix-model <m>] [--card <status.js> <batch> <id>]"
 ---
@@ -11,9 +11,20 @@ You look after PRs someone else opened (a person, a forge session, a foreman wor
 can merge. You fix what blocks them; you don't add scope. Work silently (the `silent` skill's
 rules if installed): no talk between tool calls, one line per PR at the end.
 
-Scripts are in `<skill-dir>/scripts/`: `pr-state.sh` (compact PR state), `verify.sh` (pushed
-head, checks, mergeable), `commit.sh` (commits in the repo's style), `watch.sh` (zero-token
-wait for new PRs or issues), `config.sh` (the user's models and tend settings).
+Scripts are in `<skill-dir>/scripts/` (run them, don't read them):
+
+| Script | Does |
+|---|---|
+| `pr-state.sh <pr>` | Compact PR state: checks, mergeable, review, unresolved threads, behind |
+| `verify.sh` | Pushed head, checks, mergeable |
+| `commit.sh` | Commits in the repo's style |
+| `watch.sh` | Zero-token wait for new PRs or issues |
+| `consult.sh` | One tool-less call to the user's strong model for a technical choice |
+| `config.sh` | The user's models and tend settings |
+| `agent.sh` · `harness.sh` · `route.js` | Run a fix subagent on any CLI (when the harness has no subagent tool), detect the harness, pick a tier |
+
+`<foreman-dir>` below is the foreman skill's folder: the one holding the `status.js` that the
+`--card` argument points to.
 
 ## Input
 
@@ -44,7 +55,8 @@ wait for new PRs or issues), `config.sh` (the user's models and tend settings).
 ## Loop, per PR
 
 Check out the PR's branch in its existing worktree if there is one (`git worktree list`), else a
-new one under `worktrees/tend-<n>`; never in the user's main checkout. Then repeat:
+new one at the absolute sibling path `<repo-parent>/worktrees/tend-<n>`; never in the user's main
+checkout or inside the repo. Then repeat:
 
 1. `scripts/pr-state.sh <pr>` → `{state, checks, mergeable, review, unresolved, behind}`.
 2. Act on the first thing that applies:
@@ -60,9 +72,8 @@ new one under `worktrees/tend-<n>`; never in the user's main checkout. Then repe
      with "needs you". Conflicts you can't resolve from both sides' intent → "needs you".
    - **unresolved review threads** (human or bot) → `references/RECEIVING.md`. At most 3 rounds
      per PR; the count lives in the card's `review_rounds` or `.tend/<pr>.rounds`.
-   - **checks pending** → wait with one blocking command: `gh pr checks <pr> --watch`, or an
-     `until …; do sleep 30; done` loop with a 600000 ms Bash timeout. Never sleep-then-check
-     turns.
+   - **checks pending** → wait with one blocking command (`gh pr checks <pr> --watch`, or an
+     `until …; do sleep 30; done` loop) with a 10-minute timeout. Never sleep-then-check turns.
    - **green, mergeable, approved or no review required** → `green`. Merge only if the user or
      foreman said this PR is `merge auto`, and never into the production branch.
 3. Commit fixes with `scripts/commit.sh` (style once, one concern per commit); push without force
@@ -88,8 +99,10 @@ moves on to the next PR instead of waiting.
 
 For each new issue with the label, apply the acceptance test: it targets this repo, asks for a
 concrete change, and the direction is settled (quote the lines that show each). Accepted →
-write a task file (forge `TASKS.md` format, `Status: todo`) to
-`~/.agents/plans/<repo>/inbox/` and add one line to the issue ("queued for an agent"). Not
+write a task file (forge `TASKS.md` format, `Status: todo`) to the inbox dir, which follows the
+user's task settings (`config.sh get tasks.location|tasks.commit`): `~/.agents/plans/<repo>/inbox/`
+when local, else `docs/specs/inbox/` (committed) or `.docs/specs/inbox/` (not committed); then
+add one line to the issue ("queued for an agent"). Not
 accepted → leave it alone. Report the queued ones: on the card's `note`, or one line each at the
 end (`queued <issue-url> → <task file>`). Building them is foreman's job (`/foreman <inbox dir>`).
 

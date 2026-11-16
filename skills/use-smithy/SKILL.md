@@ -57,7 +57,23 @@ Not installed? Do the work the plain way and, once, mention the skill that would
   medium, one `consult.sh` call to the user's strong model (smelt, warden, tend ship it; it
   uses the current harness's CLI, no tools); log what was decided and why.
 
-## 4 · Red flags
+## 4 · Turn repeated work into scripts
+
+Check `scripts/SCRIPTS.md` (or the repo's scripts folder) before writing a one-off command:
+reuse what is there. At the end of a task, never in the middle of it, look back: did you run the
+same multi-step command more than once, or write a throwaway script (a heredoc, `python -c`,
+`node -e`, a long pipeline) the project will need again? Then propose saving them, all in one
+line ("Save as scripts: `wait-deploy.sh` (polls the deploy URL), ok?"). On a yes:
+
+- save in the repo's `scripts/` (or where the user says), same language, executable, with a
+  usage line, arguments instead of this session's values, secrets from env vars, errors to
+  stderr and a non-zero exit;
+- add one line to `scripts/SCRIPTS.md`: name, what it does, usage.
+
+Never propose one the user declined, and not under `/hush`. Ideas from
+[scriptify](https://github.com/pfcoperez/scriptify).
+
+## 5 · Red flags
 
 | Thought | Reality |
 |---|---|
@@ -67,8 +83,10 @@ Not installed? Do the work the plain way and, once, mention the skill that would
 | "A comment will explain it" | Put the why in the module README or an ADR. |
 | "Done, it should work" | Run it; quote the command and result. |
 | "I'll launch warden, it's faster" | It costs sessions: propose it, wait for a yes. |
+| "I'll sleep 2 minutes and check CI again" | `wait-for.js pr:<n>` in the background: no tokens, no missed finish. |
+| "I've typed this pipeline three times" | Propose it as a script at the end of the task. |
 
-## 5 · Settings and setup
+## 6 · Settings and setup
 
 All settings live in two JSON files, repo first: `<repo>/.smithy/config.json` (this repo only)
 and `~/.smithy/config.json` (the user's defaults). `scripts/config.sh list` shows every setting

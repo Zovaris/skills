@@ -67,6 +67,16 @@ t "task-dir asks for tasks.ignore" 'o="$(cd "$T/repo" && $S/task-dir.sh pay)"; [
 (cd "$T/repo" && $S/config.sh set --repo tasks.ignore exclude >/dev/null && $S/task-dir.sh pay >/dev/null && $S/task-dir.sh pay >/dev/null)
 t "exclude adds .docs/ once" '[ "$(grep -c "^.docs/$" "$(cd "$T/repo" && git rev-parse --git-path info/exclude)")" = 1 ] && [ -d "$T/repo/.docs/specs/pay" ]'
 
+# route.js
+$S/config.sh set-model mid midm >/dev/null
+t "router: typo is cheap" '[ "$($S/route.js --text "fix typo in README" | cut -d" " -f1)" = cheap ]'
+t "router: auth is strong" '[ "$($S/route.js --text "add OAuth login with tokens" | cut -d" " -f1)" = strong ]'
+t "router: plain feature is mid, model from config" '[ "$($S/route.js --text "add CSV export to reports" | cut -d" " -f1-2)" = "mid midm" ]'
+t "router: full speed is strong" '[ "$($S/route.js --text "add CSV export" --speed full | cut -d" " -f1)" = strong ]'
+t "router: review is cheap" '[ "$($S/route.js --kind review | cut -d" " -f1)" = cheap ]'
+t "router: unset tier prints -" '[ "$($S/route.js --text "add OAuth login" | cut -d" " -f2)" = - ]'
+t "router: needs input" '$S/route.js; [ $? -eq 2 ]'
+
 # playbook setup.sh block
 printf '# Rules\n' > "$T/AGENTS.md"
 t "block missing" '! $P/setup.sh block status "$T/AGENTS.md"'

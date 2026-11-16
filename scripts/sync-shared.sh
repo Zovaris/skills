@@ -5,8 +5,8 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 # skill: shared files it ships
-MAP="forge:task-dir.sh agent.sh tasks.js commit.sh pr.sh cleanup.sh find-skill.sh config.sh harness.sh
-foreman:task-dir.sh agent.sh tasks.js commit.sh pr.sh cleanup.sh find-skill.sh config.sh harness.sh verify.sh
+MAP="forge:route.js task-dir.sh agent.sh tasks.js commit.sh pr.sh cleanup.sh find-skill.sh config.sh harness.sh
+foreman:route.js task-dir.sh agent.sh tasks.js commit.sh pr.sh cleanup.sh find-skill.sh config.sh harness.sh verify.sh
 playbook:find-skill.sh config.sh harness.sh
 scout:agent.sh config.sh harness.sh
 tend:verify.sh commit.sh config.sh harness.sh"

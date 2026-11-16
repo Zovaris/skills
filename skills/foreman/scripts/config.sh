@@ -3,8 +3,8 @@
 #   <repo>/.agents/config.json   per-repo overrides (set with --repo)
 #   ~/.agents/config.json        the user's defaults ($AGENTS_CONFIG)
 # Models are stored per harness (user file only) because names differ; nothing is hard-coded.
-#   config.sh model <cheap|strong>              model for this harness; exit 3 when unset
-#   config.sh set-model <cheap|strong> <name> [harness]
+#   config.sh model <cheap|mid|strong>          model for this harness; exit 3 when unset
+#   config.sh set-model <cheap|mid|strong> <name> [harness]
 #   config.sh get <key>                         effective value (repo, then user, then default); exit 3 when unset with no default
 #   config.sh set [--repo] <key> <value>        value parsed as JSON when it is JSON
 #   config.sh list                              every known setting: value, source, what it does
@@ -24,6 +24,7 @@ foreman.merge|auto|foreman|auto: workers merge green PRs; manual: they stop at r
 foreman.cleanup|auto|foreman|auto: end finished workers and remove worktrees and local branches without asking
 foreman.max|3|foreman|parallel workers (a token-cost cap)
 foreman.mode|forge fast|foreman|worker mode: forge fast, forge normal, forge full or plain
+foreman.worker_model|route|foreman|route: pick cheap/mid/strong per task (route.js); session: same model as the parent session; or one model name for every worker
 tend.watch|prs|tend|what /tend watch looks at: prs, issues or all
 tend.label|agent|tend|label of issues tend may queue for foreman'
 
@@ -47,10 +48,10 @@ write() {
 
 case "${1:-}" in
   model)
-    [[ "${2:-}" =~ ^(cheap|strong)$ ]] || { echo 'usage: config.sh model <cheap|strong>' >&2; exit 2; }
+    [[ "${2:-}" =~ ^(cheap|mid|strong)$ ]] || { echo 'usage: config.sh model <cheap|mid|strong>' >&2; exit 2; }
     v="$(read_key "models.$(harness).$2" "$USER_CFG")"; [ -n "$v" ] || exit 3; echo "$v" ;;
   set-model)
-    [[ "${2:-}" =~ ^(cheap|strong)$ ]] && [ -n "${3:-}" ] || { echo 'usage: config.sh set-model <cheap|strong> <name> [harness]' >&2; exit 2; }
+    [[ "${2:-}" =~ ^(cheap|mid|strong)$ ]] && [ -n "${3:-}" ] || { echo 'usage: config.sh set-model <cheap|mid|strong> <name> [harness]' >&2; exit 2; }
     write "$USER_CFG" "models.${4:-$(harness)}.$2" "$3"; echo "saved models.${4:-$(harness)}.$2 = $3 ($USER_CFG)" ;;
   get)
     [ -n "${2:-}" ] || exit 2
@@ -62,7 +63,7 @@ case "${1:-}" in
     write "$file" "$1" "$2"; echo "saved $1 = $2 ($file)" ;;
   list)
     h="$(harness)"
-    for m in cheap strong; do
+    for m in cheap mid strong; do
       v="$(read_key "models.$h.$m" "$USER_CFG")"
       printf '%-16s %-14s %-8s %s\n' "models.$m" "${v:-unset}" "${v:+user}" "$m model in $h"
     done

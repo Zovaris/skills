@@ -55,15 +55,28 @@ npx skills add Zovaris/skills -g -y --skill '*' -a claude-code -a codex
 Pin a release with `Zovaris/skills@v0.4.0`; update with `npx skills update -g`; drop `-g` to
 install into the current project only.
 
-Then ask your agent to **run playbook setup**. It shows what is installed, asks once which cheap
-and strong models to use in this harness (saved in `~/.agents/config.json`, nothing is
-hard-coded), and offers to add the playbook pointer to your agent instructions file.
+Then ask your agent to **run playbook setup**. It shows what is installed, asks every unset
+setting in one message and offers to add the playbook pointer to your agent instructions file.
 
-## Models
+## Settings
 
-Scouts, reviewers and simple workers use your **cheap** model; second opinions and the last fix
-round use your **strong** one. You pick both per harness (Haiku, a GPT mini, anything your CLI
-accepts); skills read them with `config.sh model cheap|strong`.
+Two JSON files, the repo's first: `<repo>/.agents/config.json` (this repo only) and
+`~/.agents/config.json` (your defaults). You never edit them by hand:
+
+- **playbook setup** asks everything up front, or each skill asks a setting the first time it
+  needs it and saves your answer;
+- `config.sh list` (in any skill's `scripts/`) shows each setting, its value and where it came
+  from; `config.sh set [--repo] <key> <value>` changes one.
+
+| Setting | Default | What it does |
+|---|---|---|
+| `models.cheap` / `models.strong` | ask | Per harness (Haiku, a GPT mini, anything your CLI accepts). Cheap: scouts, reviewers, tend's routine work. Strong: second opinions, real fixes, the last fix round. |
+| `tasks.commit` | ask | Commit specs and tasks (`docs/specs/`) or keep them out of git (`.docs/specs/`). |
+| `tasks.ignore` | ask | When not committed: a committed `.gitignore` line, or `.git/info/exclude` (this machine only). |
+| `tasks.location` | `repo` | `repo`, `local` (`~/.agents/plans`) or `board`. |
+| `foreman.merge` / `foreman.cleanup` | `auto` / `auto` | Merge green PRs; end finished workers and remove their worktrees and branches without asking. |
+| `foreman.max` / `foreman.mode` | `3` / `forge fast` | Parallel workers; how workers build. |
+| `tend.watch` / `tend.label` | `prs` / `agent` | What `/tend watch` follows; the issue label it may queue. |
 
 ## Hooks (all optional)
 

@@ -11,15 +11,15 @@ Each implementer gets the model `scripts/route.js --file <task file> --speed <sp
 (cheap, mid or strong, from the task's risk, difficulty and size); reviewers use
 `route.js --kind review`; the last fix round goes one tier up. You may move a pick one tier with
 a reason; a model the user named always wins. A tier whose model is unset prints `-`: propose
-`scripts/config.sh suggest-models` and save on a yes (`config.sh accept-models`), or ask for each
+`scripts/smithy config suggest-models` and save on a yes (`smithy config accept-models`), or ask for each
 tier when there are no suggestions; until then use the session default.
 
 ## Loop
 
-`scripts/tasks.js list <dir>` first; work `scripts/tasks.js next <dir>` until it says all done.
+`scripts/smithy tasks list <dir>` first; work `scripts/smithy tasks next <dir>` until it says all done.
 For each task:
 
-1. `tasks.js set <file> status=doing`.
+1. `smithy tasks set <file> status=doing`.
 2. **Brief.** Prompt = `agents/implementer.md` + `## Inputs`: the task file's path and text, the
    spec path, the test commands from `stack.sh`, the files and interfaces the task lists, and
    the rulings so far that touch it. Never your conversation.
@@ -28,13 +28,13 @@ For each task:
    - `DONE_WITH_CONCERNS` → read the concerns, decide each (ruling), then step 4.
    - `NEEDS_CONTEXT` → answer from the spec or code (ruling) and send it back; if only the user
      can answer, ask (under `/hush`, decide and rule).
-   - `BLOCKED` → `tasks.js set <file> status=todo`, note why, move to the next unblocked task.
+   - `BLOCKED` → `smithy tasks set <file> status=todo`, note why, move to the next unblocked task.
 4. **Verify** (the verify gate): read the diff, run the task's tests and the suite.
 5. **Review** the diff with a fresh `agents/spec-check.md` (task file as the spec) and, at
    `normal`/`full`, `agents/standards.md`. Handle findings with the receiving-review rules.
 6. **Fix loop**: send the reproduced findings back to a fresh implementer with the diff. At most
    3 rounds; round 3 uses the strong model. Still failing → `BLOCKED` with the findings.
-7. Commit the task atomically (`scripts/commit.sh`), `tasks.js set <file> status=done`.
+7. Commit the task atomically (`scripts/commit.sh`), `smithy tasks set <file> status=done`.
 
 After the last task: one whole-branch review (the review phase), one fix wave, then ship.
 

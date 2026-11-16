@@ -37,7 +37,7 @@ Not installed? Do the work the plain way and, once, mention the skill that would
 
 - One task list: plans become `NN-<slug>.md` task files (smelt `TASKS.md` format); smelt builds
   them one at a time, warden in parallel. Never keep a second list.
-- Waiting on anything external (CI, a PR, a workflow run, new issues) is one `wait-for.js`
+- Waiting on anything external (CI, a PR, a workflow run, new issues) is one `smithy wait`
   call in the background (smelt, warden and tend ship it), never sleep-then-check turns: it
   costs no tokens and returns one line when something happens.
 - Evidence over claims: "done", "passes", "fixed" always name the command and its result.
@@ -46,11 +46,11 @@ Not installed? Do the work the plain way and, once, mention the skill that would
 - Decisions that pass ledger's ADR test (hard to reverse, surprising, a real trade-off) go to an ADR. No explanatory code comments: API doc
   comments only, the "why" lives in docs.
 - Models come in three tiers per harness (cheap, mid, strong); `route.js` picks the tier per job
-  and `config.sh model <tier>` gives the model. When a tier is unset (exit 3, or `-` from
-  route.js): run `scripts/config.sh suggest-models`. If it prints suggestions, propose them in
+  and `smithy config model <tier>` gives the model. When a tier is unset (exit 3, or `-` from
+  route.js): run `scripts/smithy config suggest-models`. If it prints suggestions, propose them in
   one line ("cheap <model>, mid <model>, strong <model> for this harness, ok?") and on a yes run
-  `config.sh accept-models`. If it prints none, ask the user to name each tier and save them with
-  `config.sh set-model <tier> <name>`. Ask once per harness; until then use the session's model.
+  `smithy config accept-models`. If it prints none, ask the user to name each tier and save them with
+  `smithy config set-model <tier> <name>`. Ask once per harness; until then use the session's model.
   Under `/hush`, don't ask: use the session's model and say so at the end.
 - Ask only for decisions that are the user's: scope, money, prod, data, security, irreversible
   actions, pushing, merging. Other decisions that would stop the work: low impact, decide;
@@ -83,14 +83,14 @@ Never propose one the user declined, and not under `/hush`. Ideas from
 | "A comment will explain it" | Put the why in the module README or an ADR. |
 | "Done, it should work" | Run it; quote the command and result. |
 | "I'll launch warden, it's faster" | It costs sessions: propose it, wait for a yes. |
-| "I'll sleep 2 minutes and check CI again" | `wait-for.js pr:<n>` in the background: no tokens, no missed finish. |
+| "I'll sleep 2 minutes and check CI again" | `smithy wait pr:<n>` in the background: no tokens, no missed finish. |
 | "I've typed this pipeline three times" | Propose it as a script at the end of the task. |
 
 ## 6 · Settings and setup
 
 All settings live in two JSON files, repo first: `<repo>/.smithy/config.json` (this repo only)
-and `~/.smithy/config.json` (the user's defaults). `scripts/config.sh list` shows every setting
-with its value, where it came from and what uses it; `config.sh set [--repo] <key> <value>`
+and `~/.smithy/config.json` (the user's defaults). `scripts/smithy config list` shows every setting
+with its value, where it came from and what uses it; `smithy config set [--repo] <key> <value>`
 changes one. Nobody has to edit JSON by hand.
 
 Two ways to fill them:

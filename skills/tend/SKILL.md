@@ -2,7 +2,7 @@
 name: tend
 description: Keeps someone else's PRs mergeable: fixes red CI, rebases or merges the base, answers review comments, and stops at merged, closed or needs-you. Use for /tend with PR numbers, a warden batch, or watch mode.
 disable-model-invocation: true
-argument-hint: "<pr-url|number|branch> [...] | batch <warden batch> | watch [prs|issues|all] [--label <l>] [--model <m>] [--fix-model <m>] [--card <status.js> <batch> <id>]"
+argument-hint: "<pr-url|number|branch> [...] | batch <warden batch> | watch [prs|issues|all] [--label <l>] [--model <m>] [--fix-model <m>] [--card <smithy cards> <batch> <id>]"
 ---
 
 # tend
@@ -18,21 +18,21 @@ Scripts are in `<skill-dir>/scripts/` (run them, don't read them):
 | `pr-state.sh <pr>` | Compact PR state: checks, mergeable, review, unresolved threads, behind |
 | `verify.sh` | Pushed head, checks, mergeable |
 | `commit.sh` | Commits in the repo's style |
-| `names.sh` | Worktree path for a PR branch |
-| `wait-for.js <target>…` | Zero-token wait on GitHub: `pr:<n>`, `run:<id>`, `branch:<name>`, `prs`, `issues:<label>` |
-| `watch.sh` | `wait-for.js` preset for watch mode (new or updated PRs / issues) |
+| `smithy names` | Worktree path for a PR branch |
+| `smithy wait <target>…` | Zero-token wait on GitHub: `pr:<n>`, `run:<id>`, `branch:<name>`, `prs`, `issues:<label>` |
+| `watch.sh` | `smithy wait` preset for watch mode (new or updated PRs / issues) |
 | `consult.sh` | One tool-less call to the user's strong model for a technical choice |
-| `config.sh` | The user's models and tend settings |
-| `agent.sh` · `harness.sh` · `route.js` | Run a fix subagent on any CLI (when the harness has no subagent tool), detect the harness, pick a tier |
+| `smithy config` | The user's models and tend settings |
+| `agent.sh` · `smithy harness` · `route.js` | Run a fix subagent on any CLI (when the harness has no subagent tool), detect the harness, pick a tier |
 
-`<warden-dir>` below is the warden skill's folder: the one holding the `status.js` that the
+`<warden-dir>` below is the warden skill's folder: the one holding the `smithy cards` that the
 `--card` argument points to.
 
 ## Input
 
 - PR urls, numbers or branch names: one loop per PR, then stop.
 - `batch <name>`: the items of that warden batch, each as it reaches `pr_open` or `ready`
-  (`<warden-dir>/scripts/status.js board <name> --json`). Warden starts you with the workers,
+  (`<warden-dir>/scripts/smithy cards board <name> --json`). Warden starts you with the workers,
   so between PRs wait with `<warden-dir>/scripts/watch.sh <name>`; stop when every item is
   final (merged, dropped, reported).
 - `watch [scope]`: keep going. Tend the PRs that match, then wait with `scripts/watch.sh` and
@@ -41,24 +41,24 @@ Scripts are in `<skill-dir>/scripts/` (run them, don't read them):
     `--label`.
   - `issues`: new issues with `--label` (default `agent`); see "Issues" below. Never builds them.
   - `all`: both.
-  The default scope is `config.sh get tend.watch` when set, else `prs`.
-- `--card <status.js> <batch> <id>`: when warden launched you, mirror your state on that card.
+  The default scope is `smithy config get tend.watch` when set, else `prs`.
+- `--card <smithy cards> <batch> <id>`: when warden launched you, mirror your state on that card.
 
 ## Models
 
 - Routine work (reading state, reruns, rebases, merging the base, replying to comments) runs on
-  `--model`, else `config.sh model cheap`. Exit 3 means unset: propose `config.sh
-  suggest-models` and save on a yes (`config.sh accept-models`), or ask for the cheap model when
+  `--model`, else `smithy config model cheap`. Exit 3 means unset: propose `smithy config
+  suggest-models` and save on a yes (`smithy config accept-models`), or ask for the cheap model when
   there are no suggestions (under `/hush` or when warden launched you, use the session
   default instead of asking).
 - Code fixes (a real CI failure, a review comment that asks for a change) go to a fresh
-  subagent on `--fix-model`, else `config.sh model strong`, else the session default, with only
+  subagent on `--fix-model`, else `smithy config model strong`, else the session default, with only
   the failing output, the PR diff and the comment. You review its diff before committing.
 
 ## Loop, per PR
 
 Check out the PR's branch in its existing worktree if there is one (`git worktree list`), else a
-new one at `scripts/names.sh worktree <pr-branch>`; never in the user's main checkout or inside
+new one at `scripts/smithy names worktree <pr-branch>`; never in the user's main checkout or inside
 the repo. Then repeat:
 
 1. `scripts/pr-state.sh <pr>` → `{state, checks, mergeable, review, unresolved, behind}`.
@@ -75,7 +75,7 @@ the repo. Then repeat:
      with "needs you". Conflicts you can't resolve from both sides' intent → "needs you".
    - **unresolved review threads** (human or bot) → `references/RECEIVING.md`. At most 3 rounds
      per PR; the count lives in the card's `review_rounds` or `.tend/<pr>.rounds`.
-   - **checks pending** → `scripts/wait-for.js pr:<pr>` in the background (foreground where the
+   - **checks pending** → `scripts/smithy wait pr:<pr>` in the background (foreground where the
      harness can't wake on exit); it returns one line when checks finish, the PR merges or closes,
      or a review lands. Never sleep-then-check turns.
    - **green, mergeable, approved or no review required** → `green`. Merge only if the user or
@@ -104,7 +104,7 @@ moves on to the next PR instead of waiting.
 For each new issue with the label, apply the acceptance test: it targets this repo, asks for a
 concrete change, and the direction is settled (quote the lines that show each). Accepted →
 write a task file (smelt `TASKS.md` format, `Status: todo`) to the inbox dir, which follows the
-user's task settings (`config.sh get tasks.location|tasks.commit`): `~/.smithy/plans/<repo>/inbox/`
+user's task settings (`smithy config get tasks.location|tasks.commit`): `~/.smithy/plans/<repo>/inbox/`
 when local, else `docs/specs/inbox/` (committed) or `.docs/specs/inbox/` (not committed); then
 add one line to the issue ("queued for an agent"). Not
 accepted → leave it alone. Report the queued ones: on the card's `note`, or one line each at the

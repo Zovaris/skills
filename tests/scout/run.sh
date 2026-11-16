@@ -16,7 +16,7 @@ for r in $(grep -oE 'references/[A-Za-z-]+\.md|scripts/[a-z.-]+\.sh' $S/SKILL.md
 done
 grep -qi 'never edits' $S/SKILL.md && pass "read-only rule stated" || bad "read-only rule stated"
 grep -qi 'never authorizes' $S/SKILL.md && pass "no-authorization rule stated" || bad "no-authorization rule stated"
-grep -q 'config.sh model cheap' $S/SKILL.md && pass "uses cheap model config" || bad "uses cheap model config"
+grep -q 'smithy config model cheap' $S/SKILL.md && pass "uses cheap model config" || bad "uses cheap model config"
 grep -q 'agent.sh --readonly' $S/SKILL.md && pass "harness-agnostic fallback" || bad "harness-agnostic fallback"
 for h in '## Answer' '## Evidence' '## Confidence' '## Open questions'; do
   grep -qF "$h" $S/references/FORMAT.md && pass "format has $h" || bad "format has $h"

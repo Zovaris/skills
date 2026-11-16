@@ -14,15 +14,15 @@ git switch -q -c main 2>/dev/null || git checkout -q -b main  # CI runners defau
 git commit -q --allow-empty -m "feat(core): init"; git commit -q --allow-empty -m "fix(api): handle nulls"
 git push -q origin HEAD:main 2>/dev/null; git remote set-head origin main >/dev/null 2>&1
 
-# names.sh
-t "branch from ticket" '[ "$($S/names.sh branch PROJ-123 "Add login with Google")" = feat/PROJ-123-add-login-with-google ]'
-t "branch from issue, type from title" '[ "$($S/names.sh branch "#42" "Fix null crash")" = fix/42-null-crash ]'
-t "branch without key" '[ "$($S/names.sh branch - "Update README")" = docs/update-readme ]'
-t "branch slug capped at 40" 'b="$($S/names.sh branch 03 "a very long title that keeps going and going past forty chars")" && [ ${#b} -le 52 ]'
-t "worktree is a sibling" '[ "$($S/names.sh worktree feat/x)" = "$(cd "$T" && pwd -P)/worktrees/repo-feat-x" ]'
-t "branch template setting" '$S/config.sh set git.branch "agent/{key}-{slug}" && [ "$($S/names.sh branch 7 "Add x")" = agent/7-add-x ] && $S/config.sh set git.branch "{type}/{key}-{slug}"'
+# smithy names
+t "branch from ticket" '[ "$($S/smithy names branch PROJ-123 "Add login with Google")" = feat/PROJ-123-add-login-with-google ]'
+t "branch from issue, type from title" '[ "$($S/smithy names branch "#42" "Fix null crash")" = fix/42-null-crash ]'
+t "branch without key" '[ "$($S/smithy names branch - "Update README")" = docs/update-readme ]'
+t "branch slug capped at 40" 'b="$($S/smithy names branch 03 "a very long title that keeps going and going past forty chars")" && [ ${#b} -le 52 ]'
+t "worktree is a sibling" '[ "$($S/smithy names worktree feat/x)" = "$(cd "$T" && pwd -P)/worktrees/repo-feat-x" ]'
+t "branch template setting" '$S/smithy config set git.branch "agent/{key}-{slug}" && [ "$($S/smithy names branch 7 "Add x")" = agent/7-add-x ] && $S/smithy config set git.branch "{type}/{key}-{slug}"'
 
-# wait-for.js with a fake gh
+# smithy wait with a fake gh
 mkdir -p "$T/bin"
 cat > "$T/bin/gh" <<'GH'
 #!/usr/bin/env bash
@@ -33,7 +33,7 @@ case "$1 $2" in
 esac
 GH
 chmod +x "$T/bin/gh"; export T_PR="$T/pr.json" T_RUN="$T/run.json"
-W() { PATH="$T/bin:$PATH" node $S/wait-for.js "$@"; }
+W() { PATH="$T/bin:$PATH" "$S/smithy" wait "$@"; }
 echo '{"number":5,"url":"u5","state":"OPEN","mergeable":"MERGEABLE","headRefOid":"abc1234","statusCheckRollup":[{"name":"unit","status":"COMPLETED","conclusion":"SUCCESS"}]}' > "$T/pr.json"
 t "pr: finished checks reported at once" '[ "$(W pr:5 --max 0)" = "pr 5 checks=green u5" ]'
 echo '{"number":5,"url":"u5","state":"OPEN","mergeable":"MERGEABLE","headRefOid":"abc1234","statusCheckRollup":[{"name":"unit","status":"COMPLETED","conclusion":"FAILURE"},{"name":"lint","status":"COMPLETED","conclusion":"SUCCESS"}]}' > "$T/pr.json"
@@ -47,12 +47,12 @@ echo '{"status":"completed","conclusion":"failure","name":"CI","url":"r1","jobs"
 t "run: finished with failed jobs" '[ "$(W run:9 --max 0)" = "run 9 failure failed=build r1" ]'
 t "unknown target exits 2" 'W nope:1 --max 0; [ $? -eq 2 ]'
 
-# tasks.js add / board
+# smithy tasks add / board
 export SMITHY_HOME="$T/home"
-t "add numbers the next task" '[ "$(basename "$(node $S/tasks.js add docs/specs/b "Add login")")" = 01-add-login.md ] && [ "$(basename "$(node $S/tasks.js add docs/specs/b "Rate limit" --blocked-by 01)")" = 02-rate-limit.md ]'
-t "added task is todo and blocked" 'grep -q "^Blocked by: 01" docs/specs/b/02-rate-limit.md && [ "$(basename "$(node $S/tasks.js next docs/specs/b)")" = 01-add-login.md ]'
-t "board shows the list" 'node $S/tasks.js board | grep -q "0/2 done, 0 doing, 1 ready"'
-t "board --all finds it from elsewhere" '(cd / && node $S/tasks.js board --all) | grep -q "repo/b"'
+t "add numbers the next task" '[ "$(basename "$("$S/smithy" tasks add docs/specs/b "Add login")")" = 01-add-login.md ] && [ "$(basename "$("$S/smithy" tasks add docs/specs/b "Rate limit" --blocked-by 01)")" = 02-rate-limit.md ]'
+t "added task is todo and blocked" 'grep -q "^Blocked by: 01" docs/specs/b/02-rate-limit.md && [ "$(basename "$("$S/smithy" tasks next docs/specs/b)")" = 01-add-login.md ]'
+t "board shows the list" '"$S/smithy" tasks board | grep -q "0/2 done, 0 doing, 1 ready"'
+t "board --all finds it from elsewhere" '(cd / && "$S/smithy" tasks board --all) | grep -q "repo/b"'
 rm -rf docs/specs/b
 
 # commit.sh
@@ -78,44 +78,44 @@ t "cleans pushed branch" '$S/cleanup.sh . t1 && ! git show-ref -q --verify refs/
 git worktree add -q -b t2 "$T/wt2" main; echo dirty > "$T/wt2/x"
 t "keeps dirty worktree" '! $S/cleanup.sh . t2 && [ -d "$T/wt2" ]'
 
-# tasks.js
+# smithy tasks
 mkdir -p docs/specs/pay
 printf '# 01 · A\nStatus: todo\nBlocked by: none\n' > docs/specs/pay/01-a.md
 printf '# 02 · B\nStatus: todo\nBlocked by: 01\n' > docs/specs/pay/02-b.md
-t "next is 01" 'node $S/tasks.js next | grep -q 01-a.md'
-t "02 blocked" '[ "$(node $S/tasks.js ready | wc -l | tr -d " ")" = 1 ]'
-node "$S/tasks.js" set docs/specs/pay/01-a.md status=done pr=https://x/1 >/dev/null
-t "02 ready after 01 done" 'node $S/tasks.js next | grep -q 02-b.md'
-t "rejects bad status" '! node $S/tasks.js set docs/specs/pay/02-b.md status=bogus'
+t "next is 01" '"$S/smithy" tasks next | grep -q 01-a.md'
+t "02 blocked" '[ "$("$S/smithy" tasks ready | wc -l | tr -d " ")" = 1 ]'
+"$S/smithy" tasks set docs/specs/pay/01-a.md status=done pr=https://x/1 >/dev/null
+t "02 ready after 01 done" '"$S/smithy" tasks next | grep -q 02-b.md'
+t "rejects bad status" '! "$S/smithy" tasks set docs/specs/pay/02-b.md status=bogus'
 
 mkdir -p .docs/specs/priv elsewhere/x
 printf '# 01 · P\nStatus: todo\nBlocked by: none\n' > .docs/specs/priv/01-p.md
 printf '# 01 · E\nStatus: todo\nBlocked by: none\n' > elsewhere/x/01-e.md
-t "where finds .docs/specs" 'node $S/tasks.js where | grep -q "/.docs/specs/priv$"'
-t "where honours SMELT_TASKS_DIRS" 'SMELT_TASKS_DIRS=elsewhere node $S/tasks.js where | grep -q "/elsewhere/x$"'
+t "where finds .docs/specs" '"$S/smithy" tasks where | grep -q "/.docs/specs/priv$"'
+t "where honours SMELT_TASKS_DIRS" 'SMELT_TASKS_DIRS=elsewhere "$S/smithy" tasks where | grep -q "/elsewhere/x$"'
 
-# config.sh + harness.sh
-t "harness override" '[ "$($S/harness.sh)" = "codex any" ]'
-t "model unset → exit 3" '$S/config.sh model cheap; [ $? -eq 3 ]'
-$S/config.sh set-model cheap mini >/dev/null
-t "model saved per harness" '[ "$($S/config.sh model cheap)" = mini ] && jq -e ".models.codex.cheap" "$SMITHY_CONFIG"'
+# smithy config + smithy harness
+t "harness override" '[ "$($S/smithy harness)" = "codex any" ]'
+t "model unset → exit 3" '$S/smithy config model cheap; [ $? -eq 3 ]'
+$S/smithy config set-model cheap mini >/dev/null
+t "model saved per harness" '[ "$($S/smithy config model cheap)" = mini ] && jq -e ".models.codex.cheap" "$SMITHY_CONFIG"'
 
-(cd "$T/repo" && $S/config.sh set --repo tasks.commit false >/dev/null)
-t "repo setting overrides, false kept as false" '[ "$(cd "$T/repo" && $S/config.sh get tasks.commit)" = false ]'
-t "default applies when unset" '[ "$(cd "$T/repo" && $S/config.sh get warden.merge)" = auto ]'
-t "no default → exit 3" '(cd "$T/repo" && $S/config.sh get tasks.ignore); [ $? -eq 3 ]'
+(cd "$T/repo" && $S/smithy config set --repo tasks.commit false >/dev/null)
+t "repo setting overrides, false kept as false" '[ "$(cd "$T/repo" && $S/smithy config get tasks.commit)" = false ]'
+t "default applies when unset" '[ "$(cd "$T/repo" && $S/smithy config get warden.merge)" = auto ]'
+t "no default → exit 3" '(cd "$T/repo" && $S/smithy config get tasks.ignore); [ $? -eq 3 ]'
 t "task-dir asks for tasks.ignore" 'o="$(cd "$T/repo" && $S/task-dir.sh pay)"; [ $? -eq 3 ] && grep -q "^ask tasks.ignore" <<<"$o"'
-(cd "$T/repo" && $S/config.sh set --repo tasks.ignore exclude >/dev/null && $S/task-dir.sh pay >/dev/null && $S/task-dir.sh pay >/dev/null)
+(cd "$T/repo" && $S/smithy config set --repo tasks.ignore exclude >/dev/null && $S/task-dir.sh pay >/dev/null && $S/task-dir.sh pay >/dev/null)
 t "exclude adds .docs/ once" '[ "$(grep -c "^.docs/$" "$(cd "$T/repo" && git rev-parse --git-path info/exclude)")" = 1 ] && [ -d "$T/repo/.docs/specs/pay" ]'
 
 # model suggestions
-t "suggestions only where aliases are stable" 'WARDEN_HARNESS=codex $S/config.sh suggest-models; [ $? -eq 3 ]'
-t "claude suggests haiku/sonnet/opus" '[ "$(WARDEN_HARNESS=claude-cli $S/config.sh suggest-models | paste -sd, -)" = "cheap haiku,mid sonnet,strong opus" ]'
-WARDEN_HARNESS=claude-cli $S/config.sh accept-models >/dev/null
-t "accept saves them for that harness" '[ "$(WARDEN_HARNESS=claude-cli $S/config.sh model strong)" = opus ]'
+t "suggestions only where aliases are stable" 'WARDEN_HARNESS=codex $S/smithy config suggest-models; [ $? -eq 3 ]'
+t "claude suggests haiku/sonnet/opus" '[ "$(WARDEN_HARNESS=claude-cli $S/smithy config suggest-models | paste -sd, -)" = "cheap haiku,mid sonnet,strong opus" ]'
+WARDEN_HARNESS=claude-cli $S/smithy config accept-models >/dev/null
+t "accept saves them for that harness" '[ "$(WARDEN_HARNESS=claude-cli $S/smithy config model strong)" = opus ]'
 
 # route.js
-$S/config.sh set-model mid midm >/dev/null
+$S/smithy config set-model mid midm >/dev/null
 t "router: typo is cheap" '[ "$($S/route.js --text "fix typo in README" | cut -d" " -f1)" = cheap ]'
 t "router: auth is strong" '[ "$($S/route.js --text "add OAuth login with tokens" | cut -d" " -f1)" = strong ]'
 t "router: plain feature is mid, model from config" '[ "$($S/route.js --text "add CSV export to reports" | cut -d" " -f1-2)" = "mid midm" ]'
@@ -141,7 +141,7 @@ t "block removed, rest kept" '! grep -q use-smithy "$T/AGENTS.md" && grep -q "# 
 # agent.sh with a fake CLI
 echo hi > "$T/p.md"
 t "agent.sh strips parent harness vars" '[ "$(CLAUDECODE=1 WARDEN_HARNESS=pi AGENT_CMD="echo \${CLAUDECODE:-none} \$WARDEN_HARNESS" $S/agent.sh "$T/p.md")" = "none pi" ]'
-t "harness ignores CODEX_HOME" '[ "$(env -i PATH=/usr/bin:/bin CODEX_HOME=/x bash $S/harness.sh)" = "unknown any" ]'
+t "harness ignores CODEX_HOME" '[ "$(env -i PATH=/usr/bin:/bin CODEX_HOME=/x SMITHY_BIN="$SMITHY_BIN" $S/smithy harness)" = "unknown any" ]'
 t "agent.sh pipes prompt to AGENT_CMD" '[ "$(AGENT_CMD=cat $S/agent.sh "$T/p.md")" = hi ]'
 
 echo "shared: $pass passed, $fail failed"; [ $fail -eq 0 ]

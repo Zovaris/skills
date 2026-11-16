@@ -44,7 +44,7 @@ requirements from the intent and the code"; out of scope if the user named it>
   Don't try to invoke it as a slash command." | mode plain: "work the way the repo's agent instructions
   (AGENTS.md / CLAUDE.md) say: tests for what you change, typecheck and lint green.">
 <committed repo task file (docs/specs): "- In your branch, set the task file's `Status: done` and `PR: <url>`
-  (`<warden-dir>/scripts/tasks.js set <file> status=done pr=<url>`) so it lands with the PR.">
+  (`<warden-dir>/scripts/smithy tasks set <file> status=done pr=<url>`) so it lands with the PR.">
 - First step: check `pwd -P` and `git rev-parse --show-toplevel` equal <worktree> and the branch
   is <branch>. If not: state=blocked note=wrong-worktree, stop.
 <has prereqs or the batch is full: "- Then wait for your turn: run `<warden-dir>/scripts/wait-turn.sh
@@ -68,11 +68,11 @@ requirements from the intent and the code"; out of scope if the user named it>
   alone are not reasons to stop.
 - Same obstacle twice after a real fix attempt: state=blocked with the one thing you need; stop.
 - Do not create worktrees or issues; never start, fork or hand off sessions.
-- Waiting on CI or a PR: one blocking `<warden-dir>/scripts/wait-for.js pr:<pr>` (or `run:<id>`,
+- Waiting on CI or a PR: one blocking `<warden-dir>/scripts/smithy wait pr:<pr>` (or `run:<id>`,
   `branch:<name>`); it prints one line when something happens. No sleep-then-check turns.
 
 ## Status card
-`<skill-dir>/scripts/status.js set <batch> <id> key=value…` at every phase change and before
+`<skill-dir>/scripts/smithy cards set <batch> <id> key=value…` at every phase change and before
 every end of turn. Keep `progress` as <done>/<total> of your task list and `phase` as the
 current step, so the warden sees where you are without asking.
 - Decision needed: state=needs_decision with decision_key (short slug), question, options (JSON

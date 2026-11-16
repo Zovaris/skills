@@ -3,8 +3,8 @@
 //   route.js [--file <task.md>] [--text "<task words>"] [--kind ship|scout|review|fix|tend]
 //            [--speed fast|normal|full] [--json]
 // Prints `<tier> <model>  # reasons`, or JSON with --json. <model> is the user's model for that
-// tier in this harness (config.sh model <tier>); `-` when unset (use the session default, and
-// propose `config.sh suggest-models`, or ask the user to name the tier). The caller may move one tier up or down with a stated reason;
+// tier in this harness (smithy config model <tier>); `-` when unset (use the session default, and
+// propose `smithy config suggest-models`, or ask the user to name the tier). The caller may move one tier up or down with a stated reason;
 // a user's explicit model always wins.
 // Tiers: cheap (mechanical, read-only, small), mid (most feature work), strong (risky, ambiguous,
 // cross-cutting, or the last fix round).
@@ -46,6 +46,6 @@ if (!reasons.length) reasons.push('ordinary feature work');
 
 const tier = ['cheap', 'mid', 'strong'][score];
 let model = '';
-try { model = execFileSync(path.join(__dirname, 'config.sh'), ['model', tier], { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim(); } catch { model = ''; }
+try { model = execFileSync(path.join(__dirname, 'smithy'), ['config', 'model', tier], { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim(); } catch { model = ''; }
 if (args.includes('--json')) console.log(JSON.stringify({ tier, model: model || null, reasons }));
 else console.log(`${tier} ${model || '-'}  # ${reasons.join('; ')}`);

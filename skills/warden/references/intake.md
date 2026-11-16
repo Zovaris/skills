@@ -5,8 +5,8 @@
 Work out what you were given, in this order, and say in the plan line which it was:
 
 1. **A task dir or task file** (`docs/specs/<slug>/`, `.docs/specs/<slug>/`,
-   `~/.smithy/plans/<repo>/<slug>/`; `tasks.js where` lists them; an `NN-*.md`; or "the tasks we
-   just planned"): `tasks.js ready <dir>` gives what can start; blocked ones wait for their
+   `~/.smithy/plans/<repo>/<slug>/`; `smithy tasks where` lists them; an `NN-*.md`; or "the tasks we
+   just planned"): `smithy tasks ready <dir>` gives what can start; blocked ones wait for their
    blockers. Id = `<slug>-NN`. Source = the file.
 2. **Board ids** (GitHub issues, Linear, Jira keys): read each with `gh` or the harness's tracker
    tools. Id = the key. Source = the board.
@@ -44,7 +44,7 @@ is `manual` unless the user's intent says to release it.
 ## Status back to the source
 
 So smelt and the board stay in sync:
-- Local task dir: `tasks.js set <file> status=doing` at launch, `status=done pr=<url>` when merged,
+- Local task dir: `smithy tasks set <file> status=doing` at launch, `status=done pr=<url>` when merged,
   `status=dropped` when dropped.
 - Committed repo task dir (`docs/specs`): the worker sets `Status: done` and `PR:` in its own
   branch, so it lands with the PR; you don't commit to the base branch.

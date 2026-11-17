@@ -1,6 +1,6 @@
 ---
 name: tend
-description: Keeps someone else's PRs mergeable: fixes red CI, rebases or merges the base, answers review comments, and stops at merged, closed or needs-you. Use for /tend with PR numbers, a warden batch, or watch mode.
+description: "Keeps someone else's PRs mergeable: fixes red CI, rebases or merges the base, answers review comments, and stops at merged, closed or needs-you. Use for /tend with PR numbers, a warden batch, or watch mode."
 disable-model-invocation: true
 argument-hint: "<pr-url|number|branch> [...] | batch <warden batch> | watch [prs|issues|all] [--label <l>] [--model <m>] [--fix-model <m>] [--card <batch> <id>] [--max-hours <h>]"
 ---

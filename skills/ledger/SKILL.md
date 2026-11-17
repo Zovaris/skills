@@ -1,6 +1,6 @@
 ---
 name: ledger
-description: Keeps project docs in the repo: ADRs, glossary, module READMEs, doc comments, codebase map, drift checks and the no-inline-comments policy. Use to record a decision, document a module, sync docs with code, enforce comment rules, or search past decisions.
+description: "Keeps project docs in the repo: ADRs, glossary, module READMEs, doc comments, codebase map, drift checks and the no-inline-comments policy. Use to record a decision, document a module, sync docs with code, enforce comment rules, or search past decisions."
 argument-hint: "[init|adr <title>|module <path>|map|sync [base]|comments [paths]|search <query>]"
 ---
 

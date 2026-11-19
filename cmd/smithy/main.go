@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -66,10 +67,43 @@ func atMost(name string, n int, run func(args []string) int) func(args []string)
 }
 
 func init() {
-	register("version", "print the version", "usage: smithy version\nPrints the version (also smithy --version).", "",
-		atMost("version", 0, func([]string) int { fmt.Println(version); return 0 }))
+	register("version", "print the version", "usage: smithy version [--verbose]\nPrints the version (also smithy --version).\n--verbose adds the binary path and whether it is a dev build.", "--verbose",
+		func(args []string) int {
+			verbose := false
+			for _, a := range args {
+				if a != "--verbose" {
+					fmt.Fprintf(os.Stderr, "smithy version: unexpected argument %s\n", a)
+					fmt.Fprintln(os.Stderr, commands["version"].usage)
+					return 2
+				}
+				verbose = true
+			}
+			fmt.Println(version)
+			if !verbose {
+				return 0
+			}
+			fmt.Println("binary:", binaryPath())
+			if version == "dev" {
+				fmt.Println("build: dev (not a release build; version set at build time is missing)")
+			} else {
+				fmt.Println("build: release")
+			}
+			return 0
+		})
 	register("engine-probe", "", "usage: smithy engine-probe\nPrints smithy-engine and the version.", "",
 		atMost("engine-probe", 0, func([]string) int { fmt.Println("smithy-engine", version); return 0 }))
+}
+
+// binaryPath is the resolved path of the running binary, or argv[0] when the OS cannot say.
+func binaryPath() string {
+	p, err := os.Executable()
+	if err != nil {
+		return os.Args[0]
+	}
+	if r, err := filepath.EvalSymlinks(p); err == nil {
+		return r
+	}
+	return p
 }
 
 // entry applies the convention every command shares, before anything runs: -h/--help anywhere

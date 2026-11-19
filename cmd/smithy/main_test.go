@@ -253,6 +253,25 @@ func TestTasksFlagsPerSubcommand(t *testing.T) {
 	}
 }
 
+func TestVersionVerbose(t *testing.T) {
+	repo, env := sandbox(t)
+	out, e, code := run(t, repo, env, "version", "--verbose")
+	if code != 0 || e != "" {
+		t.Fatalf("version --verbose: exit %d, stderr %q", code, e)
+	}
+	lines := strings.Split(strings.TrimSpace(out), "\n")
+	if len(lines) != 3 || !strings.HasPrefix(lines[1], "binary: ") || strings.TrimPrefix(lines[1], "binary: ") == "" {
+		t.Errorf("version --verbose: want version, binary and build lines, got %q", out)
+	}
+	if !strings.HasPrefix(lines[2], "build: ") {
+		t.Errorf("version --verbose: missing build line, got %q", out)
+	}
+	plain, _, code := run(t, repo, env, "version")
+	if code != 0 || strings.Contains(plain, "binary:") {
+		t.Errorf("version: want version only, got %q (exit %d)", plain, code)
+	}
+}
+
 func TestArgMistakes(t *testing.T) {
 	repo, env := sandbox(t)
 	cases := []struct {

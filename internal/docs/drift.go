@@ -157,11 +157,12 @@ func hasAnyPrefix(s string, prefixes ...string) bool {
 // AddedAPI scans a -U0 diff for added lines that declare a public symbol, as "file: name".
 func AddedAPI(diff string) []string {
 	var flagged []string
-	current := "None"
+	current, header := "", false
 	for _, line := range splitLines(diff) {
-		if strings.HasPrefix(line, "+++ b/") {
-			current = line[6:]
-		} else if strings.HasPrefix(line, "+") && !strings.HasPrefix(line, "+++") {
+		if diffHeader(line, &current, &header) {
+			continue
+		}
+		if strings.HasPrefix(line, "+") {
 			if s := ExportedName(line[1:]); s != "" {
 				flagged = append(flagged, current+": "+s)
 			}

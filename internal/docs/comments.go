@@ -332,13 +332,45 @@ func commentFiles(args []string) []string {
 
 var hunkRe = regexp.MustCompile(`^@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))?`)
 
+// diffHeader tracks the file of a unified diff: file headers count only between
+// `diff --git` and the first hunk, so an added line starting with "++ " is never one.
+// It reports whether l was a header line.
+func diffHeader(l string, file *string, header *bool) bool {
+	switch {
+	case strings.HasPrefix(l, "diff --git "):
+		*header, *file = true, ""
+		return true
+	case *header && strings.HasPrefix(l, "@@"):
+		*header = false
+		return false
+	case *header && strings.HasPrefix(l, "+++ "):
+		*file = diffName(strings.TrimPrefix(l, "+++ "))
+		return true
+	}
+	return *header
+}
+
+// diffName turns a `+++` path into a repo path: git's C-style quoting is undone and the
+// b/ prefix dropped; /dev/null is "".
+func diffName(s string) string {
+	s = strings.TrimSuffix(s, "\t")
+	if strings.HasPrefix(s, "\"") {
+		if u, err := strconv.Unquote(s); err == nil {
+			s = u
+		}
+	}
+	if s == "/dev/null" {
+		return ""
+	}
+	return strings.TrimPrefix(s, "b/")
+}
+
 // AddedLines maps each file in a -U0 unified diff to the line numbers it adds.
 func AddedLines(diff string) map[string]map[int]bool {
 	out := map[string]map[int]bool{}
-	file := ""
+	file, header := "", false
 	for _, l := range strings.Split(diff, "\n") {
-		if strings.HasPrefix(l, "+++ ") {
-			file = strings.TrimSuffix(strings.TrimPrefix(strings.TrimPrefix(l, "+++ "), "b/"), "\t")
+		if diffHeader(l, &file, &header) {
 			continue
 		}
 		m := hunkRe.FindStringSubmatch(l)

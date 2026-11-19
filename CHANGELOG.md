@@ -34,6 +34,7 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 - `smithy scan` prints to stderr how many lines `smithy:allow` skipped and where.
 - `smithy config` writes its pid in the lock and reclaims a lock whose pid is gone or that is older than 30s, so a killed writer no longer blocks every later write.
 - `smithy config` writes through a symlinked config (the link stays), keeps the file mode, and refuses a read-only config with exit 1.
+- `smithy comments --diff` and `smithy drift` read a file header only right after `diff --git` (an added line starting with "++ " is not one) and unquote quoted names.
 
 ### skills consistency
 - `warden.merge` has no built-in default: warden asks once per batch in its plan line (auto or

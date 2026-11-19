@@ -11,8 +11,11 @@ import (
 )
 
 const routeUsage = `Model router: picks the cheapest model tier that can do a task well, from the task itself.
-  smithy route [--file <task.md>] [--text "<task words>"] [--kind ship|scout|review|fix|tend]
-               [--speed fast|normal|full] [--json]
+  smithy route [--file <task.md>] [--text "<task words>"] [--kind ship|scout|review|fix|tend|test]
+               [--agent <agent file or name>] [--speed fast|normal|full] [--json]
+--agent picks the kind from a smelt agent: spec-check, standards, security and builder are review;
+adversary, regression, property, mutation, e2e and hostile are test; implementer is ship (give
+the task with --file or --text).
 Prints ` + "`<tier> <model>  # reasons`" + `, or JSON with --json. <model> is the user's model for that
 tier in this harness (smithy config model <tier>); ` + "`-`" + ` when unset (use the session default, and
 propose ` + "`smithy config suggest-models`" + `, or ask the user to name the tier). The caller may move one tier up or down with a stated reason;
@@ -97,6 +100,9 @@ func Route(text, kind, speed string) (string, []string) {
 		score = min(score, 1)
 		reasons = append(reasons, "speed fast")
 	}
+	if kind == "test" {
+		reasons = append(reasons, "test agent")
+	}
 	if kind == "fix" {
 		score = max(score, 1)
 		reasons = append(reasons, "code fix")
@@ -106,6 +112,20 @@ func Route(text, kind, speed string) (string, []string) {
 		reasons = append(reasons, "ordinary feature work")
 	}
 	return Tiers[score], reasons
+}
+
+// AgentKind maps a smelt agent file or name to its routing kind.
+func AgentKind(agent string) (string, bool) {
+	name := strings.TrimSuffix(agent[strings.LastIndex(agent, "/")+1:], ".md")
+	switch name {
+	case "spec-check", "standards", "security", "builder":
+		return "review", true
+	case "adversary", "regression", "property", "mutation", "e2e", "hostile":
+		return "test", true
+	case "implementer":
+		return "ship", true
+	}
+	return "", false
 }
 
 // RouteMain runs `smithy route` and returns the exit code.
@@ -143,6 +163,14 @@ func RouteMain(args []string) int {
 		text += "\n" + string(b)
 	}
 	kind, _ := opt("--kind")
+	if a, ok := opt("--agent"); ok {
+		k, known := AgentKind(a)
+		if !known {
+			fmt.Fprintf(os.Stderr, "smithy route: unknown agent %q\n", a)
+			return 2
+		}
+		kind = k
+	}
 	if kind == "" {
 		kind = "ship"
 	}

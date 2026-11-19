@@ -10,6 +10,10 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
   without smelt (`none`, `fast`, `normal`), a hidden regression test grades it, and the script
   prints pass@1 and pass^k per arm over `-k` trials. Costs tokens; never in CI.
 
+- `smithy receipt run` records a receipt dirty when an untracked, non-ignored file is present
+  (`.smelt/` and ignored files don't count). `smithy scan` also reports added or changed binary
+  files and .pyc/.so/.dylib/.dll/.exe/.wasm/.jar/.zip/.tar/.gz/.docx/.xlsx/.pptx files as "needs a
+  human look", and fails on git conflict markers outside fenced code in docs.
 - `smithy agent` has a wall-clock cap: the new `agent.timeout` setting (minutes, default 90,
   `0` = none) or `--timeout <min>` kills the agent's process group, logs "timed out after Nm" and
   exits 124; `--bg` runs are watched by a detached smithy that enforces it.

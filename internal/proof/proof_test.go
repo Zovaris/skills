@@ -314,3 +314,80 @@ func TestRedactMasksSecretFlagsAndBearer(t *testing.T) {
 		}
 	}
 }
+
+func TestUntrackedFileMakesReceiptDirtyButIgnoredAndSmeltDoNot(t *testing.T) {
+	dir := newRepo(t)
+	if err := os.WriteFile(filepath.Join(dir, ".gitignore"), []byte("ignored.txt\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	git(t, dir, "add", ".gitignore")
+	git(t, dir, "commit", "-q", "-m", "ignore")
+	os.WriteFile(filepath.Join(dir, "ignored.txt"), []byte("x\n"), 0o644)
+	os.MkdirAll(filepath.Join(dir, ".smelt"), 0o755)
+	os.WriteFile(filepath.Join(dir, ".smelt", "notes.md"), []byte("x\n"), 0o644)
+	if r, _ := Run(dir, "x", []string{"true"}, &bytes.Buffer{}); r.Dirty {
+		t.Fatalf("ignored files and .smelt/ must not make a receipt dirty: %+v", r)
+	}
+	os.WriteFile(filepath.Join(dir, "new.go"), []byte("package x\n"), 0o644)
+	if r, _ := Run(dir, "x", []string{"true"}, &bytes.Buffer{}); !r.Dirty {
+		t.Fatalf("an untracked file must make the receipt dirty: %+v", r)
+	}
+}
+
+func TestScanBinariesFlagsBinaryAndRiskyExtensions(t *testing.T) {
+	fs := ScanBinaries([]string{"a.txt", "x.PYC", "lib/y.so", "doc.docx", "ok.go", "blob.bin", ""}, map[string]bool{"blob.bin": true})
+	got := []string{}
+	for _, f := range fs {
+		got = append(got, f.File+"|"+f.Rule)
+	}
+	want := "x.PYC|needs a human look: binary or archive file,lib/y.so|needs a human look: binary or archive file,doc.docx|needs a human look: binary or archive file,blob.bin|needs a human look: binary or archive file"
+	if strings.Join(got, ",") != want {
+		t.Fatalf("got %v", got)
+	}
+}
+
+func TestNumstatBinaries(t *testing.T) {
+	got := numstatBinaries("1\t2\ta.txt\x00-\t-\tb.bin\x00-\t-\t\x00old.bin\x00new.bin\x00")
+	if !got["b.bin"] || !got["new.bin"] || got["a.txt"] || got["old.bin"] {
+		t.Fatalf("%v", got)
+	}
+}
+
+func TestScanFailsOnConflictMarkersOutsideDocFences(t *testing.T) {
+	diff := "diff --git a/CHANGELOG.md b/CHANGELOG.md\n+++ b/CHANGELOG.md\n@@ -0,0 +1,8 @@\n" +
+		"+<<<<<<< HEAD\n+text\n+=======\n+other\n+>>>>>>> origin/x\n" +
+		"+```\n+<<<<<<< shown in docs\n+```\n"
+	fs := ScanDiff(diff)
+	if len(fs) != 3 {
+		t.Fatalf("want 3 markers outside the fence, got %v", fs)
+	}
+	for _, f := range fs {
+		if f.Rule != "conflict marker" {
+			t.Fatalf("%v", f)
+		}
+	}
+	code := "diff --git a/a.go b/a.go\n+++ b/a.go\n@@ -0,0 +1,2 @@\n+||||||| base\n+// ======= not alone\n"
+	if fs := ScanDiff(code); len(fs) != 1 {
+		t.Fatalf("code files have no fences: %v", fs)
+	}
+	if fs := ScanDiff("diff --git a/a.go b/a.go\n+++ b/a.go\n@@ -0,0 +1 @@\n+=======\r\n"); len(fs) != 1 {
+		t.Fatalf("a CRLF marker must count: %v", fs)
+	}
+	if fs := ScanDiff("diff --git a/a.md b/a.md\n+++ b/a.md\n@@ -0,0 +1 @@\n+a ======= b\n"); len(fs) != 0 {
+		t.Fatalf("%v", fs)
+	}
+}
+
+func TestScanMainReportsBinaryFile(t *testing.T) {
+	dir := newRepo(t)
+	os.WriteFile(filepath.Join(dir, "p.pyc"), []byte("text\n"), 0o644)
+	os.WriteFile(filepath.Join(dir, "z.dat"), []byte{0, 1, 2}, 0o644)
+	git(t, dir, "add", "p.pyc", "z.dat")
+	git(t, dir, "commit", "-q", "-m", "bin")
+	old, _ := os.Getwd()
+	defer os.Chdir(old)
+	os.Chdir(dir)
+	if code := ScanMain([]string{"--base", "HEAD~1"}); code != 1 {
+		t.Fatalf("binaries must be findings, exit %d", code)
+	}
+}

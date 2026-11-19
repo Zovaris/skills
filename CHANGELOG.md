@@ -5,6 +5,14 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+### hardening
+- `smithy comments --diff` reads file names with `-z` (spaces and non-ASCII names count) and exits 2 for a base git can't resolve or one starting with `-`.
+- `smithy drift` exits 2 for a base git can't resolve and reads changed and tracked names with `-z`.
+- `smithy route` exits 2 for an unknown `--kind` or `--speed` and for a flag without its value.
+- `smithy config` reports a config file that isn't a JSON object (including `null`) on reads too, rejects empty or malformed keys, harness names and model names, and locks the file around writes so concurrent `set` calls keep every value.
+- The launcher times out downloads (`--connect-timeout 10 --max-time 120`) and a failed download prints one `smithy: can't download` line and exits 3.
+- `smithy scan` prints to stderr how many lines `smithy:allow` skipped and where.
+
 ### cleanup
 - Clean up after merge is a shared rule: whoever sees the PR merge or close removes the work's
   worktrees and local branches and ends the agents or sessions it launched. smelt hands the

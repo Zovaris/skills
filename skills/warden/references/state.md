@@ -14,6 +14,8 @@ feature slug). No secrets or client data in it.
 - `stack`: boolean, default false (wait for the prereq to merge); see SKILL.md Defaults.
 - `production`: the production branch name, from the user's answer to the plan-line question or
   an obvious repo convention; `""` when no base in the batch is production.
+- `launches`: starts so far, first included; capped by `warden.max_attempts` (default 3), past it
+  the item is `blocked`, never relaunched.
 - `hold`: set when the user says wait/stop for an item, cleared only by the user. A held item is
   never launched, relaunched or nudged.
 

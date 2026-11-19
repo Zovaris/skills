@@ -20,11 +20,14 @@ reported. Heuristic: languages ts tsx js jsx mjs cjs py go rs java kt sh. Exit 1
 var (
 	slashExts = map[string]bool{".ts": true, ".tsx": true, ".js": true, ".jsx": true, ".mjs": true, ".cjs": true,
 		".go": true, ".rs": true, ".java": true, ".kt": true, ".kts": true}
-	hashExts   = map[string]bool{".py": true, ".sh": true, ".bash": true}
-	jsdocExts  = map[string]bool{".ts": true, ".tsx": true, ".js": true, ".jsx": true, ".mjs": true, ".cjs": true, ".java": true, ".kt": true, ".kts": true}
-	taskRx     = regexp.MustCompile(`\b(TODO|FIXME|HACK|XXX)\b`)
-	headerRx   = regexp.MustCompile(`(?i)(SPDX-License-Identifier|Copyright|Licensed under|License)`)
-	codeishRx  = regexp.MustCompile(`(;\s*$|[{}]\s*$|^\s*(return|if|for|while|const|let|var|def|func|import|from)\b|\w+\(.*\)\s*;?\s*$|=)`)
+	hashExts  = map[string]bool{".py": true, ".sh": true, ".bash": true}
+	jsdocExts = map[string]bool{".ts": true, ".tsx": true, ".js": true, ".jsx": true, ".mjs": true, ".cjs": true, ".java": true, ".kt": true, ".kts": true}
+	taskRx    = regexp.MustCompile(`\b(TODO|FIXME|HACK|XXX)\b`)
+	headerRx  = regexp.MustCompile(`(?i)(SPDX-License-Identifier|Copyright|Licensed under|License)`)
+	// codeishRx matches comment text shaped like code, not prose that happens to hold a
+	// keyword or "O(1)": a line ending in ; { or }, a lone call, an assignment, an import,
+	// a short return, or a block header ending in ( { or :.
+	codeishRx  = regexp.MustCompile(`(;\s*$|[{}]\s*$|^\s*[\w.$]+\(.*\)\s*;?\s*$|\S\s*(:=|[-+*/]?=)\s*\S|^\s*(import|from|package)\s+[\w./"'@-]+(\s+import\s+.*)?\s*$|^\s*return(\s+\S+){0,2}\s*;?\s*$|^\s*(if|for|while|def|func|class|elif|else)\b.*[({:]\s*$)`)
 	goDeclRx   = regexp.MustCompile(`^(func(\s*\([^)]*\))?|type|var|const)\s+[A-Z]`)
 	goPkgRx    = regexp.MustCompile(`^package\s`)
 	goFieldRx  = regexp.MustCompile(`^\s+[A-Z]\w*(\s|$|\()`)

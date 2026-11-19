@@ -42,6 +42,7 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 - `smithy wait-turn` says `batch.json unreadable: stack must be true or false` (not "no batch") for a non-bool `stack`, and `smithy cards board` holds an item only for `"hold": true` or a reason, not `"hold": false`.
 - `smithy doctor` prints the agent CLI line only for the cli and any adapters, not under desktop.
 - `smithy drift` lists under "Missing references" the backticked code symbols (`Put`, `Store.Put`) in changed docs and docs that mention changed files that were in the code at base and are gone now.
+- `smithy comments` labels only code-shaped text "commented-out code"; prose such as "a map because lookups must be O(1)" is an explanatory comment.
 
 ### skills consistency
 - `warden.merge` has no built-in default: warden asks once per batch in its plan line (auto or

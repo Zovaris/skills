@@ -3,7 +3,7 @@
 No model is hard-coded, and workers don't simply inherit yours. `smithy config get
 warden.worker_model` decides:
 
-- `route` (default): `smithy route --file <task file or intent> --kind <ship|scout> --speed <speed>`
+- `route` (default): `smithy route --file <task file> | --text "<words>" --kind <ship|scout> --speed <speed>`
   per item; launch it on the model of the tier it picks (cheap: small or read-only, mid: most
   features, strong: risky, hard or large). Look at each pick and move it one tier when you know
   better, saying why.

@@ -31,13 +31,15 @@ line, and pointers to the files above.
 - **init** — create `docs/README.md` (index), `docs/adr/0000-record-architecture-decisions.md`
   (accepted: we use ADRs), `docs/GLOSSARY.md` and `docs/agents/STANDARDS.md` (headers only; the
   standards file collects judgement rules the reviewers enforce). Add to AGENTS.md (or CLAUDE.md if
-  that is what the repo uses) a short block: where docs live and the comment policy. Detect the
-  stack and offer the matching lint config from `references/COMMENTS.md`; write it only on yes.
-  Done: the four files exist and are listed.
-- **adr `<title>`** — only when the ADR test below passes. `smithy adr "<title>"` creates the
+  that is what the repo uses; with neither, create AGENTS.md) a short block: where docs live and
+  the comment policy. Detect the stack and offer the matching lint config from
+  `references/COMMENTS.md`; write it only on yes. Headless (nobody to answer): don't write it,
+  report the snippet. Done: the four files exist and are listed in `docs/README.md`.
+- **adr `<title>`** — run the ADR test below first; only when it passes, `smithy adr "<title>"` creates the
   next numbered file from its built-in template (the shape in `references/ADR-FORMAT.md`); fill it from the conversation and the code,
   status `proposed` until the user accepts it. Superseding: new ADR, then change only the old
-  one's status line to `superseded by NNNN`. Done: the ADR file is filled and its path given.
+  one's status line to `superseded by NNNN`. After writing, check every `path:line` it cites still
+  points at the cited code. Done: the ADR file is filled, its citations hold, and its path given.
 - **module `<path>`** — write `<path>/README.md`: purpose, public entry points, invariants, the
   "why" that would otherwise be inline comments, links to ADRs. Add or fix doc comments on every
   exported symbol (what it does, params, returns, errors; not how). Remove explanatory comments
@@ -48,7 +50,8 @@ line, and pointers to the files above.
   then judge what it flags. Update the docs in the same branch; report what changed.
 - **comments `[paths]`** — `smithy comments <paths>` (or `--diff <base>`). For each finding:
   move the content to the module README or an ADR, turn it into a doc comment if it documents
-  public API, or delete it. Re-run until clean.
+  public API, or delete it. A TODO/FIXME is first opened as an issue, or its text listed for the
+  user, then deleted. Re-run until clean.
 - **search `<query>`** — `smithy search "<query>"`: ADRs first, then glossary, module
   READMEs, other docs. Read the hits you need; quote file:line when you use them.
 

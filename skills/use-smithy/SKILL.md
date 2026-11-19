@@ -17,8 +17,8 @@ it. User instructions win over this file, and the repo's AGENTS.md / CLAUDE.md w
 
 `smithy <command>` in this skill means `<skill-dir>/scripts/smithy <command>` (`<skill-dir>` is this file's folder); run it by that path, nothing needs to be on PATH.
 
-Run `smithy skills --list` once per session. Only
-offer skills that are listed. Every skill can be run by you or by the user: to run one, read the
+Run `smithy skills --list` once per session: it is what's installed. Only offer skills that are
+listed; if the harness lists fewer skills, offer only those both show. Every skill can be run by you or by the user: to run one, read the
 SKILL.md path it prints and follow it. Each harness has its own way for the user to start a skill
 by name (a slash command, `$name`, `@name` or plain words); never assume one.
 

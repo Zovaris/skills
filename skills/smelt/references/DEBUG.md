@@ -8,11 +8,12 @@ Phases with gates; don't skip ahead. No fix before a root cause.
 3. **Locate.** In a multi-component path (UI → API → service → DB, or build → package → run),
    log what goes in and out at every boundary in one run, then find the first boundary where
    the data is wrong. Trace backwards from there to where the bad value was created.
+   Single function with no boundaries: state the faulty line and skip tracing.
 4. **Hypothesize.** Write 3–5 ranked hypotheses, each with a prediction you can test
    ("if it's the cache, clearing it makes the repro pass").
 5. **Probe.** Test the top hypothesis with the cheapest probe, one change at a time. Tag every
    debug log line (`[smelt-debug]`) so cleanup is a grep. Update the ranking after each probe.
-6. **Fix.** Turn the repro into a regression test at the right seam; it must fail. Fix the root
+6. **Fix.** You write the regression test: turn the repro into one at the right seam; it must fail. Fix the root
    cause, not the symptom. Test green, full suite green.
 7. **Clean.** `grep -rn "\[smelt-debug\]"` returns nothing. Note the root cause in the PR body.
    A cause that will bite again (bad pattern, missing guard) → propose a check in retro.
@@ -24,7 +25,8 @@ the architecture with the user before a fourth attempt.
 **Redirect signals.** When the user says "is that really happening?", "you're guessing", "stop,
 look again" or similar, you skipped a phase: go back to reproduce or locate.
 
-Then the regression agent proves the fix, and review follows.
+Then the regression agent proves the fix: it runs your test on the base (must fail) and on the
+fix (must pass), and adds no file. Review follows.
 
 ## Red flags
 

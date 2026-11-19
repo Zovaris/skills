@@ -80,9 +80,9 @@ starts workers and whether a waiting session can be woken up:
 
 `smithy agent` runs workers headless with each CLI's flags for writing files, running commands
 and opening PRs without prompts (`AGENT_CLI` picks one, `AGENT_ARGS` adds flags, `AGENT_CMD`
-plugs in anything else). User-invoked skills (smelt, warden, hush, tend) stay out of the model's
-reach where the harness supports it (`disable-model-invocation`, and `agents/openai.yaml` for
-Codex); Gemini has no such switch.
+plugs in anything else). Every skill can be run by an agent; only warden is kept out of implicit
+invocation (`allow_implicit_invocation: false` in its `agents/openai.yaml` for Codex), and it still
+asks for a yes before it starts sessions.
 
 ## The smithy binary
 

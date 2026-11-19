@@ -88,3 +88,19 @@ func TestResolveBaseLocalBranchWithoutOrigin(t *testing.T) {
 		t.Fatalf("local branch: %s %q", sha, label)
 	}
 }
+
+func TestResolveBaseFallsBackToUpstream(t *testing.T) {
+	up, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	gitIn(t, up, "init", "-q")
+	commitFile(t, up, "a.txt")
+	dir := filepath.Join(t.TempDir(), "c")
+	gitIn(t, up, "clone", "-q", up, dir)
+	gitIn(t, dir, "remote", "set-head", "origin", "--delete")
+	commitFile(t, dir, "b.txt")
+	if _, label := ResolveBase(dir, ""); !strings.HasPrefix(label, "origin/main (merge-base ") {
+		t.Fatalf("upstream fallback: %q", label)
+	}
+}

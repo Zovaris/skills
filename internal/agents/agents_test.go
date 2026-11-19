@@ -231,6 +231,7 @@ func TestAgentKind(t *testing.T) {
 	for in, want := range map[string]string{
 		"spec-check": "review", "skills/smelt/agents/security.md": "review",
 		"hostile.md": "test", "adversary": "test", "implementer": "ship",
+		"skills/tend/SKILL.md": "tend", "scout": "scout",
 	} {
 		if k, ok := AgentKind(in); !ok || k != want {
 			t.Errorf("AgentKind(%q) = %q, %v; want %q", in, k, ok, want)

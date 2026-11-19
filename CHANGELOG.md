@@ -10,6 +10,9 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
   without smelt (`none`, `fast`, `normal`), a hidden regression test grades it, and the script
   prints pass@1 and pass^k per arm over `-k` trials. Costs tokens; never in CI.
 
+- ADRs 0001-0005 in `docs/adr/`: record decisions, gh optional, no decision-model adapter for now,
+  release branch for big changes, learning in repo docs.
+
 ## v0.10.0 — 2026-11-19
 
 - Audit fixes after the gh-optional batch: warden's final message shows the Decisions and

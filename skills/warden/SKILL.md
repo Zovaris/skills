@@ -73,7 +73,8 @@ source), `references/state.md` (batch dir, cards, states and stages), `reference
 `references/harness.md` (how to **spawn**, **tell**, **wake**, **end** and run a **subagent** here;
 read it once per batch).
 
-1. **Preflight and plan.** `smithy doctor --quiet`; on `not ready` show the FAIL lines and stop. Work
+1. **Preflight and plan.** `smithy doctor --quiet`; on `not ready` show the FAIL lines with the
+   plan line and keep planning: only launch (step 2) and merges wait until doctor says ready. Work
    out the input and items (`references/intake.md`), check duplicates (a card with that id in
    another batch, an open PR covering it via `gh pr list --search "<id>"`, a task file already
    `done`; someone else's PR → `dropped` with a pointer), write `batch.json`

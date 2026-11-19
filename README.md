@@ -22,7 +22,9 @@ smithy turns your coding agent into a small engineering team: it plans before it
 the failing test first, checks its work with independent reviewers, runs many tasks in parallel
 and keeps the pull requests green until they merge. It works in any harness that loads
 `SKILL.md` skills (Claude Code, Codex, OpenCode, Cursor, Gemini, Pi,
-DeepSeek Harness), and needs nothing but git and the GitHub CLI.
+DeepSeek Harness), and needs git. It is built for GitHub: the [GitHub CLI](https://cli.github.com) (`gh`) gives the full
+experience but is optional (with `GH_TOKEN`/`GITHUB_TOKEN` smithy uses the GitHub API; with neither, it
+pushes the branch and prints a compare URL to open the PR by hand).
 
 ## Quick start
 
@@ -134,8 +136,13 @@ npx skills update -g                                                      # upda
 ```
 
 Drop `-g` to install into the current project only. Requires the
-[skills CLI](https://github.com/vercel-labs/skills) (Node 22.20+), git and
-[`gh`](https://cli.github.com) signed in.
+[skills CLI](https://github.com/vercel-labs/skills) (Node 22.20+) and git;
+[`gh`](https://cli.github.com) signed in is recommended, not required.
+
+## Roadmap
+
+smithy is GitHub-only today. Other forges (GitLab, Bitbucket) come later; there is no `glab`
+support now.
 
 ## Contributing
 

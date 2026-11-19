@@ -21,7 +21,7 @@ It asks at most twice per repo, ever:
 
 `tasks.location` (default `repo`) switches the whole thing: `local` puts plans in
 `~/.smithy/plans/<repo>/<slug>/` (`$SMELT_PLANS`), `board` puts tasks on the user's tracker
-(GitHub Issues via `gh`, or Linear/Jira through the harness's tools) and keeps the spec where
+(GitHub Issues via `gh` when installed, or Linear/Jira through the harness's tools) and keeps the spec where
 `tasks.commit` says. `smithy config list` shows the current values.
 
 Other places: list them in `$SMELT_TASKS_DIRS` (colon-separated) so `smithy tasks` finds them.

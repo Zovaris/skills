@@ -30,6 +30,11 @@ else update the docs the change touched (`references/DOCS.md`). Then:
   is mergeable or needs the user, then waits for the merge so it can clean up. Without tend, wait
   with `smithy wait pr:<pr-url>`, in the background where the harness wakes on exit, else in the
   foreground; never sleep loops; on merge, clean up yourself.
+  GitHub modes, one line each: with `gh`, `smithy pr create` opens the PR (best experience);
+  without `gh` but with `GH_TOKEN`/`GITHUB_TOKEN`, it uses the GitHub API; with neither, it
+  pushes the branch and prints the compare URL: end there, report the branch and URL, and skip
+  tend and the wait (the user opens the PR by hand). Merge with `smithy pr merge <pr>`, never
+  `gh pr merge`.
   (2) **Merge** the PR or locally into the base only when the user asks or the session that
   launched you said `merge auto` (a warden worker); into the production
   branch only on their explicit yes for this change. (3) **Keep** the branch for later. Discard

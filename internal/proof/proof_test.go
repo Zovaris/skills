@@ -370,7 +370,7 @@ func TestScanFailsOnConflictMarkersOutsideDocFences(t *testing.T) {
 	if fs := ScanDiff(code); len(fs) != 1 {
 		t.Fatalf("code files have no fences: %v", fs)
 	}
-	if fs := ScanDiff("diff --git a/a.go b/a.go\n+++ b/a.go\n@@ -0,0 +1 @@\n+=======\r\n"); len(fs) != 1 {
+	if fs := ScanDiff("diff --git a/a.go b/a.go\n+++ b/a.go\n@@ -0,0 +2 @@\n+<<<<<<< HEAD\r\n+=======\r\n"); len(fs) != 2 {
 		t.Fatalf("a CRLF marker must count: %v", fs)
 	}
 	if fs := ScanDiff("diff --git a/a.md b/a.md\n+++ b/a.md\n@@ -0,0 +1 @@\n+a ======= b\n"); len(fs) != 0 {
@@ -387,7 +387,18 @@ func TestScanMainReportsBinaryFile(t *testing.T) {
 	old, _ := os.Getwd()
 	defer os.Chdir(old)
 	os.Chdir(dir)
-	if code := ScanMain([]string{"--base", "HEAD~1"}); code != 1 {
-		t.Fatalf("binaries must be findings, exit %d", code)
+	if code := ScanMain([]string{"--base", "HEAD~1"}); code != 0 {
+		t.Fatalf("binaries are warnings for a human look, not failures; exit %d", code)
+	}
+}
+
+func TestBareSeparatorNeedsAConflictStart(t *testing.T) {
+	banner := "diff --git a/x.txt b/x.txt\n+++ b/x.txt\n@@ -0,0 +1,2 @@\n+=======\n+title\n"
+	if fs, _ := scanDiff(banner); len(fs) != 0 {
+		t.Fatalf("a bare ======= with no <<<<<<< is not a conflict: %v", fs)
+	}
+	conflict := "diff --git a/x.txt b/x.txt\n+++ b/x.txt\n@@ -0,0 +1,3 @@\n+<<<<<<< HEAD\n+=======\n+>>>>>>> other\n"
+	if fs, _ := scanDiff(conflict); len(fs) != 3 {
+		t.Fatalf("all three markers of a real conflict: %v", fs)
 	}
 }

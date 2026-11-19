@@ -143,4 +143,14 @@ t "smithy agent strips parent harness vars" '[ "$(CLAUDECODE=1 WARDEN_HARNESS=pi
 t "harness ignores CODEX_HOME" '[ "$(env -i PATH=/usr/bin:/bin CODEX_HOME=/x SMITHY_BIN="$SMITHY_BIN" $S/smithy harness)" = "unknown any" ]'
 t "smithy agent pipes prompt to AGENT_CMD" '[ "$(AGENT_CMD=cat $S/smithy agent "$T/p.md")" = hi ]'
 
+# launcher download failures (copied away from the checkout so it can't build)
+L="$T/launch"; mkdir -p "$L/curl" "$L/gh"; cp "$S/smithy" "$L/smithy"; echo 0.0.0 > "$L/VERSION"
+printf '#!/bin/sh\necho "$@" > "%s/curl.args"\necho "curl: (22) The requested URL returned error: 404" >&2\nexit 22\n' "$L" > "$L/curl/curl"
+printf '#!/bin/sh\necho "release not found" >&2\nexit 1\n' > "$L/gh/gh"
+chmod +x "$L/curl/curl" "$L/gh/gh"
+LR() { env -u SMITHY_BIN SMITHY_HOME="$L/home" PATH="$1:/usr/bin:/bin" "$L/smithy" version 2>"$L/err"; }
+t "launcher: curl 404 exits 3 with one line" 'LR "$L/curl"; [ $? -eq 3 ] && [ "$(wc -l < "$L/err")" -eq 2 ] && grep -q "^smithy: can.t download v0.0.0 (smithy-.*\.gz): .*404" "$L/err" && ! grep -q awk "$L/err"'
+t "launcher: curl has timeouts" 'grep -q -- "--connect-timeout 10 --max-time 120" "$L/curl.args"'
+t "launcher: gh failure exits 3 with one line" 'LR "$L/gh"; [ $? -eq 3 ] && grep -q "^smithy: can.t download v0.0.0 (smithy-.*\.gz): release not found" "$L/err" && ! grep -q awk "$L/err"'
+
 echo "shared: $pass passed, $fail failed"; [ $fail -eq 0 ]

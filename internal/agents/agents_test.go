@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 )
 
 func env(m map[string]string) func(string) string { return func(k string) string { return m[k] } }
@@ -243,4 +244,70 @@ func TestAgentKind(t *testing.T) {
 	if tier, _ := Route("", "test", "normal"); tier != "mid" {
 		t.Errorf("test agent tier %s, want mid", tier)
 	}
+}
+
+func TestParseTimeout(t *testing.T) {
+	for in, want := range map[string]time.Duration{"90": 90 * time.Minute, "0": 0, "0.5": 30 * time.Second, "": 90 * time.Minute, "x": 90 * time.Minute, "Inf": 90 * time.Minute} {
+		if got := ParseTimeout(in); got != want {
+			t.Errorf("ParseTimeout(%q) = %v, want %v", in, got, want)
+		}
+	}
+}
+
+func timeoutPrompt(t *testing.T) (string, string) {
+	t.Helper()
+	d := t.TempDir()
+	p := filepath.Join(d, "prompt.md")
+	os.WriteFile(p, []byte("x"), 0o644)
+	t.Setenv("AGENT_CMD", "sleep 30 & echo started; wait")
+	return p, filepath.Join(d, "agent.log")
+}
+
+func TestAgentTimeout(t *testing.T) {
+	p, log := timeoutPrompt(t)
+	start := time.Now()
+	rc := AgentMain([]string{"--timeout", "0.02", "--log", log, p})
+	if rc != 124 {
+		t.Fatalf("timed-out run exited %d, want 124", rc)
+	}
+	if el := time.Since(start); el > 10*time.Second {
+		t.Fatalf("timeout not enforced: ran %v", el)
+	}
+	b, _ := os.ReadFile(log)
+	if !strings.Contains(string(b), "timed out after 0.02m") || !strings.Contains(string(b), "started") {
+		t.Errorf("log = %q", b)
+	}
+}
+
+func TestAgentNoTimeoutWhenZero(t *testing.T) {
+	p, log := timeoutPrompt(t)
+	t.Setenv("AGENT_CMD", "echo ok")
+	if rc := AgentMain([]string{"--timeout", "0", "--log", log, p}); rc != 0 {
+		t.Fatalf("rc = %d", rc)
+	}
+}
+
+func TestAgentTimeoutBackground(t *testing.T) {
+	p, log := timeoutPrompt(t)
+	t.Setenv("SMITHY_TEST_AGENT_MAIN", "1")
+	start := time.Now()
+	if rc := AgentMain([]string{"--bg", "--timeout", "0.02", "--log", log, p}); rc != 0 {
+		t.Fatalf("bg rc = %d", rc)
+	}
+	for time.Since(start) < 15*time.Second {
+		if b, _ := os.ReadFile(log); strings.Contains(string(b), "timed out after 0.02m") {
+			return
+		}
+		time.Sleep(200 * time.Millisecond)
+	}
+	b, _ := os.ReadFile(log)
+	t.Fatalf("background run not timed out; log = %q", b)
+}
+
+func advPrompt(t *testing.T) (string, string, string) {
+	t.Helper()
+	d := t.TempDir()
+	p := filepath.Join(d, "prompt.md")
+	os.WriteFile(p, []byte("x"), 0o644)
+	return d, p, filepath.Join(d, "agent.log")
 }

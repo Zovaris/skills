@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/Zovaris/smithy/internal/ghx"
@@ -158,33 +157,27 @@ func PRStateMain(args []string) int {
 		fmt.Fprintln(os.Stderr, prStateUsage)
 		return 2
 	}
-	if _, err := ghx.Run("gh", "auth", "status"); err != nil {
-		fmt.Fprintln(os.Stderr, "smithy pr-state: gh is missing or signed out: install the GitHub CLI and run `gh auth login`")
+	if err := ghx.Ready(); err != nil {
+		fmt.Fprintln(os.Stderr, "smithy pr-state:", err)
 		return 3
 	}
-	view, err := ghx.Run("gh", "pr", "view", args[0], "--json", "url,number,state,mergeable,reviewDecision,statusCheckRollup,headRefName,baseRefName,headRepositoryOwner,headRepository")
+	var raw json.RawMessage
+	if err := ghx.PRView(args[0], &raw); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return 1
+	}
+	view := []byte(raw)
+	repo, err := ghx.RepoName()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return 1
 	}
-	var repo struct {
-		Name  string `json:"name"`
-		Owner struct {
-			Login string `json:"login"`
-		} `json:"owner"`
-	}
-	if err := ghx.GH(&repo, "repo", "view", "--json", "owner,name"); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		return 1
-	}
 	var v stateView
-	if err := decode([]byte(view), &v); err != nil {
+	if err := decode(view, &v); err != nil {
 		fmt.Fprintln(os.Stderr, "smithy pr-state:", err)
 		return 1
 	}
-	thr, err := ghx.Run("gh", "api", "graphql", "-F", "owner="+repo.Owner.Login, "-F", "name="+repo.Name, "-F", "num="+strconv.Itoa(v.Number), "-f", `query=
-  query($owner:String!,$name:String!,$num:Int!){repository(owner:$owner,name:$name){pullRequest(number:$num){
-    reviewThreads(first:100){nodes{isResolved}}}}}`)
+	thr, err := ghx.ReviewThreads(repo, v.Number)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return 1
@@ -193,11 +186,11 @@ func PRStateMain(args []string) int {
 	if v.HeadOwner != nil && v.HeadOwner.Login != "" {
 		head = v.HeadOwner.Login + ":" + head
 	}
-	cmp, err := ghx.Run("gh", "api", "repos/"+repo.Owner.Login+"/"+repo.Name+"/compare/"+jqText(v.BaseRefName)+"..."+head)
+	cmp, err := ghx.Compare(repo, jqText(v.BaseRefName), head)
 	if err != nil {
-		cmp = `{"behind_by":0}`
+		cmp = []byte(`{"behind_by":0}`)
 	}
-	s, err := Summarize([]byte(view), []byte(thr), []byte(cmp))
+	s, err := Summarize(view, thr, cmp)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "smithy pr-state:", err)
 		return 1

@@ -70,6 +70,8 @@ func sandbox(t *testing.T) env {
 	t.Chdir(filepath.Join(root, "work"))
 	t.Setenv("PATH", bin+string(os.PathListSeparator)+os.Getenv("PATH"))
 	t.Setenv("FAKE_GH", data)
+	t.Setenv("GH_TOKEN", "")
+	t.Setenv("GITHUB_TOKEN", "")
 	t.Setenv("HOME", filepath.Join(root, "home"))
 	t.Setenv("SMITHY_HOME", filepath.Join(root, "smithy"))
 	t.Setenv("SMITHY_CONFIG", filepath.Join(root, "config.json"))
@@ -223,12 +225,8 @@ func TestPRWatcherError(t *testing.T) {
 }
 
 func TestPRArgs(t *testing.T) {
-	w := newPR("https://github.com/o/r/pull/12", allOpts())
-	if w.args[2] != "12" || w.args[len(w.args)-2] != "-R" || w.args[len(w.args)-1] != "o/r" {
-		t.Errorf("args %v", w.args)
-	}
-	if w := newPR("7", allOpts()); w.args[2] != "7" || len(w.args) != 5 {
-		t.Errorf("args %v", w.args)
+	if w := newPR("https://github.com/o/r/pull/12", allOpts()); w.ref != "https://github.com/o/r/pull/12" {
+		t.Errorf("ref %v", w.ref)
 	}
 }
 
@@ -564,7 +562,7 @@ func TestMainErrors(t *testing.T) {
 	}
 	e.rm("fail-pr-view")
 	e.put(t, "signedout", "")
-	if _, er, c := mainOut(t, "pr:1", "--max", "0"); c != 3 || !strings.Contains(er, "gh is missing") {
+	if _, er, c := mainOut(t, "pr:1", "--max", "0"); c != 3 || !strings.Contains(er, "signed out") {
 		t.Errorf("signed out: %d %q", c, er)
 	}
 	writeCard(t, "b1", "a", `{}`)
@@ -572,8 +570,8 @@ func TestMainErrors(t *testing.T) {
 		t.Errorf("batch needs no gh: %d", c)
 	}
 	t.Setenv("PATH", t.TempDir())
-	if _, _, c := mainOut(t, "pr:1", "--max", "0"); c != 3 {
-		t.Errorf("gh missing: %d", c)
+	if _, er, c := mainOut(t, "pr:1", "--max", "0"); c != 3 || !strings.Contains(er, "needs the GitHub CLI or GH_TOKEN") {
+		t.Errorf("gh missing: %d %q", c, er)
 	}
 }
 

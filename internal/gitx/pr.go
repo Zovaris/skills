@@ -14,7 +14,10 @@ import (
 const prUsage = `Pull requests that follow the repo's PR template.
   smithy pr template                        print the template path(s); exit 1 when the repo has none
   smithy pr create --base <b> --title "<t>" --body-file <f> [--draft]
-                                            open the PR for the current branch, or print the open one
+                                            open the PR for the current branch, or print the open one;
+                                            without gh or GH_TOKEN, push and print the compare URL
+  smithy pr merge <pr> [--rebase|--merge|--squash]
+                                            merge a PR (default --merge) with gh or the GitHub API
 With a template, the body must keep every heading of the template (fill them, write "N/A" when
 one doesn't apply). The title follows the commit style (smithy commit check).`
 
@@ -77,6 +80,9 @@ func PRMain(args []string) int {
 			return 0
 		}
 	}
+	if len(args) > 0 && args[0] == "merge" {
+		return prMerge(args[1:])
+	}
 	if len(args) == 0 || (args[0] != "template" && args[0] != "create") {
 		fmt.Println(prUsage)
 		return 2
@@ -126,7 +132,7 @@ func PRMain(args []string) int {
 	var open []struct {
 		URL string `json:"url"`
 	}
-	if ghx.GH(&open, "pr", "list", "--head", branch, "--state", "open", "--json", "url") == nil && len(open) > 0 && open[0].URL != "" {
+	if ghx.PRList(branch, "open", &open) == nil && len(open) > 0 && open[0].URL != "" {
 		fmt.Println(open[0].URL)
 		return 0
 	}
@@ -144,9 +150,47 @@ func PRMain(args []string) int {
 	if c := attached("git", "push", "-q", "-u", "origin", branch); c != 0 {
 		return c
 	}
-	ca := []string{"pr", "create", "--base", base, "--head", branch, "--title", title, "--body-file", body}
-	if draft {
-		ca = append(ca, "--draft")
+	if ghx.Mode() == "none" {
+		repo, err := ghx.RepoName()
+		if err != nil {
+			return die(p, "%s; open the PR on GitHub", err)
+		}
+		fmt.Fprintf(os.Stderr, "smithy pr: no GitHub CLI and no GH_TOKEN: open the PR from this URL\n")
+		fmt.Println(ghx.CompareURL(repo, base, branch))
+		return 0
 	}
-	return attached("gh", ca...)
+	u, err := ghx.PRCreate(base, branch, title, body, draft)
+	if err != nil {
+		return die(p, "%s", err)
+	}
+	fmt.Println(u)
+	return 0
+}
+
+// prMerge runs `smithy pr merge <pr> [--rebase|--merge|--squash]`.
+func prMerge(args []string) int {
+	const p = "smithy pr"
+	const use = "usage: smithy pr merge <pr> [--rebase|--merge|--squash]"
+	ref, method := "", "merge"
+	for _, a := range args {
+		switch a {
+		case "--rebase", "--merge", "--squash":
+			method = strings.TrimPrefix(a, "--")
+		default:
+			if strings.HasPrefix(a, "-") || ref != "" {
+				die(p, use)
+				return 2
+			}
+			ref = a
+		}
+	}
+	if ref == "" {
+		die(p, use)
+		return 2
+	}
+	if err := ghx.PRMerge(ref, method); err != nil {
+		return die(p, "%s", err)
+	}
+	fmt.Println("merged " + ref)
+	return 0
 }

@@ -330,3 +330,39 @@ func TestRepeatedValueFlagLastWins(t *testing.T) {
 		t.Errorf("tasks add --key A-1 --key B-2 wrote:\n%s", b)
 	}
 }
+
+func TestNoGitHubAccess(t *testing.T) {
+	repo, env := sandbox(t)
+	if out, e, code := run(t, repo, env, "pr-state", "1"); code != 3 || !strings.Contains(e, "needs the GitHub CLI or GH_TOKEN") {
+		t.Errorf("pr-state: exit %d, out %q, err %q", code, out, e)
+	}
+	if out, e, code := run(t, repo, env, "pr", "merge", "1", "--rebase"); code == 0 || !strings.Contains(e, "needs the GitHub CLI or GH_TOKEN") {
+		t.Errorf("pr merge: exit %d, out %q, err %q", code, out, e)
+	}
+	if out, e, code := run(t, repo, env, "pr", "merge"); code != 2 || !strings.Contains(e, "usage: smithy pr merge") {
+		t.Errorf("pr merge usage: exit %d, out %q, err %q", code, out, e)
+	}
+}
+
+func TestPRCreatePrintsCompareURLWithoutGitHub(t *testing.T) {
+	repo, env := sandbox(t)
+	bare := filepath.Join(filepath.Dir(repo), "origin.git")
+	for _, args := range [][]string{
+		{"init", "-q", "--bare", bare},
+		{"-C", repo, "remote", "add", "origin", "https://github.com/o/r.git"},
+		{"-C", repo, "config", "url." + bare + ".pushInsteadOf", "https://github.com/o/r.git"},
+		{"-C", repo, "checkout", "-q", "-b", "feat/x"},
+	} {
+		c := exec.Command("git", args...)
+		c.Env = env
+		if out, err := c.CombinedOutput(); err != nil {
+			t.Fatalf("git %v: %v\n%s", args, err, out)
+		}
+	}
+	body := filepath.Join(filepath.Dir(repo), "body.md")
+	os.WriteFile(body, []byte("what and why"), 0o644)
+	out, e, code := run(t, repo, env, "pr", "create", "--base", "main", "--title", "feat: x", "--body-file", body)
+	if code != 0 || strings.TrimSpace(out) != "https://github.com/o/r/compare/main...feat/x?expand=1" || !strings.Contains(e, "open the PR") {
+		t.Errorf("pr create: exit %d, out %q, err %q", code, out, e)
+	}
+}

@@ -113,17 +113,13 @@ type prState struct {
 }
 
 type prWatcher struct {
-	args []string
+	ref  string
 	last *prState
 	o    opts
 }
 
 func newPR(ref string, o opts) *prWatcher {
-	args := []string{"pr", "view", idOf(ref, `/pull/(\d+)`), "--json", "number,url,state,mergeable,reviewDecision,statusCheckRollup,headRefOid,comments,reviews"}
-	if r := repoOf(ref); r != "" {
-		args = append(args, "-R", r)
-	}
-	return &prWatcher{args: args, o: o}
+	return &prWatcher{ref: ref, o: o}
 }
 
 func (w *prWatcher) read() (*prState, error) {
@@ -138,7 +134,7 @@ func (w *prWatcher) read() (*prState, error) {
 		Comments          []json.RawMessage
 		Reviews           []json.RawMessage
 	}
-	if err := ghx.GH(&p, w.args...); err != nil {
+	if err := ghx.PRView(w.ref, &p); err != nil {
 		return nil, err
 	}
 	return &prState{url: p.URL, num: p.Number, state: p.State, mergeable: p.Mergeable, review: p.ReviewDecision, head: p.HeadRefOid,
@@ -213,17 +209,11 @@ func ok(conclusion string) bool {
 }
 
 type runWatcher struct {
-	id   string
-	args []string
+	id, ref string
 }
 
 func newRun(ref string) *runWatcher {
-	id := idOf(ref, `/runs/(\d+)`)
-	args := []string{"run", "view", id, "--json", "status,conclusion,name,url,jobs"}
-	if r := repoOf(ref); r != "" {
-		args = append(args, "-R", r)
-	}
-	return &runWatcher{id, args}
+	return &runWatcher{idOf(ref, `/runs/(\d+)`), ref}
 }
 
 func (w *runWatcher) poll() ([]string, error) {
@@ -231,7 +221,7 @@ func (w *runWatcher) poll() ([]string, error) {
 		Status, Conclusion, Name, URL string
 		Jobs                          []job
 	}
-	if err := ghx.GH(&r, w.args...); err != nil {
+	if err := ghx.RunView(w.ref, &r); err != nil {
 		return nil, err
 	}
 	if r.Status != "completed" {
@@ -256,7 +246,7 @@ func (w branchWatcher) poll() ([]string, error) {
 	var runs []struct {
 		Status, Conclusion, Name, HeadSha, CreatedAt string
 	}
-	if err := ghx.GH(&runs, "run", "list", "--branch", w.name, "--limit", "30", "--json", "status,conclusion,name,headSha,createdAt"); err != nil {
+	if err := ghx.RunList(w.name, &runs); err != nil {
 		return nil, err
 	}
 	if len(runs) == 0 {
@@ -300,13 +290,13 @@ type listWatcher struct {
 }
 
 func newList(kind, label string, o opts) (*listWatcher, error) {
-	repo, err := ghx.Run("gh", "repo", "view", "--json", "nameWithOwner", "-q", ".nameWithOwner")
+	repo, err := ghx.RepoName()
 	if err != nil {
 		return nil, err
 	}
 	w := &listWatcher{kind: kind, label: label, o: o}
 	if kind == "pr" {
-		w.me, _ = ghx.Run("gh", "api", "user", "-q", ".login")
+		w.me, _ = ghx.CurrentUser()
 	}
 	dir := os.Getenv("TEND_HOME")
 	if dir == "" {
@@ -357,7 +347,7 @@ func (w *listWatcher) snapshot() ([]item, error) {
 			Author      struct{ Login string }
 			Labels      []struct{ Name string }
 		}
-		if err := ghx.GH(&prs, "pr", "list", "--state", "open", "--limit", "100", "--json", "number,url,headRefName,author,labels,updatedAt"); err != nil {
+		if err := ghx.PRList("", "open", &prs); err != nil {
 			return nil, err
 		}
 		mine := batchBranches()
@@ -383,7 +373,7 @@ func (w *listWatcher) snapshot() ([]item, error) {
 		URL       string
 		UpdatedAt string
 	}
-	if err := ghx.GH(&issues, "issue", "list", "--state", "open", "--limit", "100", "--label", label, "--json", "number,url,updatedAt"); err != nil {
+	if err := ghx.IssueList(label, &issues); err != nil {
 		return nil, err
 	}
 	for _, i := range issues {
@@ -496,7 +486,7 @@ Targets (any mix):
   batch:<name>        a warden card needs the warden (--all: any card change); polls every 10 s
   watch[:prs|issues|all]  tend's watch mode: new or updated PRs and/or labeled issues
                       (scope from tend.watch, label from tend.label)
-Finished checks are reported at once. Exit 0 = events, 4 = heartbeat, 2 = bad target, 3 = gh missing or signed out.
+Finished checks are reported at once. Exit 0 = events, 4 = heartbeat, 2 = bad target, 3 = no GitHub access (gh missing or signed out and no GH_TOKEN).
 Defaults: settings watch.events, watch.every (30 s), watch.max (50 min).`
 
 // expandWatch turns `watch[:prs|issues|all]` into prs and issues targets, the scope and label
@@ -612,8 +602,8 @@ func Main(args []string) int {
 	}
 	for _, t := range targets {
 		if !strings.HasPrefix(t, "batch:") {
-			if _, err := ghx.Run("gh", "auth", "status"); err != nil {
-				fmt.Fprintln(os.Stderr, "gh is missing or signed out: install the GitHub CLI and run `gh auth login`")
+			if err := ghx.Ready(); err != nil {
+				fmt.Fprintln(os.Stderr, "smithy wait:", err)
 				return 3
 			}
 			break

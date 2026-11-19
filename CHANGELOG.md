@@ -5,6 +5,8 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+## v0.10.0 — 2026-11-19
+
 - Audit fixes after the gh-optional batch: warden's final message shows the Decisions and
   Followups lines, workers and tend merge with `smithy pr merge`, smelt proposes up to 3 lessons and
   only skips asking about speed under hush, warden doesn't launch ship items with no GitHub access,

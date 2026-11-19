@@ -121,11 +121,12 @@ user's task settings (`smithy config get tasks.location|tasks.commit`): `~/.smit
 when local, else `docs/specs/inbox/` (committed) or `.docs/specs/inbox/` (not committed); then
 add one line to the issue ("queued for an agent"). Not
 accepted → leave it alone. Report the queued ones: on the card's `note`, or one line each at the
-end (`queued <issue-url> → <task file>`). Building them is warden's job (`/warden <inbox dir>`).
+end (`queued <issue-url> → <task file>`). Building them is warden's job (start warden on the inbox dir).
 
 ## End
 
-One line per PR or issue, nothing else:
+One line per PR or issue, nothing else; when launched as a subagent, a last line
+`done: <result>` follows them:
 
 ```
 merged <url>
@@ -133,4 +134,5 @@ green <url>
 closed <url>
 needs you <url>: <why, one line>
 queued <issue-url> → <task file>
+done: <one-line result>      (subagent only)
 ```

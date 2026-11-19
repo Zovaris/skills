@@ -96,7 +96,7 @@ smithy tasks board [--all]        # one line per task list and batch: this repo,
 ## After the list is written
 
 Ask how to run it, recommendation first, only offering what is installed:
-- **Here, one at a time:** `/smelt build next` (repeat until `smithy tasks next` says all done).
+- **Here, one at a time:** smelt `build next` (e.g. `/smelt build next`; repeat until `smithy tasks next` says all done).
 - **In parallel:** warden on the task dir (read the SKILL.md `smithy skills warden` prints) when
   it is installed (it is listed among
   your skills, or `<skill-dir>/../warden/SKILL.md` exists). Mixing is fine: build some here,

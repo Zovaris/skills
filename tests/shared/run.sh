@@ -77,6 +77,9 @@ git push -q origin t1 2>/dev/null
 t "cleans pushed branch" '$S/smithy cleanup . t1 && ! git show-ref -q --verify refs/heads/t1'
 git worktree add -q -b t2 "$T/wt2" main; echo dirty > "$T/wt2/x"
 t "keeps dirty worktree" '! $S/smithy cleanup . t2 && [ -d "$T/wt2" ]'
+git worktree add -q -b t3 "$T/wt3" origin/main; (cd "$T/wt3" && echo r > r.txt && git add r.txt && git commit -q -m "feat(x): rebased")
+git worktree add -q --detach "$T/wt4" origin/main; (cd "$T/wt4" && git commit -q --allow-empty -m "chore: other" && git cherry-pick t3 >/dev/null && git push -q origin HEAD:main 2>/dev/null); git worktree remove --force "$T/wt4"; git fetch -q origin
+t "cleans a branch whose commits landed rebased" '$S/smithy cleanup . t3 && ! git show-ref -q --verify refs/heads/t3'
 
 # smithy tasks
 mkdir -p docs/specs/pay

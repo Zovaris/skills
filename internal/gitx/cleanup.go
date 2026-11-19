@@ -72,7 +72,7 @@ func CleanupMain(args []string) int {
 		base = "origin/main"
 	}
 	unpushed := git("rev-list", branch, "--not", "--remotes")
-	if force || quiet("git", "merge-base", "--is-ancestor", branch, base) == nil || unpushed == "" {
+	if force || quiet("git", "merge-base", "--is-ancestor", branch, base) == nil || unpushed == "" || landed(branch, base) {
 		if stderrOnly("git", "branch", "-D", branch) == nil {
 			fmt.Println("cleaned", branch)
 			return 0
@@ -80,4 +80,11 @@ func CleanupMain(args []string) int {
 	}
 	fmt.Printf("kept %s: has commits not on any remote; push it or pass --force\n", branch)
 	return 1
+}
+
+// landed reports whether every commit of branch not in base has an equivalent change in base,
+// as after a rebase merge rewrote its hashes.
+func landed(branch, base string) bool {
+	out := git("cherry", base, branch)
+	return out != "" && !strings.Contains("\n"+out, "\n+")
 }

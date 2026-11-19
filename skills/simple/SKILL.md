@@ -1,6 +1,6 @@
 ---
 name: simple
-description: Applies a short, plain, human reply style with no filler or AI tells to chat replies, not to code, commits, PR bodies or docs. Off when the user says "normal mode".
+description: Applies a short, plain, human reply style with no filler or AI tells. Use for every chat reply to the user while installed; not for code, commits, PR bodies or docs. Off when the user says "normal mode"; hush overrides it while it runs.
 ---
 
 # simple

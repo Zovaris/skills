@@ -5,6 +5,11 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+### models
+- smithy ships no model names: `smithy config suggest-models` and `accept-models` are gone. The
+  first time a tier is needed the skill asks the user to name it and saves it with
+  `smithy config set-model` in `~/.smithy/config.json`; a session that can't ask uses its own model.
+
 ### from the smelt validation run
 - The launcher builds the dev binary per checkout (`~/.smithy/bin/dev/<checkout id>`), so
   parallel worktrees never run each other's build.

@@ -61,10 +61,10 @@ Not installed? Do the work the plain way and, once, mention the skill that would
   comments only, the "why" lives in docs.
 - Models come in three tiers per harness (cheap, mid, strong); `smithy route` picks the tier per job
   and `smithy config model <tier>` gives the model. When a tier is unset (exit 3, or `-` from
-  smithy route): run `smithy config suggest-models`. If it prints suggestions, propose them in
-  one line ("cheap <model>, mid <model>, strong <model> for this harness, ok?") and on a yes run
-  `smithy config accept-models`. If it prints none, ask the user to name each tier and save them with
-  `smithy config set-model <tier> <name>`. Ask once per harness; until then use the session's model.
+  smithy route), ask the user in one message to name each unset tier for this harness (smithy
+  ships no model names) and save them with `smithy config set-model <tier> <name>`; they live in
+  the user's `~/.smithy/config.json`, never in a repo. Ask once per harness; until then use the
+  session's model.
   Under hush, or in a session another one launched (it can't ask), don't ask: use the session's
   model and say so at the end. `smithy route --agent <file>` routes a smelt agent.
 - Ask only for decisions that are the user's: scope, money, prod, data, security, irreversible

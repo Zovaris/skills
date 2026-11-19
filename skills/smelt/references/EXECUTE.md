@@ -10,9 +10,9 @@ alternative.
 Each implementer gets the model `smithy route --file <task file> --speed <speed>` picks
 (cheap, mid or strong, from the task's risk, difficulty and size); reviewers use
 `smithy route --kind review`; the last fix round goes one tier up. You may move a pick one tier with
-a reason; a model the user named always wins. A tier whose model is unset prints `-`: propose
-`smithy config suggest-models` and save on a yes (`smithy config accept-models`), or ask for each
-tier when there are no suggestions; until then use the session default.
+a reason; a model the user named always wins. A tier whose model is unset prints `-`: ask the
+user once to name it and save it with `smithy config set-model <tier> <name>`; until then, or when
+you can't ask, use the session default.
 
 ## Loop
 

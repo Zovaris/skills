@@ -8,7 +8,6 @@ import (
 	"testing"
 )
 
-// strictAPI fails on any request whose path is not in allowed.
 func strictAPI(t *testing.T, allowed map[string]string) *int32 {
 	var hits int32
 	apiMode(t, func(w http.ResponseWriter, r *http.Request) {
@@ -84,7 +83,7 @@ func TestEdgeRunListBranchSpecialChars(t *testing.T) {
 func TestEdgeCompareTraversal(t *testing.T) {
 	strictAPI(t, map[string]string{"/repos/o/r/compare/main...b%3Fx=1": `{}`})
 	for _, c := range [][3]string{{"o/r", "../../../user", "b"}, {"o/r/../../x", "main", "b"}, {"o/r", "main", "b?x=1"}, {"o", "main", "b"}} {
-		Compare(c[0], c[1], c[2]) // strictAPI fails any request outside the allowed, escaped path
+		Compare(c[0], c[1], c[2])
 	}
 }
 
@@ -163,7 +162,6 @@ func TestEdgeTokenWithNewline(t *testing.T) {
 }
 
 func TestEdgeTokenTrailingWhitespace(t *testing.T) {
-	// tokens pasted from files often end in \n; the auth header must still be exact
 	apiMode(t, func(w http.ResponseWriter, r *http.Request) { io.WriteString(w, `{"login":"me"}`) })
 	t.Setenv("GH_TOKEN", testToken+"\n")
 	if u, err := CurrentUser(); err != nil || u != "me" {
@@ -197,7 +195,6 @@ func TestEdgeEndpointsHostEdge(t *testing.T) {
 }
 
 func TestEdgeBadGHHostNoRequest(t *testing.T) {
-	// with a bad GH_HOST the token must not go anywhere, and error must not echo it
 	noGH(t)
 	t.Setenv("GH_TOKEN", testToken)
 	t.Setenv("GH_HOST", "evil.com/x")

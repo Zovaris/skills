@@ -167,7 +167,6 @@ func PRMain(args []string) int {
 	return 0
 }
 
-// prMerge runs `smithy pr merge <pr> [--rebase|--merge|--squash]`.
 func prMerge(args []string) int {
 	const p = "smithy pr"
 	const use = "usage: smithy pr merge <pr> [--rebase|--merge|--squash]"

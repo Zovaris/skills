@@ -13,7 +13,6 @@ import (
 
 const testToken = "ghp_secretTOKEN123"
 
-// noGH hides gh from PATH and clears the token env.
 func noGH(t *testing.T) {
 	t.Helper()
 	t.Setenv("PATH", t.TempDir())
@@ -22,7 +21,6 @@ func noGH(t *testing.T) {
 	t.Setenv("GH_HOST", "")
 }
 
-// apiMode serves the GitHub API from h, with a token set, no gh and origin o/r.
 func apiMode(t *testing.T, h http.HandlerFunc) {
 	t.Helper()
 	noGH(t)
@@ -421,5 +419,17 @@ func TestGHModeUsesCLI(t *testing.T) {
 		if !strings.Contains(string(b), want) {
 			t.Errorf("missing %q in\n%s", want, b)
 		}
+	}
+}
+
+func TestDashRefRejected(t *testing.T) {
+	noGH(t)
+	fakeGH(t, `echo ran >&2; exit 9`)
+	var v any
+	if err := PRView("--web", &v); err == nil || !strings.Contains(err.Error(), "not a pull request") {
+		t.Fatalf("view: %v", err)
+	}
+	if err := PRMerge("--admin", "merge"); err == nil || !strings.Contains(err.Error(), "not a pull request") {
+		t.Fatalf("merge: %v", err)
 	}
 }

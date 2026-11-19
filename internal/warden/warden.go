@@ -202,7 +202,6 @@ var findSkill = agents.FindSkill
 
 var allowRe = regexp.MustCompile(`"behavior"\s*:\s*"allow"`)
 
-// githubMode reports how smithy reaches GitHub: gh, token or none.
 func githubMode(r *report) {
 	switch ghx.Mode() {
 	case "gh":

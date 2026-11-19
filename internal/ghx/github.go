@@ -1,10 +1,5 @@
 package ghx
 
-// The one seam between smithy and GitHub. With the GitHub CLI each operation runs gh; without it,
-// the REST/GraphQL API over HTTPS with a token from GH_TOKEN or GITHUB_TOKEN. Every operation
-// returns the JSON shape `gh ... --json` would, so callers decode the same structs either way.
-// The token only ever goes in the Authorization header, to api.github.com or GH_HOST's API.
-
 import (
 	"bytes"
 	"encoding/json"
@@ -26,9 +21,9 @@ var ErrNoGitHub = errors.New("needs the GitHub CLI or GH_TOKEN (or GITHUB_TOKEN)
 
 var (
 	lookPath     = exec.LookPath
-	baseOverride string // tests only: serve REST and GraphQL from this URL
+	baseOverride string
 	originURL    = func() string { s, _ := Run("git", "remote", "get-url", "origin"); return s }
-	httpClient   = &http.Client{Timeout: 30 * time.Second}
+	httpClient   = &http.Client{Timeout: 30 * time.Second, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
 
 	hostRe   = regexp.MustCompile(`^[A-Za-z0-9]([A-Za-z0-9.-]*[A-Za-z0-9])?(:[0-9]{1,5})?$`)
 	pullRe   = regexp.MustCompile(`/([^/\s]+/[^/\s]+)/pull/(\d+)/?$`)
@@ -90,7 +85,6 @@ func host() string {
 	return "github.com"
 }
 
-// endpoints returns the REST base, the GraphQL URL and the web base for GH_HOST.
 func endpoints() (rest, gql, web string, err error) {
 	if baseOverride != "" {
 		return baseOverride, baseOverride + "/graphql", "https://github.com", nil
@@ -108,6 +102,11 @@ func endpoints() (rest, gql, web string, err error) {
 // CompareURL is the web page that opens a PR from head into base.
 func CompareURL(repo, base, head string) string {
 	base, head = refEscape(base), refEscape(head)
+	if o, n, err := splitRepo(repo); err == nil {
+		repo = o + "/" + n
+	} else {
+		repo = url.PathEscape(repo)
+	}
 	web := "https://" + host()
 	if !hostRe.MatchString(host()) {
 		web = "https://github.com"
@@ -133,7 +132,6 @@ func splitRepo(repo string) (string, string, error) {
 	return url.PathEscape(o), url.PathEscape(n), nil
 }
 
-// call does one REST request; path is relative to the API base and holds no secrets.
 func call(method, path string, in, out any) error {
 	rest, _, _, err := endpoints()
 	if err != nil {
@@ -190,7 +188,6 @@ func send(method, u string, in any) ([]byte, error) {
 	return b, nil
 }
 
-// refEscape escapes a branch for a URL path, keeping its slashes.
 func refEscape(s string) string { return strings.ReplaceAll(url.PathEscape(s), "%2F", "/") }
 
 func redact(s, tok string) string { return strings.ReplaceAll(s, tok, "***") }
@@ -211,7 +208,6 @@ func graphql(query string, vars map[string]any) ([]byte, error) {
 	return b, nil
 }
 
-// via picks the backend: gh runs ghFn, the API runs apiFn, none fails with ErrNoGitHub.
 func via(ghFn, apiFn func() error) error {
 	switch Mode() {
 	case "gh":
@@ -241,7 +237,6 @@ func RepoName() (string, error) {
 	return "", fmt.Errorf("origin is not a %s remote", host())
 }
 
-// repoOf is the repo a PR or run URL names, else the origin's.
 func repoOf(ref string, re *regexp.Regexp) (string, error) {
 	if m := re.FindStringSubmatch(ref); m != nil {
 		return m[1], nil
@@ -249,7 +244,6 @@ func repoOf(ref string, re *regexp.Regexp) (string, error) {
 	return RepoName()
 }
 
-// prNumber resolves a number, PR URL or branch name to repo and PR number.
 func prNumber(ref string) (string, int, error) {
 	repo, err := repoOf(ref, pullRe)
 	if err != nil {
@@ -297,6 +291,9 @@ const viewQuery = `query($owner:String!,$name:String!,$num:Int!){repository(owne
 
 // PRView is `gh pr view <ref> --json <all fields smithy reads>`; ref is a number, URL or branch.
 func PRView(ref string, v any) error {
+	if strings.HasPrefix(ref, "-") {
+		return fmt.Errorf("not a pull request: %q", ref)
+	}
 	return via(func() error {
 		return GH(v, "pr", "view", ref, "--json", viewFields)
 	}, func() error {
@@ -455,6 +452,9 @@ func PRCreate(base, head, title, bodyFile string, draft bool) (string, error) {
 func PRMerge(ref, method string) error {
 	if method != "merge" && method != "rebase" && method != "squash" {
 		return fmt.Errorf("merge method must be merge, rebase or squash, not %q", method)
+	}
+	if strings.HasPrefix(ref, "-") {
+		return fmt.Errorf("not a pull request: %q", ref)
 	}
 	return via(func() error {
 		_, err := Run("gh", "pr", "merge", ref, "--"+method)

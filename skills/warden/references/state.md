@@ -40,7 +40,8 @@ a running worker.
 
 ## Other files
 
-- `decisions.md` (yours): one line per decision settled without the user.
+- `decisions.md` (yours): one line per decision settled without the user. Read at batch end and listed in the final message
+  (`references/acting.md`, batch end), together with the cards' `followup:` notes.
 - `<id>.brief.md`, `<id>.inbox.md`, `<id>.log`: the worker's brief, messages for respawns, its log.
 - `<id>/report.md`: scout reports. `followups/`: task files workers write after a merge when there
   is no task dir.

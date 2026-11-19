@@ -9,6 +9,8 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
   `references/STANDARDS-FORMAT.md` (line format, ~30-rule budget, retire rules), a `standard` mode,
   `init` creates SCRIPTS.md, DRIFT.md proposes retiring lines whose path is gone; a test pins
   that `smithy drift` reports missing paths in STANDARDS.md.
+- warden's final message lists every `decisions.md` entry and card `followup:` note with its PR,
+  marks reusable rules as candidate standards (proposal only), or says `no decisions or followups`.
 
 ## v0.9.1 — 2026-11-19
 

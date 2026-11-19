@@ -97,14 +97,16 @@ func TestVerdict(t *testing.T) {
 		anc                      func() bool
 		want                     string
 	}{
-		{"MERGED", "fail", "", false, "x", no, "merged"},
-		{"CLOSED", "pass", "", false, "", no, "closed"},
-		{"OPEN", "pass", "MERGEABLE", false, "zzz", no, "unpushed"},
-		{"OPEN", "pass", "MERGEABLE", false, "old", yes, "green"},
-		{"OPEN", "pass", "MERGEABLE", true, "", no, "pending"},
-		{"OPEN", "fail", "MERGEABLE", false, "", no, "red"},
+		{"MERGED", "red", "", false, "x", no, "merged"},
+		{"CLOSED", "green", "", false, "", no, "closed"},
+		{"OPEN", "green", "MERGEABLE", false, "zzz", no, "unpushed"},
+		{"OPEN", "green", "MERGEABLE", false, "old", yes, "green"},
+		{"OPEN", "green", "MERGEABLE", true, "", no, "draft"},
+		{"OPEN", "pending", "MERGEABLE", true, "", no, "pending"},
+		{"OPEN", "red", "MERGEABLE", true, "", no, "red"},
+		{"OPEN", "red", "MERGEABLE", false, "", no, "red"},
 		{"OPEN", "pending", "MERGEABLE", false, "", no, "pending"},
-		{"OPEN", "pass", "CONFLICTING", false, "", no, "red"},
+		{"OPEN", "green", "CONFLICTING", false, "", no, "red"},
 		{"OPEN", "none", "MERGEABLE", false, "head", no, "green"},
 	}
 	for _, c := range cases {
@@ -130,8 +132,8 @@ func TestSummarize(t *testing.T) {
 		view, thr, cmp string
 		want           map[string]any
 	}{
-		{"view-red.json", "threads-2open.json", "compare-behind.json", map[string]any{"checks": "fail", "mergeable": "CONFLICTING", "review": "CHANGES_REQUESTED", "unresolved": 2.0, "behind": 3.0, "head": "warden/t1"}},
-		{"view-green.json", "threads-none.json", "compare-even.json", map[string]any{"checks": "pass", "review": "none", "unresolved": 0.0, "behind": 0.0}},
+		{"view-red.json", "threads-2open.json", "compare-behind.json", map[string]any{"checks": "red", "mergeable": "CONFLICTING", "review": "CHANGES_REQUESTED", "unresolved": 2.0, "behind": 3.0, "head": "warden/t1"}},
+		{"view-green.json", "threads-none.json", "compare-even.json", map[string]any{"checks": "green", "review": "none", "unresolved": 0.0, "behind": 0.0}},
 		{"view-pending.json", "threads-none.json", "compare-even.json", map[string]any{"checks": "pending", "review": "none"}},
 		{"view-nochecks.json", "threads-none.json", "compare-even.json", map[string]any{"state": "MERGED", "checks": "none"}},
 	}

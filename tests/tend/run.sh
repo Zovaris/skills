@@ -18,14 +18,14 @@ done
 
 st() { $S/scripts/smithy pr-state --from "$F/$1" "$F/$2" "$F/$3"; }
 o="$(st view-red.json threads-2open.json compare-behind.json)"
-eq "red: checks"     "$(jq -r .checks <<<"$o")" fail
+eq "red: checks"     "$(jq -r .checks <<<"$o")" red
 eq "red: mergeable"  "$(jq -r .mergeable <<<"$o")" CONFLICTING
 eq "red: review"     "$(jq -r .review <<<"$o")" CHANGES_REQUESTED
 eq "red: unresolved" "$(jq -r .unresolved <<<"$o")" 2
 eq "red: behind"     "$(jq -r .behind <<<"$o")" 3
 eq "red: head"       "$(jq -r .head <<<"$o")" warden/t1
 o="$(st view-green.json threads-none.json compare-even.json)"
-eq "green: checks"     "$(jq -r .checks <<<"$o")" pass
+eq "green: checks"     "$(jq -r .checks <<<"$o")" green
 eq "green: review"     "$(jq -r .review <<<"$o")" none
 eq "green: unresolved" "$(jq -r .unresolved <<<"$o")" 0
 eq "green: behind"     "$(jq -r .behind <<<"$o")" 0

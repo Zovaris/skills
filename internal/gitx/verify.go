@@ -10,7 +10,7 @@ import (
 	"github.com/Zovaris/smithy/internal/ghx"
 )
 
-const verifyUsage = "usage: smithy verify <repo-dir> <branch> [pr]\n  <repo-dir> is the local checkout path (\".\" for here), not owner/name"
+const verifyUsage = "usage: smithy verify <repo-dir> <branch> [pr]\n  <repo-dir> is the local checkout path (\".\" for here), not owner/name\nverdicts: green or merged (exit 0); draft, everything green but still a draft (exit 3);\npending, red, unpushed, closed, no-pr (exit 1). checks= is green, red, pending or none."
 
 var (
 	failRe    = regexp.MustCompile(`(?i)FAIL|ERROR|CANCEL|TIMED_OUT|ACTION_REQUIRED`)
@@ -33,7 +33,7 @@ func (r Rollup) outcome() string {
 	return "PENDING"
 }
 
-// Checks sums a statusCheckRollup into pass, fail, pending or none, using these patterns.
+// Checks sums a statusCheckRollup into green, red, pending or none, using these patterns.
 func Checks(rollup []Rollup, fail, pending *regexp.Regexp) string {
 	if len(rollup) == 0 {
 		return "none"
@@ -48,11 +48,11 @@ func Checks(rollup []Rollup, fail, pending *regexp.Regexp) string {
 	}
 	switch {
 	case anyOf(fail):
-		return "fail"
+		return "red"
 	case anyOf(pending):
 		return "pending"
 	}
-	return "pass"
+	return "green"
 }
 
 type prView struct {
@@ -89,17 +89,13 @@ func Verdict(state, checks, mergeable string, draft bool, local, head string, an
 	if local != "" && local != head && !ancestor() {
 		return "unpushed"
 	}
-	if draft {
-		return "pending"
-	}
-	switch checks {
-	case "fail":
+	switch {
+	case checks == "red" || mergeable == "CONFLICTING":
 		return "red"
-	case "pending":
+	case checks == "pending":
 		return "pending"
-	}
-	if mergeable == "CONFLICTING" {
-		return "red"
+	case draft:
+		return "draft"
 	}
 	return "green"
 }
@@ -146,8 +142,11 @@ func VerifyMain(args []string) int {
 		short = short[:7]
 	}
 	fmt.Printf("%s pr=%s state=%s head=%s checks=%s mergeable=%s draft=%s\n", verdict, jqText(v.URL), state, short, checks, mergeable, draft)
-	if verdict == "green" || verdict == "merged" {
+	switch verdict {
+	case "green", "merged":
 		return 0
+	case "draft":
+		return 3
 	}
 	return 1
 }

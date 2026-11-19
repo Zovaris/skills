@@ -5,6 +5,11 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+- `smithy wait pr:` ignores check results left over from the previous head after a push and
+  reports only the current head's; `smithy commit style` prints the 72-char subject limit it
+  enforces; smelt's spec-check and standards agents diff against
+  `git merge-base origin/<base> HEAD`, never a local base branch.
+
 ## v0.10.0 — 2026-11-19
 
 - Audit fixes after the gh-optional batch: warden's final message shows the Decisions and

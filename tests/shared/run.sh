@@ -102,7 +102,7 @@ t "model saved per harness" '[ "$($S/smithy config model cheap)" = mini ] && jq 
 
 (cd "$T/repo" && $S/smithy config set --repo tasks.commit false >/dev/null)
 t "repo setting overrides, false kept as false" '[ "$(cd "$T/repo" && $S/smithy config get tasks.commit)" = false ]'
-t "default applies when unset" '[ "$(cd "$T/repo" && $S/smithy config get warden.merge)" = auto ]'
+t "default applies when unset" '[ "$(cd "$T/repo" && $S/smithy config get warden.cleanup)" = auto ]'
 t "no default → exit 3" '(cd "$T/repo" && $S/smithy config get tasks.ignore); [ $? -eq 3 ]'
 t "task-dir asks for tasks.ignore" 'o="$(cd "$T/repo" && $S/smithy task-dir pay)"; [ $? -eq 3 ] && grep -q "^ask tasks.ignore" <<<"$o"'
 (cd "$T/repo" && $S/smithy config set --repo tasks.ignore exclude >/dev/null && $S/smithy task-dir pay >/dev/null && $S/smithy task-dir pay >/dev/null)

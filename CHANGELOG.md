@@ -9,6 +9,12 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
   receipts, scan); a real batch showed workers stopping after build and skipping review.
 - README: proof (receipts, scan), your say on merges, and who can start each skill; the flow
   diagram shows the proof step.
+- smelt and warden: the PR body file goes inside the worktree's `.smelt/` or the system temp
+  dir, never next to the worktree.
+- warden: the worker brief's wait targets read `run:<run-id>` and `branch:<branch-name>`, so
+  filling the `<id>` slot no longer rewrites them; the CLI channel line uses `<address>`.
+- tests: `tests/shared/run.sh` builds its own binary when `SMITHY_BIN` is unset, so it passes
+  run alone.
 
 ## v0.9.0 — 2026-11-19
 

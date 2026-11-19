@@ -85,6 +85,9 @@ func TestStack(t *testing.T) {
 		{"bun over yarn, jest", map[string]string{"package.json": `{"dependencies":{"jest":"1"}}`, "yarn.lock": "", "bun.lock": ""}, map[string]string{
 			"pkg-manager": "bun", "test": "", "single": "npx jest <file>",
 		}},
+		{"bun runs the test script", map[string]string{"package.json": `{"scripts":{"test":"vitest run"},"devDependencies":{"vitest":"1"}}`, "bun.lock": ""}, map[string]string{
+			"pkg-manager": "bun", "test": "bun run test",
+		}},
 		{"empty", nil, map[string]string{"lang": "unknown", "test": "", "base": ""}},
 	}
 	for _, c := range cases {

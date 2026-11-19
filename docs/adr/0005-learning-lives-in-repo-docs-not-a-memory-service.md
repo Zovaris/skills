@@ -19,7 +19,7 @@ grow cause error propagation and cost (arXiv 2505.16067, 2602.11988).
 Chosen option: "evidence-backed proposals into repo docs": smelt proposes up to 3 lessons per PR,
 each citing a receipt, test, finding or ruling; warden lists its decisions at batch end; accepted
 rules go to `docs/agents/STANDARDS.md` / `scripts/SCRIPTS.md`, owned by ledger with a rule budget
-and retirement via `smithy drift`. Nothing is written without the user's yes.
+with stale or over-budget lines flagged by `smithy drift` and retired by judgement. Nothing is written without the user's yes.
 
 ## Consequences
 

@@ -30,6 +30,6 @@ Skip spec conformance entirely: another reviewer owns it.
   problem: <one line>  fix: <one line>
 ```
 At most 10 findings, most important first. Blocking only for a violation of a rule in
-`docs/agents/STANDARDS.md` (or, in a repo without one, real bug risk); every other finding is
-`should` or `nit`.
+`docs/agents/STANDARDS.md`; a bug you see is `should` unless a test reproduces it; everything
+else is `should` or `nit`.
 Nothing found is a valid result.

@@ -17,11 +17,12 @@
      personal data, input parsing, file or shell access, or secrets. Its high findings are the
      user's to see before merge.
 4. Show the reports separately, as returned. Don't merge, dedupe or rerank them: they answer
-   different questions. Blocking means a spec gap, a correctness bug, or a violation of a rule in
-   `docs/agents/STANDARDS.md`; every other standards finding is advisory.
+   different questions. Blocking: a spec-check `missing`, `partial` or `wrong`; a failing holdout, adversary or
+   regression test; a violation of a rule in `docs/agents/STANDARDS.md`. A high security finding
+   is shown to the user. Every other finding is advisory.
 5. Handle each finding with the receiving-review rules: verify, then fix (bug findings: failing
    test first) or decline. Give every finding a disposition in the PR body (or the final message):
-   `fixed`, `declined: <why>` or `false positive`, so the reviewers' precision can be read later.
+   `fixed`, `declined: <why>`, `false positive` or `not reproduced`.
 6. **The reviewer closes, not you.** At `full` speed, and at any speed for any blocking finding
    you fixed or a high security finding you fixed, send the fix's diff and the finding to a fresh subagent with the
    same agent file, asked only "is this finding resolved, and did the fix add a new problem?".

@@ -29,7 +29,7 @@ Before saying something is done, fixed, passing or ready:
 | Criterion met | a test that exercises it, named, passing |
 | An agent or worker completed a task | the VCS diff it produced (`git diff`, `git log -p`), read, plus its tests passing when you run them |
 | Refactor safe | suite green before and after, no snapshot or assertion changed |
-| Ready to open a PR | `smithy scan` clean (secrets, conflict markers, binaries), `smithy receipt list` fresh for HEAD, the diff matches the task |
+| Ready to open a PR | `smithy scan` clean (secrets, conflict markers; each binary warning looked at), `smithy receipt list` fresh for HEAD, the diff matches the task |
 | PR ready to merge | the above, and `smithy verify <repo-dir> <branch> <pr-url>` says `green` |
 | Docs updated | the docs diff, and every symbol it names still exists |
 

@@ -52,7 +52,7 @@ requirements from the intent and the code"; out of scope if the user named it>
   it once if the path is set.
 - Workflow: <mode smelt: "read <smelt-skill> and follow it yourself from the build phase to ship
   at speed <speed>, every phase in order (build test-first, the speed's test agents, review with
-  its fresh agents, verify with `smithy receipt run`, `smithy scan`, PR body with `smithy receipt
+  its fresh agents, verify with `smithy receipt run`, `smithy scan <base>`, PR body with `smithy receipt
   list --md`); skipping a phase the speed lists is a failed task, not a shortcut; its references/,
   agents/ and scripts/ paths are relative to its folder.
   Don't try to invoke it as a slash command." | mode plain: "work the way the repo's agent instructions
@@ -63,7 +63,8 @@ requirements from the intent and the code"; out of scope if the user named it>
   its folder between calls, so start every command with `cd <worktree> &&`. Then check `pwd -P` and `git rev-parse --show-toplevel` equal <worktree> and the branch
   is <branch>. If not: state=blocked note=wrong-worktree, stop.
 <has prereqs or the batch is full: "- Then wait for your turn: run `<warden-dir>/scripts/smithy wait-turn
-  <batch> <id>` (one blocking call; exit 4 means run it again, exit 0 means go). When it says go,
+  <batch> <id>` (one blocking call; if your harness moves it to the background, wait for it to end, never poll;
+  exit 4 means run it again, exit 0 means go). When it says go, set `state=working`,
   `git fetch origin && git merge origin/<base>` (or the prereq's branch when stacked) so you
   start from the merged prereqs.">
 <relaunch: "- This is a relaunch. Read <batch-dir>/<id>.inbox.md first if it exists. Before any
@@ -84,8 +85,6 @@ requirements from the intent and the code"; out of scope if the user named it>
   alone are not reasons to stop.
 - Same obstacle twice after a real fix attempt: state=blocked with the one thing you need; stop.
 - Do not create worktrees or issues; never start, fork or hand off sessions.
-- A dev server uses port 3000 + <NN> (<NN> = the numeric part of the id), never the default; put the
-  port in the card's note.
 - Waiting on CI or a PR: one blocking `<warden-dir>/scripts/smithy wait pr:<pr-url>` (or `run:<run-id>`,
   `branch:<branch-name>`); it prints one line when something happens. No sleep-then-check turns.
 

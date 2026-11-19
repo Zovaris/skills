@@ -12,11 +12,12 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Zovaris/smithy/internal/config"
 	"github.com/Zovaris/smithy/internal/ghx"
 )
 
 const agentUsage = `Harness-agnostic agent runner: runs one headless coding agent on a prompt file.
-  smithy agent [--bg] [--cwd <dir>] [--log <file>] [--model <m>] [--readonly] <prompt-file>
+  smithy agent [--bg] [--cwd <dir>] [--log <file>] [--model <m>] [--effort low|medium] [--readonly] <prompt-file>
 Agent CLI: $AGENT_CLI picks one by name; else the first installed of the list below.
   AGENT_CMD   any shell command; gets the prompt on stdin and in $AGENT_PROMPT_FILE, the model
               in $AGENT_MODEL, and $AGENT_READONLY=1 for read-only runs
@@ -28,6 +29,9 @@ Agent CLI: $AGENT_CLI picks one by name; else the first installed of the list be
   cursor      agent -p --force (Cursor CLI)
   pi          pi -p (--tools read when read-only)
   dsh         dsh headless --approval-policy never (DeepSeek Harness; model from its profile)
+Effort: --effort, else $AGENT_EFFORT, else the agent.effort setting (default medium). Anything
+above medium is capped at medium. Passed as --effort (claude) or -c model_reasoning_effort
+(codex), and as $AGENT_EFFORT to every CLI; the others keep their own default and say so.
 Extra flags for the chosen CLI: $AGENT_ARGS. Workers get WARDEN_HARNESS set to the CLI and the
 parent harness's variables removed, so their own scripts detect the right harness.
 --bg prints ` + "`<pid> <log>`" + ` and returns at once; otherwise prints the agent's output when it ends
@@ -49,6 +53,7 @@ type Options struct {
 	Cwd        string
 	Log        string
 	Model      string
+	Effort     string
 	ReadOnly   bool
 	PromptFile string
 }
@@ -60,6 +65,40 @@ type Spec struct {
 	PromptStdin bool
 	Harness     string
 }
+
+// Efforts are the reasoning efforts smithy passes on, lowest first; MaxEffort is the cap.
+var Efforts = []string{"low", "medium"}
+
+// MaxEffort is the highest effort smithy ever asks an agent for.
+const MaxEffort = "medium"
+
+// ClampEffort normalizes an effort: "" → MaxEffort, low and medium as they are, anything else
+// (high, xhigh, max, unknown) → MaxEffort. capped reports whether a higher value was lowered.
+func ClampEffort(e string) (effort string, capped bool) {
+	e = strings.ToLower(strings.TrimSpace(e))
+	switch e {
+	case "":
+		return MaxEffort, false
+	case "minimal", "low":
+		return "low", false
+	case "medium":
+		return "medium", false
+	}
+	return MaxEffort, true
+}
+
+// DefaultEffort is the effort from $AGENT_EFFORT, else the agent.effort setting, clamped.
+func DefaultEffort() string {
+	e := os.Getenv("AGENT_EFFORT")
+	if e == "" {
+		e = config.Get("agent.effort", MaxEffort)
+	}
+	e, _ = ClampEffort(e)
+	return e
+}
+
+// EffortFlags are the CLIs that take an effort flag; the rest only get $AGENT_EFFORT.
+var EffortFlags = map[string]bool{"claude": true, "codex": true}
 
 // Bin is the executable name of an agent CLI.
 func Bin(cli string) string {
@@ -118,6 +157,9 @@ func Build(cli string, o Options, prompt string, extra []string, gitDir string, 
 		}
 		a = []string{"claude", "-p", "--permission-mode", perm}
 		opt("--model")
+		if o.Effort != "" {
+			a = append(a, "--effort", o.Effort)
+		}
 		a = append(a, extra...)
 		return Spec{a, true, "claude-cli"}, nil
 	case "codex":
@@ -131,6 +173,9 @@ func Build(cli string, o Options, prompt string, extra []string, gitDir string, 
 			}
 		}
 		opt("-m")
+		if o.Effort != "" {
+			a = append(a, "-c", "model_reasoning_effort="+o.Effort)
+		}
 		a = append(append(a, extra...), "-")
 		stdin = true
 	case "opencode":
@@ -177,7 +222,7 @@ func Build(cli string, o Options, prompt string, extra []string, gitDir string, 
 // Env is the worker's environment: base without the parent harness's variables, with
 // WARDEN_HARNESS and the AGENT_* run variables set.
 func Env(base []string, s Spec, o Options) []string {
-	drop := map[string]bool{"WARDEN_HARNESS": true, "AGENT_PROMPT_FILE": true, "AGENT_MODEL": true, "AGENT_READONLY": true}
+	drop := map[string]bool{"WARDEN_HARNESS": true, "AGENT_PROMPT_FILE": true, "AGENT_MODEL": true, "AGENT_READONLY": true, "AGENT_EFFORT": true}
 	for _, k := range ParentVars {
 		drop[k] = true
 	}
@@ -192,7 +237,7 @@ func Env(base []string, s Spec, o Options) []string {
 	if o.ReadOnly {
 		ro = "1"
 	}
-	return append(env, "AGENT_PROMPT_FILE="+o.PromptFile, "AGENT_MODEL="+o.Model, "AGENT_READONLY="+ro, "WARDEN_HARNESS="+s.Harness)
+	return append(env, "AGENT_PROMPT_FILE="+o.PromptFile, "AGENT_MODEL="+o.Model, "AGENT_EFFORT="+o.Effort, "AGENT_READONLY="+ro, "WARDEN_HARNESS="+s.Harness)
 }
 
 // SplitArgs splits $AGENT_ARGS into words the way a shell would, honouring quotes and backslashes.
@@ -279,6 +324,9 @@ func Run(o Options) int {
 		}
 		prompt = strings.TrimRight(string(b), "\n")
 	}
+	if cli != "custom" && !EffortFlags[cli] {
+		fmt.Fprintf(os.Stderr, "smithy agent: %s has no effort flag; it runs at its own default (AGENT_EFFORT=%s is set)\n", cli, o.Effort)
+	}
 	s, err := Build(cli, o, prompt, SplitArgs(os.Getenv("AGENT_ARGS")), gitDir, os.Getenv)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -351,7 +399,10 @@ func Run(o Options) int {
 
 // AgentMain runs `smithy agent` and returns the exit code.
 func AgentMain(args []string) int {
-	o := Options{Model: os.Getenv("AGENT_MODEL")}
+	o := Options{Model: os.Getenv("AGENT_MODEL"), Effort: os.Getenv("AGENT_EFFORT")}
+	if o.Effort == "" {
+		o.Effort = config.Get("agent.effort", MaxEffort)
+	}
 loop:
 	for len(args) > 1 {
 		switch args[0] {
@@ -367,6 +418,8 @@ loop:
 			o.Log = args[1]
 		case "--model":
 			o.Model = args[1]
+		case "--effort":
+			o.Effort = args[1]
 		default:
 			break loop
 		}
@@ -377,6 +430,11 @@ loop:
 		return 2
 	}
 	o.PromptFile = args[0]
+	var capped bool
+	asked := o.Effort
+	if o.Effort, capped = ClampEffort(o.Effort); capped {
+		fmt.Fprintf(os.Stderr, "smithy agent: effort %q capped at %s\n", asked, o.Effort)
+	}
 	return Run(o)
 }
 

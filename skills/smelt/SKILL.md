@@ -17,7 +17,8 @@ reviewers); it sees only what that prompt lists.
 Subagent models: `smithy route` picks cheap, mid or strong per job from the task itself
 (read-only agents and reviews cheap, risky or hard work strong); unset tiers → propose
 `smithy config suggest-models` (or ask for each tier when there are none) and save the
-user's yes.
+user's yes. Effort is never raised: every agent runs at `agent.effort` (default and cap
+`medium`); a harder job gets a stronger tier or more agents, not more effort.
 
 ## Pick the entry point
 

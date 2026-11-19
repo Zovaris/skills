@@ -5,6 +5,12 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+### smithy binary
+- New `agent.effort` setting (default `medium`, also the cap): `smithy agent --effort`,
+  `$AGENT_EFFORT` or the setting; `high`, `xhigh` and `max` are lowered to `medium`. Claude Code
+  gets `--effort`, Codex `-c model_reasoning_effort`; every CLI gets `$AGENT_EFFORT`, and one
+  without an effort flag says it runs at its own default. `smithy consult` uses it too.
+
 ### smelt
 - New `agents/hostile.md`: runs the built CLI, API or worker as a hostile user across eight
   classes (malformed input, interruption, cancel-and-resume, repeats, injected instructions,

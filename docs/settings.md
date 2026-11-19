@@ -11,6 +11,7 @@ Two JSON files, the repo's first: `<repo>/.smithy/config.json` (this repo only) 
 | Setting | Default | What it does |
 |---|---|---|
 | `models.<harness>.cheap` / `.mid` / `.strong` | suggested or ask | Stored per harness (`smithy config set-model <tier> <name>`); on Claude the agent suggests haiku, sonnet, opus. The router (`smithy route`) picks a tier per task: cheap for small, mechanical or read-only work, mid for most features, strong for risky, hard or large work and the last fix round. |
+| `agent.effort` | `medium` | Reasoning effort for every agent smithy starts (`smithy agent`, `smithy consult`, warden workers): `low` or `medium`. It is also the cap: `high`, `xhigh` or `max` run at `medium`. Passed as `--effort` (Claude Code) or `-c model_reasoning_effort` (Codex) and as `$AGENT_EFFORT`; CLIs without an effort flag keep their own default. Speed (`fast`/`normal`/`full`) adds agents, never effort. |
 | `warden.worker_model` | `route` | `route`: a tier per task; `session`: the parent's model; or one model name for every worker. |
 | `tasks.commit` | ask | Commit specs and tasks (`docs/specs/`) or keep them out of git (`.docs/specs/`). |
 | `tasks.ignore` | ask | When not committed: a committed `.gitignore` line, or `.git/info/exclude` (this machine only). |

@@ -5,6 +5,11 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+- smithy works without the GitHub CLI: every GitHub call goes through one seam (`internal/ghx`)
+  that uses gh when present, else the GitHub API with `GH_TOKEN`/`GITHUB_TOKEN` (origin's repo,
+  `GH_HOST` for Enterprise), else fails with "needs the GitHub CLI or GH_TOKEN"; with neither,
+  `smithy pr create` prints the compare URL. New `smithy pr merge <pr> [--rebase|--merge|--squash]`;
+  `smithy doctor` reports the GitHub mode (gh / token / none).
 - Skill contradictions fixed: worker effort follows the medium cap, trivial warden items still
   run smelt fast, tend caps bot review rounds (not people), smelt treats security, money and personal
   data as high impact, warden runs risky items at least at normal, smelt's README defers branch

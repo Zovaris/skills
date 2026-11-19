@@ -28,6 +28,22 @@ Two JSON files, the repo's first: `<repo>/.smithy/config.json` (this repo only) 
 Coming from 0.7 (`~/.agents/`): the first run moves your settings, plans and batches to
 `~/.smithy/` (`smithy config migrate` does it by hand).
 
+## GitHub access
+
+smithy reaches GitHub (open, merge, verify and watch PRs, read CI runs) in one of three modes;
+`smithy doctor` says which one it found:
+
+| Mode | When | What works |
+|---|---|---|
+| `gh` | the GitHub CLI is installed (and signed in, or no token is set) | everything; the best experience |
+| `token` | no gh (or gh signed out) and `GH_TOKEN` or `GITHUB_TOKEN` is set | everything, over the GitHub REST/GraphQL API; owner/repo come from the `origin` remote |
+| `none` | neither | git only: `smithy pr create` pushes and prints the compare URL to open the PR by hand; `pr merge`, `pr-state`, `verify` and `wait` on PRs exit with "needs the GitHub CLI or GH_TOKEN" |
+
+The token goes only in the `Authorization` header to `api.github.com`, or to `https://<GH_HOST>/api/v3`
+when `GH_HOST` names a GitHub Enterprise host; it is never printed, logged or written to receipts.
+`smithy pr merge <pr> [--rebase|--merge|--squash]` merges through whichever mode is active, so
+skills don't need to call `gh pr merge` themselves.
+
 ## Hooks (all optional)
 
 | Hook | Harness | Does |

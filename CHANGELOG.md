@@ -5,6 +5,11 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+- `smithy receipt run` records a receipt dirty when an untracked, non-ignored file is present
+  (`.smelt/` and ignored files don't count). `smithy scan` also reports added or changed binary
+  files and .pyc/.so/.dylib/.dll/.exe/.wasm/.jar/.zip/.tar/.gz/.docx/.xlsx/.pptx files as "needs a
+  human look", and fails on git conflict markers outside fenced code in docs.
+
 ## v0.10.0 — 2026-11-19
 
 - Audit fixes after the gh-optional batch: warden's final message shows the Decisions and

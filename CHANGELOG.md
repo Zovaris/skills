@@ -9,6 +9,8 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
   findings, proposes at most 3 lessons (each with a receipt, failing test, finding, `file:line`
   or ruling; a lint rule, test or script instead of prose when it can be one), and accepted
   judgement rules go to `docs/agents/STANDARDS.md` as `- <rule> — covers: … — from: <evidence>`.
+- warden's final message lists every `decisions.md` entry and card `followup:` note with its PR,
+  marks reusable rules as candidate standards (proposal only), or says `no decisions or followups`.
 
 ## v0.9.1 — 2026-11-19
 

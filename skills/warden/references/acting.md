@@ -43,6 +43,19 @@ dependents are already waiting and start on their own. A `followup: <file>` in t
 found after the merge: small and inside the intent → add it as an item (spawn it if this harness
 can from here, else propose it); bigger → a scope question for the user, with the other decisions.
 
+## batch end (final message)
+
+When every item is final, read `<batch-dir>/decisions.md` and every card's `followup:` note (cards
+set `followup:` in the note of a merged item), then end the final message with one section, one
+line each, grouped as **Decisions** and **Followups**, each with the PR it came from
+(`- <decision or followup> (PR <url>)`; no PR → the item id).
+- A decision that reads like a reusable rule (it would apply to future tasks, not just this one)
+  gets a trailing `candidate standard: <rule> | evidence: <the PR or finding that showed it>`.
+  This is a proposal only: write nothing to STANDARDS.md or any repo doc without the user's yes;
+  on yes, hand the accepted ones to smelt `retro` (or ledger).
+- One group empty → leave it out. Both empty → the single line `no decisions or followups`.
+- The user drops what they don't want; unpromoted entries stay in `decisions.md`.
+
 ## reported · dropped
 
 `reported`: read the report's first lines, **end** the worker, `smithy cleanup`. `dropped`:

@@ -128,6 +128,15 @@ func AgentKind(agent string) (string, bool) {
 	return "", false
 }
 
+func oneOf(s string, opts ...string) bool {
+	for _, o := range opts {
+		if s == o {
+			return true
+		}
+	}
+	return false
+}
+
 // RouteMain runs `smithy route` and returns the exit code.
 func RouteMain(args []string) int {
 	opt := func(k string) (string, bool) {
@@ -151,6 +160,23 @@ func RouteMain(args []string) int {
 	}
 	if has("-h") || has("--help") {
 		fmt.Fprintln(os.Stderr, routeUsage)
+		return 2
+	}
+	for i, a := range args {
+		switch a {
+		case "--file", "--text", "--kind", "--agent", "--speed":
+			if i+1 >= len(args) || strings.HasPrefix(args[i+1], "--") {
+				fmt.Fprintf(os.Stderr, "smithy route: %s needs a value\n", a)
+				return 2
+			}
+		}
+	}
+	if k, ok := opt("--kind"); ok && !oneOf(k, "ship", "scout", "review", "fix", "tend", "test") {
+		fmt.Fprintf(os.Stderr, "smithy route: unknown --kind %q (ship, scout, review, fix, tend, test)\n", k)
+		return 2
+	}
+	if s, ok := opt("--speed"); ok && !oneOf(s, "fast", "normal", "full") {
+		fmt.Fprintf(os.Stderr, "smithy route: unknown --speed %q (fast, normal, full)\n", s)
 		return 2
 	}
 	text, _ := opt("--text")

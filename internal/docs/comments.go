@@ -300,8 +300,8 @@ func commentFiles(args []string) []string {
 		if len(args) > 1 {
 			base = args[1]
 		}
-		names := strings.Fields(git("diff", "--name-only", "--diff-filter=ACMR", base))
-		names = append(names, strings.Fields(git("diff", "--name-only", "--diff-filter=ACMR", "--cached"))...)
+		names := gitNames("diff", "--name-only", "--diff-filter=ACMR", base, "--")
+		names = append(names, gitNames("diff", "--name-only", "--diff-filter=ACMR", "--cached", "--")...)
 		set := map[string]bool{}
 		for _, f := range names {
 			if isFile(f) {
@@ -338,7 +338,7 @@ func AddedLines(diff string) map[string]map[int]bool {
 	file := ""
 	for _, l := range strings.Split(diff, "\n") {
 		if strings.HasPrefix(l, "+++ ") {
-			file = strings.TrimPrefix(strings.TrimPrefix(l, "+++ "), "b/")
+			file = strings.TrimSuffix(strings.TrimPrefix(strings.TrimPrefix(l, "+++ "), "b/"), "\t")
 			continue
 		}
 		m := hunkRe.FindStringSubmatch(l)
@@ -373,7 +373,12 @@ func Comments(args []string) int {
 		if len(args) > 1 {
 			base = args[1]
 		}
-		added = AddedLines(git("diff", "-U0", "--no-color", base) + "\n" + git("diff", "-U0", "--no-color", "--cached"))
+		if msg := checkBase(base); msg != "" {
+			fmt.Fprintln(os.Stderr, "smithy comments:", msg)
+			return 2
+		}
+		q := []string{"-c", "core.quotepath=false", "diff", "-U0", "--no-color", "--no-ext-diff"}
+		added = AddedLines(git(append(q, base, "--")...) + "\n" + git(append(q, "--cached", "--")...))
 	}
 	for _, f := range commentFiles(args) {
 		_, ext := splitExt(f)

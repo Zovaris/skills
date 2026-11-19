@@ -20,7 +20,7 @@ scan does); a revision expression is used as given. Without an origin default br
 the report covers the whole history.
 Sections: changed code and the docs that mention it (by path or exported symbol); paths and
 ` + "`name()`" + ` symbols named in docs that no longer exist; public API added or changed without any
-doc change in the diff. Report only: always exits 0. Judgement comes after (references/DRIFT.md).`
+doc change in the diff. Report only: exits 0, or 2 for a base git can't resolve. Judgement comes after (references/DRIFT.md).`
 
 var (
 	srcExts = map[string]bool{".ts": true, ".tsx": true, ".js": true, ".jsx": true, ".mjs": true, ".cjs": true,
@@ -170,7 +170,7 @@ func AddedAPI(diff string) []string {
 	return flagged
 }
 
-// Drift runs `smithy drift [base]` and always exits 0 once inside a repo.
+// Drift runs `smithy drift [base]`; it exits 2 for a base git cannot resolve, else 0 inside a repo.
 func Drift(args []string) int {
 	if wantsHelp(args) {
 		fmt.Fprintln(os.Stderr, driftUsage)
@@ -194,9 +194,15 @@ func Drift(args []string) int {
 	if len(args) > 0 {
 		arg = args[0]
 	}
+	if arg != "" {
+		if msg := checkBase(arg); msg != "" {
+			fmt.Fprintln(os.Stderr, "smithy drift:", msg)
+			return 2
+		}
+	}
 	base, label := gitx.ResolveBase(".", arg)
 	changedSet := map[string]bool{}
-	for _, f := range strings.Fields(git("diff", "--name-only", base)) {
+	for _, f := range gitNames("diff", "--name-only", base, "--") {
 		changedSet[f] = true
 	}
 	changed := sortedKeys(changedSet)
@@ -242,7 +248,7 @@ func Drift(args []string) int {
 	corpus := func() string {
 		if !loaded {
 			var parts []string
-			for _, f := range strings.Fields(git("ls-files")) {
+			for _, f := range gitNames("ls-files") {
 				if _, ext := splitExt(f); srcExts[ext] {
 					parts = append(parts, readOrEmpty(f))
 				}
@@ -266,7 +272,7 @@ func Drift(args []string) int {
 	fmt.Println("\n## Public API changed without a doc change")
 	var flagged []string
 	if len(changedSrc) > 0 {
-		flagged = AddedAPI(git(append([]string{"diff", "-U0", base, "--"}, changedSrc...)...))
+		flagged = AddedAPI(git(append([]string{"-c", "core.quotepath=false", "diff", "-U0", "--no-ext-diff", base, "--"}, changedSrc...)...))
 	}
 	switch {
 	case len(flagged) > 0 && len(changedDocs) == 0:

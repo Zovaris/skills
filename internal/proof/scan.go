@@ -69,7 +69,28 @@ var hunkRe = regexp.MustCompile(`^@@ -\d+(?:,\d+)? \+(\d+)`)
 
 // ScanDiff finds secrets in the added lines of a unified diff (git diff -U0 output).
 func ScanDiff(diff string) []Finding {
+	out, _ := scanDiff(diff)
+	return out
+}
+
+// AllowedLines lists, as file:line, the added lines of a diff that carry smithy:allow.
+func AllowedLines(diff string) []string {
+	_, allowed := scanDiff(diff)
+	return allowed
+}
+
+// AllowNote is the stderr line naming the lines skipped by smithy:allow.
+func AllowNote(allowed []string) string {
+	s := "s"
+	if len(allowed) == 1 {
+		s = ""
+	}
+	return fmt.Sprintf("scan: skipped %d line%s marked smithy:allow: %s", len(allowed), s, strings.Join(allowed, ", "))
+}
+
+func scanDiff(diff string) ([]Finding, []string) {
 	var out []Finding
+	var allowed []string
 	file, line, header := "", 0, false
 	for _, l := range strings.Split(diff, "\n") {
 		switch {
@@ -85,7 +106,9 @@ func ScanDiff(diff string) []Finding {
 			}
 		case strings.HasPrefix(l, "+"):
 			text := l[1:]
-			if !strings.Contains(text, "smithy:allow") {
+			if strings.Contains(text, "smithy:allow") {
+				allowed = append(allowed, fmt.Sprintf("%s:%d", file, line))
+			} else {
 				for _, r := range rules {
 					if m := r.re.FindString(text); m != "" {
 						out = append(out, Finding{file, line, r.name, mask(m)})
@@ -95,12 +118,13 @@ func ScanDiff(diff string) []Finding {
 			line++
 		}
 	}
-	return out
+	return out, allowed
 }
 
 // scanUntracked checks the content of new files git doesn't track yet.
-func scanUntracked(root string, names []string) []Finding {
+func scanUntracked(root string, names []string) ([]Finding, []string) {
 	var out []Finding
+	var allowed []string
 	for _, n := range names {
 		if n == "" {
 			continue
@@ -114,9 +138,10 @@ func scanUntracked(root string, names []string) []Finding {
 		for _, l := range strings.Split(string(b), "\n") {
 			d.WriteString("+" + l + "\n")
 		}
-		out = append(out, ScanDiff(d.String())...)
+		fs, al := scanDiff(d.String())
+		out, allowed = append(out, fs...), append(allowed, al...)
 	}
-	return out
+	return out, allowed
 }
 
 // ScanFiles flags added files whose name alone means a secret or key.
@@ -165,10 +190,15 @@ func ScanMain(args []string) int {
 	added, _ := ghx.Run("git", "-C", root, "diff", "-z", "--name-only", "--diff-filter=A", base, "--")
 	untracked, _ := ghx.Run("git", "-C", root, "ls-files", "-z", "--others", "--exclude-standard")
 	news := strings.Split(strings.Trim(untracked, "\x00"), "\x00")
-	fs := append(ScanFiles(append(strings.Split(added, "\x00"), news...)), ScanDiff(diff)...)
-	fs = append(fs, scanUntracked(root, news)...)
+	dfs, allowed := scanDiff(diff)
+	ufs, uallowed := scanUntracked(root, news)
+	fs := append(ScanFiles(append(strings.Split(added, "\x00"), news...)), dfs...)
+	fs = append(fs, ufs...)
 	for _, f := range fs {
 		fmt.Println(f)
+	}
+	if allowed = append(allowed, uallowed...); len(allowed) > 0 {
+		fmt.Fprintln(os.Stderr, AllowNote(allowed))
 	}
 	if len(fs) > 0 {
 		fmt.Fprintf(os.Stderr, "scan: %d possible secret(s); remove them, or mark a false positive with smithy:allow\n", len(fs))

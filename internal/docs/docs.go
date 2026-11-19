@@ -21,6 +21,29 @@ func git(args ...string) string {
 	return string(out)
 }
 
+// gitNames runs a git command that lists paths with -z and returns them unquoted.
+func gitNames(args ...string) []string {
+	out := git(append([]string{"-c", "core.quotepath=false"}, append(args[:1:1], append([]string{"-z"}, args[1:]...)...)...)...)
+	var names []string
+	for _, n := range strings.Split(out, "\x00") {
+		if n != "" {
+			names = append(names, n)
+		}
+	}
+	return names
+}
+
+// checkBase returns an error message when git can't use base as a commit.
+func checkBase(base string) string {
+	if strings.HasPrefix(base, "-") {
+		return base + " is an option, not a revision"
+	}
+	if err := exec.Command("git", "rev-parse", "--verify", "--quiet", "--end-of-options", base+"^{commit}").Run(); err != nil {
+		return "git can't resolve " + base
+	}
+	return ""
+}
+
 func readText(p string) (string, bool) {
 	b, err := os.ReadFile(p)
 	if err != nil {

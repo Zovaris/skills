@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/Zovaris/smithy/internal/ghx"
 	"github.com/Zovaris/smithy/internal/harness"
@@ -70,10 +71,13 @@ func RepoFile() string {
 
 func exists(p string) bool { _, err := os.Stat(p); return err == nil }
 
-// loadForWrite reads file for a change; it refuses one that exists but isn't a JSON object, so
-// a write never drops the user's content.
-func loadForWrite(file string) (map[string]any, error) {
+// loadFile reads a settings file; a missing or empty file is an empty object, and one that
+// exists but isn't a JSON object is an error naming the file, so it is never taken as unset.
+func loadFile(file string) (map[string]any, error) {
 	m := map[string]any{}
+	if file == "" {
+		return m, nil
+	}
 	b, err := os.ReadFile(file)
 	if os.IsNotExist(err) {
 		return m, nil
@@ -84,23 +88,50 @@ func loadForWrite(file string) (map[string]any, error) {
 	if len(bytes.TrimSpace(b)) == 0 {
 		return m, nil
 	}
-	if err := json.Unmarshal(b, &m); err != nil {
+	if err := json.Unmarshal(b, &m); err != nil || m == nil {
+		if err == nil {
+			err = errors.New("null")
+		}
 		return nil, fmt.Errorf("%s is not a JSON object; fix or move it first: %v", file, err)
 	}
 	return m, nil
 }
 
-func load(file string) map[string]any {
-	m := map[string]any{}
-	if file == "" {
-		return m
+// ValidKey reports whether key is non-empty with no empty dot-separated segment.
+func ValidKey(key string) error {
+	for _, p := range strings.Split(key, ".") {
+		if strings.TrimSpace(p) == "" {
+			return fmt.Errorf("bad key %q: it needs non-empty parts separated by single dots", key)
+		}
 	}
-	b, err := os.ReadFile(file)
-	if err != nil {
-		return m
+	return nil
+}
+
+const lockWait = 10 * time.Second
+
+// withLock runs f holding an advisory lock file next to file (created with O_EXCL, removed after).
+func withLock(file string, f func() error) error {
+	if err := os.MkdirAll(filepath.Dir(file), 0o755); err != nil {
+		return err
 	}
-	_ = json.Unmarshal(b, &m)
-	return m
+	lock := file + ".lock"
+	deadline := time.Now().Add(lockWait)
+	for {
+		l, err := os.OpenFile(lock, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0o644)
+		if err == nil {
+			l.Close()
+			break
+		}
+		if !os.IsExist(err) {
+			return err
+		}
+		if time.Now().After(deadline) {
+			return fmt.Errorf("%s is locked by another smithy config write; remove it if no write is running", lock)
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	defer os.Remove(lock)
+	return f()
 }
 
 func lookup(m map[string]any, key string) (any, bool) {
@@ -132,11 +163,20 @@ func str(v any) string {
 }
 
 func readKey(file, key string) (string, bool) {
-	v, ok := lookup(load(file), key)
-	if !ok {
-		return "", false
+	v, ok, _ := readKeyErr(file, key)
+	return v, ok
+}
+
+func readKeyErr(file, key string) (string, bool, error) {
+	m, err := loadFile(file)
+	if err != nil {
+		return "", false, err
 	}
-	return str(v), true
+	v, ok := lookup(m, key)
+	if !ok {
+		return "", false, nil
+	}
+	return str(v), true, nil
 }
 
 func defaultOf(key string) string {
@@ -148,13 +188,17 @@ func defaultOf(key string) string {
 	return ""
 }
 
-// Effective returns a key's value and where it came from (repo, user or default).
+// Effective returns a key's value and where it came from (repo, user or default); a settings
+// file that isn't a JSON object is an error, not ErrUnset.
 func Effective(key string) (string, string, error) {
-	if v, ok := readKey(RepoFile(), key); ok {
-		return v, "repo", nil
-	}
-	if v, ok := readKey(UserFile(), key); ok {
-		return v, "user", nil
+	for _, s := range [][2]string{{RepoFile(), "repo"}, {UserFile(), "user"}} {
+		v, ok, err := readKeyErr(s[0], key)
+		if err != nil {
+			return "", "", err
+		}
+		if ok {
+			return v, s[1], nil
+		}
 	}
 	if d := defaultOf(key); d != "" && d != "ask" {
 		return d, "default", nil
@@ -172,7 +216,14 @@ func Get(key, fallback string) string {
 
 // Set writes key = value into file; value is stored as JSON when it parses as JSON.
 func Set(file, key, value string) error {
-	m, err := loadForWrite(file)
+	if err := ValidKey(key); err != nil {
+		return err
+	}
+	return withLock(file, func() error { return set(file, key, value) })
+}
+
+func set(file, key, value string) error {
+	m, err := loadFile(file)
 	if err != nil {
 		return err
 	}
@@ -191,9 +242,6 @@ func Set(file, key, value string) error {
 		cur = next
 	}
 	cur[parts[len(parts)-1]] = v
-	if err := os.MkdirAll(filepath.Dir(file), 0o755); err != nil {
-		return err
-	}
 	return writeJSON(file, m)
 }
 
@@ -217,7 +265,20 @@ func writeJSON(file string, m map[string]any) error {
 
 // Unset removes key from file; it reports whether the key was there.
 func Unset(file, key string) (bool, error) {
-	m, err := loadForWrite(file)
+	if err := ValidKey(key); err != nil {
+		return false, err
+	}
+	var found bool
+	err := withLock(file, func() error {
+		var err error
+		found, err = unset(file, key)
+		return err
+	})
+	return found, err
+}
+
+func unset(file, key string) (bool, error) {
+	m, err := loadFile(file)
 	if err != nil {
 		return false, err
 	}
@@ -256,7 +317,11 @@ func tier(t string) bool { return t == "cheap" || t == "mid" || t == "strong" }
 // Model returns the user's model for a tier in the current harness.
 func Model(t string) (string, error) {
 	h, _ := harness.Detect()
-	if v, ok := readKey(UserFile(), "models."+h+"."+t); ok {
+	v, ok, err := readKeyErr(UserFile(), "models."+h+"."+t)
+	if err != nil {
+		return "", err
+	}
+	if ok {
 		return v, nil
 	}
 	return "", ErrUnset
@@ -300,6 +365,15 @@ const usage = `usage: smithy config <command>
   migrate                               move pre-0.8 state from ~/.agents to ~/.smithy
 Unset with no default: ask the user once, then save with set (--repo when it only applies here).`
 
+// readFail returns 3 for an unset value, else prints err and returns 1.
+func readFail(err error) int {
+	if errors.Is(err, ErrUnset) {
+		return 3
+	}
+	fmt.Fprintln(os.Stderr, err)
+	return 1
+}
+
 // Main runs `smithy config` and returns the exit code.
 func Main(args []string) int {
 	if len(args) == 0 {
@@ -315,7 +389,7 @@ func Main(args []string) int {
 		}
 		m, err := Model(args[1])
 		if err != nil {
-			return 3
+			return readFail(err)
 		}
 		fmt.Println(m)
 	case "set-model":
@@ -325,6 +399,14 @@ func Main(args []string) int {
 		}
 		if len(args) > 3 {
 			h = args[3]
+		}
+		if h == "" || strings.ContainsAny(h, "/.") || strings.TrimSpace(h) != h {
+			fmt.Fprintf(os.Stderr, "bad harness name %q: no /, . or spaces, not empty\n", h)
+			return 2
+		}
+		if strings.TrimSpace(args[2]) == "" {
+			fmt.Fprintln(os.Stderr, "the model name is empty")
+			return 2
 		}
 		key := "models." + h + "." + args[1]
 		if err := Set(UserFile(), key, strconv.Quote(args[2])); err != nil {
@@ -336,9 +418,13 @@ func Main(args []string) int {
 		if len(args) < 2 {
 			return 2
 		}
+		if err := ValidKey(args[1]); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			return 2
+		}
 		v, _, err := Effective(args[1])
 		if err != nil {
-			return 3
+			return readFail(err)
 		}
 		fmt.Println(v)
 	case "set", "unset":
@@ -358,6 +444,10 @@ func Main(args []string) int {
 				fmt.Fprintln(os.Stderr, "usage: smithy config unset [--repo] <key>")
 				return 2
 			}
+			if err := ValidKey(rest[0]); err != nil {
+				fmt.Fprintln(os.Stderr, err)
+				return 2
+			}
 			ok, err := Unset(file, rest[0])
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err)
@@ -372,6 +462,10 @@ func Main(args []string) int {
 		}
 		if len(rest) != 2 {
 			fmt.Fprintln(os.Stderr, "usage: smithy config set [--repo] <key> <value>")
+			return 2
+		}
+		if err := ValidKey(rest[0]); err != nil {
+			fmt.Fprintln(os.Stderr, err)
 			return 2
 		}
 		val, note, err := Normalize(rest[0], rest[1])
@@ -397,6 +491,11 @@ func Main(args []string) int {
 			fmt.Println("moved", m)
 		}
 	case "list":
+		for _, f := range []string{RepoFile(), UserFile()} {
+			if _, err := loadFile(f); err != nil {
+				return readFail(err)
+			}
+		}
 		for _, t := range []string{"cheap", "mid", "strong"} {
 			v, ok := readKey(UserFile(), "models."+h+"."+t)
 			src := ""

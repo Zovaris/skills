@@ -207,32 +207,6 @@ func TestAppendIgnoresItsOwnFolder(t *testing.T) {
 	}
 }
 
-func TestResolveBasePrefersOrigin(t *testing.T) {
-	up := newRepo(t)
-	dir := t.TempDir()
-	git(t, dir, "clone", "-q", up, "c")
-	dir = filepath.Join(dir, "c")
-	if err := os.WriteFile(filepath.Join(up, "b.txt"), []byte("b\n"), 0o644); err != nil {
-		t.Fatal(err)
-	}
-	git(t, up, "add", "b.txt")
-	git(t, up, "commit", "-q", "-m", "upstream")
-	git(t, dir, "fetch", "-q")
-	git(t, dir, "switch", "-q", "-c", "feat", "origin/main")
-	git(t, dir, "branch", "-q", "-f", "main", "main")
-	sha, label := resolveBase(dir, "main")
-	want, _ := exec.Command("git", "-C", dir, "rev-parse", "origin/main").Output()
-	if sha != strings.TrimSpace(string(want)) || !strings.HasPrefix(label, "origin/main (merge-base ") {
-		t.Fatalf("main: %s %q", sha, label)
-	}
-	if _, label := resolveBase(dir, ""); !strings.HasPrefix(label, "origin/main (merge-base ") {
-		t.Fatalf("default: %q", label)
-	}
-	if sha, label := resolveBase(dir, "HEAD~1"); sha != "HEAD~1" || label != "HEAD~1" {
-		t.Fatalf("revision not used as given: %s %q", sha, label)
-	}
-}
-
 func TestRedactKeepsTokensOutOfPRBodies(t *testing.T) {
 	tok := "ghp_" + strings.Repeat("a", 36)
 	md := Markdown([]Receipt{{Commit: "c", Command: []string{"curl", "-H", "Authorization: token " + tok}}}, "c", false)

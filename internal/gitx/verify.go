@@ -153,7 +153,7 @@ func VerifyMain(args []string) int {
 		var list []struct {
 			Number int `json:"number"`
 		}
-		if ghx.GH(&list, "pr", "list", "--head", branch, "--state", "all", "--json", "number") == nil && len(list) > 0 {
+		if ghx.PRList(branch, "all", &list) == nil && len(list) > 0 {
 			pr = strconv.Itoa(list[0].Number)
 		}
 	}
@@ -162,7 +162,7 @@ func VerifyMain(args []string) int {
 		return 1
 	}
 	var v prView
-	if err := ghx.GH(&v, "pr", "view", pr, "--json", "url,state,headRefOid,mergeable,isDraft,statusCheckRollup"); err != nil {
+	if err := ghx.PRView(pr, &v); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return 1
 	}

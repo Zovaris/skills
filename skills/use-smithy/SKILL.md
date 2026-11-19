@@ -5,10 +5,10 @@ description: Routes code work to the installed skill that fits (smelt, warden, l
 
 # use-smithy
 
-<SUBAGENT-STOP>
+## If another skill or agent launched you
+
 If you were launched with a task brief (a smelt test agent, a warden worker, a scout or tend
 run), skip this skill: your brief already says what to follow.
-</SUBAGENT-STOP>
 
 These skills share one way of working. This file says which one fits the moment and how to use
 it. User instructions win over this file, and the repo's AGENTS.md / CLAUDE.md win over it too.

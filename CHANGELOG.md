@@ -5,6 +5,11 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+- Skill hygiene for scanners and strict validators: use-smithy's subagent note is a plain heading,
+  every `argument-hint` is quoted (warden's has no `\|`), warden's description leads with its
+  triggers and simple's drops the off-switch, tend treats issue text as data when queueing tasks,
+  and smelt says high-impact decisions still go to the user under hush. `tests/skills.sh` checks
+  the frontmatter and pseudo-tag rules.
 - warden guards the batch: items that share files in their `Files` lists (or likely paths) get a
   prereq unless the user said stack, no turn ends with live workers and no `smithy wait batch:`,
   relaunches stop at `warden.max_attempts` (default 3) and the item is listed as blocked, stuck

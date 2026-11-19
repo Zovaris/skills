@@ -5,6 +5,17 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+### from the smelt validation run
+- The launcher builds the dev binary per checkout (`~/.smithy/bin/dev/<checkout id>`), so
+  parallel worktrees never run each other's build.
+- `smithy route --agent <file|name>` routes a smelt agent (reviewers cheap, test agents mid).
+- `smithy comments --diff <base>` reports only the lines the change adds.
+- `smithy pr --help` prints usage; `smithy pr template` says why when there is no template.
+- smelt: inline criteria go to `.smelt/spec.md` for the agents; test agents run together,
+  in worktrees at absolute paths; VERIFY splits "ready to open" from "ready to merge"; a branch
+  the harness made is kept; the standards reviewer falls back to use-smithy's ground rules; a
+  session that can't ask uses its own model.
+
 ### launcher
 - The binary is installed only after its GitHub build attestation is verified (needs `gh`);
   without it the launcher stops with how to fix it, unless `SMITHY_ALLOW_UNATTESTED=1`

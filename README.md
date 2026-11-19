@@ -48,10 +48,15 @@ Pick every skill (at least `use-smithy`) and the agents to install to. Then, in 
 - **Proof, not claims:** every "tests pass" is a recorded receipt (`smithy receipt`) pasted into
   the PR, and `smithy scan` checks the change for secrets before anything is pushed.
 - **tend** keeps every open PR green: CI fixes, rebases after sibling merges, review threads.
+- **It learns, with your yes:** after a PR, smelt proposes up to 3 lessons, each citing evidence
+  (a receipt, a failing test, a review finding); warden's final message lists the decisions it
+  made alone. What you accept lands in `docs/agents/STANDARDS.md` or `scripts/SCRIPTS.md`, which
+  every later session and worker reads first. ledger keeps both small: a rule budget, and lines
+  whose files are gone are retired (`smithy drift` flags them).
 - **You decide** the plan, scope, and merges: nothing reaches the production branch without your
   explicit yes. Agents work silently and send their questions up to the session you talk to.
 - Commits are atomic in your repo's style, PRs follow your template, branches are named
-  `<type>/<key>-<slug>`, and finished worktrees are removed every time.
+  by `smithy names branch` (`feat/…`, `fix/…`), and finished worktrees are removed every time.
 
 ## Skills
 
@@ -61,7 +66,7 @@ Pick every skill (at least `use-smithy`) and the agents to install to. Then, in 
 | [smelt](skills/smelt/README.md) | you or the agent · `/smelt` | One task, step by step: brainstorm, spec, TDD, test agents, review, receipts, secret scan, PR. `fast`, `normal` or `full` (adds a hostile run of the built system). |
 | [warden](skills/warden/README.md) | you or the agent, after your yes · `/warden` | Many tasks in parallel: one silent worker and worktree per task, each to its own PR. |
 | [tend](skills/tend/README.md) | you · `/tend`, or smelt and warden | Keeps PRs mergeable: CI, rebases, review comments; can watch for new PRs and issues. |
-| [ledger](skills/ledger/README.md) | the agent or you | ADRs, glossary, module READMEs, codebase map, doc drift, comment policy. |
+| [ledger](skills/ledger/README.md) | the agent or you | ADRs, glossary, standards, scripts index, module READMEs, codebase map, doc drift, comment policy. |
 | [scout](skills/scout/README.md) | the agent or you | Read-only answers with sources, on your cheap model. |
 | [hush](skills/hush/README.md) | you or the agent · `/hush` | Does the task with no talk; ends with one `done:` line. |
 | [simple](skills/simple/README.md) | the agent | Short, plain replies with no filler. Off with "normal mode". |

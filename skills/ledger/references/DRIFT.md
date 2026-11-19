@@ -6,7 +6,8 @@
 - **Changed files and the docs that mention them** (by path or by exported symbol name): each
   pairing is a doc to re-read.
 - **Missing references:** paths and backticked symbols named in docs that no longer exist in the
-  code.
+  code. A path is only checked when it contains a `/` and a file extension (`scripts/x.sh`,
+  not `x.sh`).
 - **Public API changes without docs:** changed source files with exported symbols whose doc
   comments or module README didn't change in the same diff.
 

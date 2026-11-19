@@ -108,6 +108,6 @@ current step, so the warden sees where you are without asking.
 Reminder: no text between tool calls at any point; this line is your only message.
 <warden channel: "Send it to the warden with SendMessage, to: <address>." | "Put it in the card's note.">
 End each turn with exactly one line and nothing else:
-"ok <id>: PR <url>" | "ok <id>: ready <url>" | "ok <id>: reported" | "decide <id>: <question>" |
-"blocked <id>: <why>".
+"done: <id> PR <url>" | "done: <id> ready <url>" | "done: <id> reported" |
+"done: <id> decide: <question>" | "done: <id> blocked: <why>".
 ```

@@ -26,7 +26,8 @@ else update the docs the change touched (`references/DOCS.md`). Then:
   contract (`references/TESTING.md`); it keeps CI green, rebases and answers review until the PR
   is mergeable or needs the user. Without tend, wait with `smithy wait pr:<pr-url>`, in the
   background where the harness wakes on exit, else in the foreground; never sleep loops.
-  (2) **Merge** the PR or locally into the base only when the user asks; into the production
+  (2) **Merge** the PR or locally into the base only when the user asks or the session that
+  launched you said `merge auto` (a warden worker); into the production
   branch only on their explicit yes for this change. (3) **Keep** the branch for later. Discard
   work only when the user explicitly says to.
 - **Clean up** once merged or discarded: `smithy cleanup <repo> <branch> [<worktree>]`,

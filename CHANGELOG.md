@@ -5,6 +5,9 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+- warden's final message lists every `decisions.md` entry and card `followup:` note with its PR,
+  marks reusable rules as candidate standards (proposal only), or says `no decisions or followups`.
+
 ## v0.9.1 — 2026-11-19
 
 Fixes from a real warden batch and a second smelt validation run. Upgrade: `smithy cleanup` in

@@ -45,7 +45,7 @@ Say the speed and the phases you'll run in one line before starting.
 | For | small or clear changes, warden workers | most features and fixes | risky logic, money, data, auth, public APIs |
 | Plan / spec | skipped; criteria from the task | spec if none exists | brainstorm + grill + spec + builder check + tasks |
 | Build | TDD on the acceptance criteria only | TDD on every behaviour | TDD on every behaviour |
-| Test agents | regression (bugs) | + adversary; property or e2e when the change fits | + 2 adversaries, property, mutation, e2e when applicable |
+| Test agents | regression (bugs) | + adversary; property or e2e when the change fits | + 2 adversaries, property, mutation, e2e when applicable; hostile after review when it runs |
 | Review | a fresh spec-check agent (self-check against `agents/spec-check.md` only without a subagent tool); security only if the change is risky | spec-check + standards (+ security if risky) | spec-check + standards + security |
 | Verify gate | always | always | always |
 | Docs | ADR only if forced | glossary/ADR when they apply | glossary/ADR when they apply + retro |
@@ -98,6 +98,8 @@ gate on the suite.
 never merge or rerank their reports. Findings and human PR comments: `references/RECEIVING.md`.
 **Done:** no open blocking finding (closed by a reviewer, not by you); every high security
 finding shown to the user.
+At `full`, with something that runs, launch `agents/hostile.md` on the reviewed commit next
+(`references/TESTING.md`); its fixes go back through build and review.
 
 **ship.** Docs first: `smithy comments --diff <base>` on the changed files (API doc comments
 only, the why goes to docs); with the ledger skill installed, also its `sync` mode on the diff,

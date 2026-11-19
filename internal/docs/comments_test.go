@@ -159,3 +159,16 @@ func TestCommentsSkipsOtherLanguages(t *testing.T) {
 		t.Errorf("dotfile ext = %q, want none", ext)
 	}
 }
+
+func TestAddedLines(t *testing.T) {
+	diff := "diff --git a/a.go b/a.go\n--- a/a.go\n+++ b/a.go\n@@ -3,0 +4,2 @@\n+x\n+y\n@@ -9 +11 @@\n-z\n+w\n"
+	got := AddedLines(diff)["a.go"]
+	for _, n := range []int{4, 5, 11} {
+		if !got[n] {
+			t.Errorf("line %d not added: %v", n, got)
+		}
+	}
+	if got[3] || got[6] || got[10] {
+		t.Errorf("extra lines: %v", got)
+	}
+}

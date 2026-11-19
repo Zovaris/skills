@@ -5,13 +5,14 @@ import (
 	"os"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"unicode/utf8"
 )
 
 const commentsUsage = `smithy comments: checks the comment policy and prints ` + "`file:line: reason`" + ` per forbidden comment.
   smithy comments [paths...]         files or folders (default: the repo)
-  smithy comments --diff <base>      only files changed against <base> (and staged ones)
+  smithy comments --diff <base>      only lines added against <base> (and staged ones)
 Allowed: public API doc comments, license/SPDX headers, shebangs, a shell script's header block,
 tool directives with a reason, go:build/generate, Rust /// //! and SAFETY. Everything else is
 reported. Heuristic: languages ts tsx js jsx mjs cjs py go rs java kt sh. Exit 1 on findings.`
@@ -329,6 +330,36 @@ func commentFiles(args []string) []string {
 	return found
 }
 
+var hunkRe = regexp.MustCompile(`^@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))?`)
+
+// AddedLines maps each file in a -U0 unified diff to the line numbers it adds.
+func AddedLines(diff string) map[string]map[int]bool {
+	out := map[string]map[int]bool{}
+	file := ""
+	for _, l := range strings.Split(diff, "\n") {
+		if strings.HasPrefix(l, "+++ ") {
+			file = strings.TrimPrefix(strings.TrimPrefix(l, "+++ "), "b/")
+			continue
+		}
+		m := hunkRe.FindStringSubmatch(l)
+		if m == nil || file == "" {
+			continue
+		}
+		start, _ := strconv.Atoi(m[1])
+		n := 1
+		if m[2] != "" {
+			n, _ = strconv.Atoi(m[2])
+		}
+		if out[file] == nil {
+			out[file] = map[int]bool{}
+		}
+		for i := start; i < start+n; i++ {
+			out[file][i] = true
+		}
+	}
+	return out
+}
+
 // Comments runs `smithy comments [paths...]` or `smithy comments --diff <base>`.
 func Comments(args []string) int {
 	if wantsHelp(args) {
@@ -336,6 +367,14 @@ func Comments(args []string) int {
 		return 2
 	}
 	findings := 0
+	var added map[string]map[int]bool
+	if len(args) > 0 && args[0] == "--diff" {
+		base := "HEAD"
+		if len(args) > 1 {
+			base = args[1]
+		}
+		added = AddedLines(git("diff", "-U0", "--no-color", base) + "\n" + git("diff", "-U0", "--no-color", "--cached"))
+	}
 	for _, f := range commentFiles(args) {
 		_, ext := splitExt(f)
 		if !slashExts[ext] && !hashExts[ext] {
@@ -347,6 +386,9 @@ func Comments(args []string) int {
 		}
 		res, _ := CheckFile(f, text)
 		for _, r := range res {
+			if added != nil && !added[f][r.Line] {
+				continue
+			}
 			fmt.Printf("%s:%d: %s\n", f, r.Line, r.Why)
 			findings++
 		}

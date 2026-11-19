@@ -5,6 +5,9 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+- ADRs 0001-0005 in `docs/adr/`: record decisions, gh optional, no decision-model adapter for now,
+  release branch for big changes, learning in repo docs.
+
 ## v0.10.0 — 2026-11-19
 
 - Audit fixes after the gh-optional batch: warden's final message shows the Decisions and

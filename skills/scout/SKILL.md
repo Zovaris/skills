@@ -25,7 +25,7 @@ recommendation and the trade-off, not with the choice made.
 - prints a name → use it.
 - exit 3 → propose `smithy config suggest-models` and save on a yes
   (`smithy config accept-models`); with no suggestions, ask "Which cheap model should scouts use
-  in this harness?" and save it with `smithy config set-model cheap <name>`. Under `/hush`,
+  in this harness?" and save it with `smithy config set-model cheap <name>`. Under hush,
   don't ask: use the harness default and say so in the report.
 
 Use the strong model (`smithy config model strong`) only when the user asks or the question is about

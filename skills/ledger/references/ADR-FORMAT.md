@@ -9,7 +9,6 @@ add nothing; an ADR can be one paragraph.
 
 - Status: proposed | accepted | rejected | deprecated | superseded by NNNN
 - Date: YYYY-MM-DD
-- Deciders: <who, optional>
 
 ## Context and Problem Statement
 

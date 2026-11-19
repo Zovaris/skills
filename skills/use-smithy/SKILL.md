@@ -41,7 +41,8 @@ Not installed? Do the work the plain way and, once, mention the skill that would
 - One task list: plans become `NN-<slug>.md` task files (smelt `TASKS.md` format); smelt builds
   them one at a time, warden in parallel. Never keep a second list.
 - Waiting on anything external (CI, a PR, a workflow run, new issues) is one `smithy wait`
-  call in the background (smelt, warden and tend ship it), never sleep-then-check turns: it
+  call in the background (in the foreground where the harness can't wake on exit; smelt,
+  warden and tend ship it), never sleep-then-check turns: it
   costs no tokens and returns one line when something happens.
 - **Merges.** Only the session that talks to the user decides them: warden for its batch, else
   the session running smelt. Tend and workers merge only when the one that launched them says

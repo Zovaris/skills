@@ -1,8 +1,8 @@
 # Test agents
 
 Launch each as a fresh **subagent**: prompt = the agent file's text, a `## You get` block with
-exactly what the file lists, and the report contract below. Agents that write tests work in their own git worktree,
-cut from your current commit, never from the base branch: commit your work first, then
+exactly what the file lists, and the report contract below. Agents that write tests work in
+their own git worktree, cut from your current commit, never from the base branch: commit your work first, then
 `git worktree add <path> HEAD` (or the harness's isolation option when it starts from HEAD) and
 pass the path. Their tests are input, not files to ship: move the cases worth keeping into the
 repo's existing test files in its own naming, drop the rest and any reference to the agent or
@@ -18,8 +18,9 @@ Every prompt ends with this **report contract**, since agents see only their pro
 ```
 ## Report
 Work silently: no narration, no questions to the user. Your report is your only output, in the
-shape your file asks for, then one last line `done: <one-line result>`. Anything you can't
-settle goes in the report under `Question:` with your recommendation; never stop to ask.
+shape your file asks for (its status block included), then one last line
+`done: <one-line result>`. Anything you can't settle goes in the report as a question with your
+recommendation; never stop to ask.
 ```
 
 Which ones run depends on the speed (table in SKILL.md); within it, use this to choose.

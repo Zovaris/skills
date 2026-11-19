@@ -2,7 +2,7 @@
 
 `/smelt build all [dir]` works every task of a task list in this session, one fresh implementer
 **subagent** per task, so your own context only holds briefs, diffs and rulings. For tasks that
-can run at the same time in separate worktrees and PRs, `/warden <dir>` is the parallel
+can run at the same time in separate worktrees and PRs, warden on `<dir>` (read the SKILL.md `smithy skills warden` prints) is the parallel
 alternative.
 
 ## Models
@@ -22,7 +22,7 @@ For each task:
 1. `smithy tasks set <file> status=doing`.
 2. **Brief.** Prompt = `agents/implementer.md` + `## You get`: the task file's path and text, the
    spec path, the test commands from `smithy stack`, the files and interfaces the task lists, and
-   the rulings so far that touch it, + the report contract (`references/TESTING.md`). Never your
+   the rulings so far that touch it, and the report contract (`references/TESTING.md`). Never your
    conversation.
 3. **Status.** The implementer ends with one of:
    - `DONE` → step 4.

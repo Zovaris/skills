@@ -33,6 +33,8 @@ when the user has something to decide or the batch is done.
 
 ## Usage
 
+Started by name (the user's harness decides the syntax; `/warden` below) or by an agent that
+read this file after the user's yes.
 - `/warden <input>`: tasks, a task dir or file, board ids, or an idea (`references/intake.md`).
   One task is fine: it still gets a worktree, a silent worker and verification.
 - `/warden status [batch]`: `smithy cards board`, shown as is. `/warden status all`: `smithy tasks board --all`

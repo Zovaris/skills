@@ -2,6 +2,7 @@ package gitx
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"regexp"
 	"sort"
@@ -173,6 +174,13 @@ func CommitMain(args []string) int {
 	if len(paths) == 0 {
 		die(p, "name the paths for this commit (atomic: one concern per commit)")
 		return 2
+	}
+	for _, f := range paths {
+		// A deleted file git still tracks is a valid path: committing its removal.
+		if _, err := os.Lstat(f); err != nil && quiet("git", "ls-files", "--error-unmatch", "--", f) != nil {
+			die(p, "no such path: %s", f)
+			return 2
+		}
 	}
 	if err := Check(msg, detect()); err != nil {
 		return die(p, "%s", err)

@@ -172,3 +172,142 @@ func TestTasksAfterTaskDir(t *testing.T) {
 		t.Fatalf("tasks list: exit %d, out %q, err %q", code, out, e)
 	}
 }
+
+func TestDoubleDashReachesNoCommand(t *testing.T) {
+	repo, env := sandbox(t)
+	os.MkdirAll(filepath.Join(repo, ".smelt"), 0o755)
+	os.WriteFile(filepath.Join(repo, ".smelt", "green"), nil, 0o644)
+	if _, e, code := run(t, repo, env, "guard-tests", "--", "hello_test.go"); code != 2 {
+		t.Errorf("guard-tests -- hello_test.go: exit %d, stderr %q", code, e)
+	}
+	os.RemoveAll(filepath.Join(repo, ".smelt"))
+	os.WriteFile(filepath.Join(repo, "b.txt"), []byte("b\n"), 0o644)
+	if out, e, code := run(t, repo, env, "commit", "feat: add b", "--", "b.txt"); code != 0 || !strings.Contains(out, "add b") {
+		t.Errorf("commit -- b.txt: exit %d, out %q, err %q", code, out, e)
+	}
+	os.WriteFile(filepath.Join(repo, "f.go"), []byte("package f\n"), 0o644)
+	if _, e, code := run(t, repo, env, "comments", "--", "f.go"); code != 0 {
+		t.Errorf("comments -- f.go: exit %d, err %q", code, e)
+	}
+	if out, e, code := run(t, repo, env, "drift", "--", "main"); code == 2 || strings.Contains(out+e, "--") {
+		t.Errorf("drift -- main: exit %d, out %q, err %q", code, out, e)
+	}
+	if out, e, code := run(t, repo, env, "names", "branch", "--", "x", "T"); code != 0 || strings.Contains(out, "--") {
+		t.Errorf("names branch -- x T: exit %d, out %q, err %q", code, out, e)
+	}
+	if _, e, code := run(t, repo, env, "search", "--", "--all"); code != 1 || !strings.Contains(e, "no match") {
+		t.Errorf("search -- --all: exit %d, err %q", code, e)
+	}
+	out, e, code := run(t, repo, env, "receipt", "run", "--claim", "c", "--", "git", "--version")
+	if code != 0 || !strings.Contains(out, "git version") {
+		t.Errorf("receipt run -- git --version: exit %d, out %q, err %q", code, out, e)
+	}
+}
+
+func TestFlagEqualsValue(t *testing.T) {
+	repo, env := sandbox(t)
+	for _, args := range [][]string{
+		{"search", "--max=1", "x"},
+		{"route", "--text=fix a typo"},
+		{"scan", "--base=main"},
+		{"pr", "create", "--base=main"},
+		{"receipt", "run", "--claim=a", "--", "git", "--version"},
+		{"tasks", "add", "t", "--key=X"},
+	} {
+		if out, e, code := run(t, repo, env, args...); strings.Contains(e, "unknown option") {
+			t.Errorf("%v: exit %d, out %q, err %q", args, code, out, e)
+		}
+	}
+	if out, e, code := run(t, repo, env, "route", "--json=x"); code != 2 {
+		t.Errorf("route --json=x: exit %d, out %q, err %q", code, out, e)
+	}
+}
+
+func TestValueFlagWithoutValue(t *testing.T) {
+	repo, env := sandbox(t)
+	dir := filepath.Join(repo, "plan")
+	os.MkdirAll(dir, 0o755)
+	for _, args := range [][]string{
+		{"tasks", "add", dir, "x", "--blocked-by"},
+		{"tasks", "add", dir, "x", "--key", "--blocked-by", "01"},
+		{"search", "q", "--max"},
+	} {
+		if out, e, code := run(t, repo, env, args...); code != 2 || !strings.Contains(e, "needs a value") {
+			t.Errorf("%v: exit %d, out %q, err %q", args, code, out, e)
+		}
+	}
+	if entries, _ := os.ReadDir(dir); len(entries) != 0 {
+		t.Errorf("side effect: %d files in %s", len(entries), dir)
+	}
+}
+
+func TestTasksFlagsPerSubcommand(t *testing.T) {
+	repo, env := sandbox(t)
+	for _, args := range [][]string{{"tasks", "ready", "--all"}, {"tasks", "list", "--key", "x"}, {"tasks", "board", "--key=x"}} {
+		if out, e, code := run(t, repo, env, args...); code != 2 || !strings.Contains(e, "unknown option") {
+			t.Errorf("%v: exit %d, out %q, err %q", args, code, out, e)
+		}
+	}
+	if _, e, _ := run(t, repo, env, "tasks", "board", "--all"); strings.Contains(e, "unknown option") {
+		t.Errorf("tasks board --all: %q", e)
+	}
+}
+
+func TestArgMistakes(t *testing.T) {
+	repo, env := sandbox(t)
+	cases := []struct {
+		args   []string
+		code   int
+		errHas string
+	}{
+		{[]string{"comments", "--diff"}, 2, "--diff needs a base"},
+		{[]string{"changed", "nosuch"}, 2, "smithy changed: no such base nosuch"},
+		{[]string{"drift", "main", "extra"}, 2, "smithy drift: unexpected argument extra"},
+		{[]string{"version", "extra"}, 2, "smithy version: unexpected argument extra"},
+		{[]string{"commit", "fix: x", "nosuch.txt"}, 2, "smithy commit: no such path: nosuch.txt"},
+	}
+	for _, c := range cases {
+		out, errOut, code := run(t, repo, env, c.args...)
+		if code != c.code || !strings.Contains(errOut, c.errHas) {
+			t.Errorf("%v: exit %d (want %d), stdout %q, stderr %q (want %q)", c.args, code, c.code, out, errOut, c.errHas)
+		}
+	}
+}
+
+func TestCleanupMissingBranch(t *testing.T) {
+	repo, env := sandbox(t)
+	out, e, code := run(t, repo, env, "cleanup", repo, "nosuchbr")
+	if code != 1 || !strings.Contains(out+e, "no branch nosuchbr") || strings.Contains(out, "cleaned") {
+		t.Errorf("cleanup nosuchbr: exit %d, out %q, err %q", code, out, e)
+	}
+}
+
+func TestPRStateSignedOut(t *testing.T) {
+	repo, env := sandbox(t)
+	bin := filepath.Join(filepath.Dir(repo), "bin")
+	gh := "#!/bin/sh\necho 'You are not logged into any GitHub hosts.' >&2\nexit 1\n"
+	if err := os.WriteFile(filepath.Join(bin, "gh"), []byte(gh), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	out, e, code := run(t, repo, env, "pr-state", "1")
+	if code != 3 || strings.Count(strings.TrimSpace(e), "\n") != 0 || !strings.Contains(e, "signed out") {
+		t.Errorf("pr-state signed out: exit %d, out %q, err %q", code, out, e)
+	}
+}
+
+func TestRepeatedValueFlagLastWins(t *testing.T) {
+	repo, env := sandbox(t)
+	if out, e, code := run(t, repo, env, "route", "--speed", "bogus", "--speed=fast", "--text", "x"); code != 0 {
+		t.Errorf("route --speed bogus --speed=fast: exit %d, out %q, err %q", code, out, e)
+	}
+	dir := filepath.Join(repo, "plan")
+	os.MkdirAll(dir, 0o755)
+	out, e, code := run(t, repo, env, "tasks", "add", dir, "x", "--key", "A-1", "--key", "B-2")
+	if code != 0 {
+		t.Fatalf("tasks add: exit %d, err %q", code, e)
+	}
+	b, _ := os.ReadFile(strings.TrimSpace(out))
+	if !strings.Contains(string(b), "B-2") || strings.Contains(string(b), "A-1") {
+		t.Errorf("tasks add --key A-1 --key B-2 wrote:\n%s", b)
+	}
+}

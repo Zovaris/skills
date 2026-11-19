@@ -6,6 +6,17 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 ## Unreleased
 
 ### CLI
+- `smithy pr-state <n>` with gh missing or signed out exits 3 with a one-line reason, like `wait` and `doctor`.
+- `smithy cleanup <repo> <branch>` says `no branch <x>` and exits 1 when neither the branch nor its worktree exists, instead of "cleaned".
+- `smithy commit "<msg>" <path>` with a path that is neither on disk nor tracked exits 2 with `no such path: <x>` before touching git.
+- `smithy drift` and `smithy version` exit 2 on a surplus argument (`unexpected argument <x>`).
+- `smithy changed <base>` with an unknown base exits 2 with `no such base <x>` instead of git's error and exit 0.
+- `smithy comments --diff` without a base exits 2 instead of passing as clean.
+- `smithy tasks` checks flags per subcommand: `--all` only for `board`, `--blocked-by`/`--key` only for `add` (`tasks ready --all` exits 2).
+- A repeated value flag: the last one wins for every command (`smithy route` kept the first).
+- A value flag with no value (`smithy tasks add "x" --blocked-by`) exits 2 with `<flag> needs a value` and writes nothing.
+- Value flags accept `--flag=value` as well as `--flag value` (`smithy search --max=1`, `smithy tasks add --key=X`).
+- A bare `--` no longer reaches commands (`smithy guard-tests -- x_test.go` now blocks); `receipt run` and `search` still read it.
 - `smithy cleanup` removes a branch whose commits already landed under new hashes (a rebase
   merge), instead of keeping it as unpushed.
 - Every command: `-h`/`--help` anywhere prints its usage on stdout and exits 0 before any repo

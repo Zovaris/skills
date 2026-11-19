@@ -425,7 +425,11 @@ loop:
 		}
 		args = args[2:]
 	}
-	if len(args) != 1 || !isFile(args[0]) {
+	if len(args) == 1 && !isFile(args[0]) {
+		fmt.Fprintf(os.Stderr, "smithy agent: prompt file not found: %s\n", args[0])
+		return 2
+	}
+	if len(args) != 1 {
 		fmt.Fprintln(os.Stderr, agentUsage)
 		return 2
 	}

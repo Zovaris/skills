@@ -476,11 +476,11 @@ func TestMainSetGet(t *testing.T) {
 	if code != 0 || !strings.Contains(so, `"phase": "build"`) {
 		t.Fatalf("%d %q", code, so)
 	}
-	so, _, code = capture(t, func() int { return Main([]string{"get", "b1", "missing"}) })
-	if code != 0 || strings.TrimSpace(so) != "null" {
-		t.Fatalf("%d %q", code, so)
+	_, se, code := capture(t, func() int { return Main([]string{"get", "b1", "missing"}) })
+	if code != 1 || !strings.Contains(se, "no card missing") {
+		t.Fatalf("%d %q", code, se)
 	}
-	_, se, code := capture(t, func() int { return Main([]string{"set", "b1", "a", "state=bogus"}) })
+	_, se, code = capture(t, func() int { return Main([]string{"set", "b1", "a", "state=bogus"}) })
 	if code != 1 || !strings.Contains(se, "state must be one of") {
 		t.Fatalf("%d %q", code, se)
 	}

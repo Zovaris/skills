@@ -5,6 +5,11 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+### launcher
+- The binary is installed only after its GitHub build attestation is verified (needs `gh`);
+  without it the launcher stops with how to fix it, unless `SMITHY_ALLOW_UNATTESTED=1`
+  accepts a checksum-only install. Answers the skills.sh Snyk E004/W012 on the launcher.
+
 ### hush and warden workers, from the skills.sh Snyk audit
 - hush no longer tells the agent to override the harness's narration rules; it keeps chat to
   what the harness or user requires, records each decision visibly, and the user can end it by

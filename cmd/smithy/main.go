@@ -7,6 +7,8 @@ import (
 	"io"
 	"os"
 	"sort"
+	"strconv"
+	"strings"
 
 	"github.com/Zovaris/smithy/internal/config"
 )
@@ -15,20 +17,68 @@ import (
 var version = "dev"
 
 type command struct {
-	help string
-	run  func(args []string) int
+	help  string
+	usage string
+	flags map[string]bool
+	run   func(args []string) int
 }
 
 var commands = map[string]command{}
 
-// register adds a top-level command; help is one line for `smithy` with no arguments.
-func register(name, help string, run func(args []string) int) {
-	commands[name] = command{help, run}
+// register adds a top-level command. help is one line for `smithy --help`; usage is what
+// `smithy <name> --help` prints; flags lists the options the command accepts, a trailing
+// "=" marking one that takes a value.
+func register(name, help, usage, flags string, run func(args []string) int) {
+	f := map[string]bool{}
+	for _, x := range strings.Fields(flags) {
+		f[strings.TrimSuffix(x, "=")] = strings.HasSuffix(x, "=")
+	}
+	commands[name] = command{help, usage, f, run}
 }
 
 func init() {
-	register("version", "print the version", func([]string) int { fmt.Println(version); return 0 })
-	register("engine-probe", "", func([]string) int { fmt.Println("smithy-engine", version); return 0 })
+	register("version", "print the version", "usage: smithy version\nPrints the version (also smithy --version).", "",
+		func([]string) int { fmt.Println(version); return 0 })
+	register("engine-probe", "", "usage: smithy engine-probe\nPrints smithy-engine and the version.", "",
+		func([]string) int { fmt.Println("smithy-engine", version); return 0 })
+}
+
+// entry applies the convention every command shares, before anything runs: -h/--help anywhere
+// (up to a bare --) prints the usage on stdout, exit 0; an unknown option exits 2.
+func entry(name string, c command, args []string) (int, bool) {
+	for _, a := range args {
+		if a == "--" {
+			break
+		}
+		if a == "-h" || a == "--help" {
+			fmt.Println(c.usage)
+			return 0, true
+		}
+	}
+	for i := 0; i < len(args); i++ {
+		a := args[i]
+		if a == "--" {
+			break
+		}
+		if len(a) < 2 || a[0] != '-' || isNumber(a) {
+			continue
+		}
+		takesValue, ok := c.flags[a]
+		if !ok {
+			fmt.Fprintf(os.Stderr, "smithy %s: unknown option %s\n", name, a)
+			fmt.Fprintln(os.Stderr, c.usage)
+			return 2, true
+		}
+		if takesValue {
+			i++
+		}
+	}
+	return 0, false
+}
+
+func isNumber(s string) bool {
+	_, err := strconv.ParseFloat(s, 64)
+	return err == nil
 }
 
 func usage(w io.Writer) {
@@ -43,7 +93,7 @@ func usage(w io.Writer) {
 	for _, n := range names {
 		fmt.Fprintf(w, "  smithy %-12s %s\n", n, commands[n].help)
 	}
-	fmt.Fprintln(w, "Run any command without arguments for its usage. Not on PATH? smithy setup path.")
+	fmt.Fprintln(w, "Run any command with --help for its usage. Not on PATH? smithy setup path.")
 }
 
 func main() {
@@ -65,6 +115,9 @@ func main() {
 		fmt.Fprintf(os.Stderr, "unknown command %s\n", name)
 		usage(os.Stderr)
 		os.Exit(2)
+	}
+	if code, done := entry(name, c, os.Args[2:]); done {
+		os.Exit(code)
 	}
 	config.AutoMigrate()
 	os.Exit(c.run(os.Args[2:]))

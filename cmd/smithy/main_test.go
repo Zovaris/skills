@@ -1,0 +1,174 @@
+package main
+
+import (
+	"bytes"
+	"errors"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"runtime"
+	"sort"
+	"strings"
+	"testing"
+)
+
+var bin string
+
+func TestMain(m *testing.M) {
+	dir, err := os.MkdirTemp("", "smithy-bin")
+	if err != nil {
+		panic(err)
+	}
+	bin = filepath.Join(dir, "smithy")
+	if runtime.GOOS == "windows" {
+		bin += ".exe"
+	}
+	if out, err := exec.Command("go", "build", "-o", bin, ".").CombinedOutput(); err != nil {
+		panic(string(out))
+	}
+	code := m.Run()
+	os.RemoveAll(dir)
+	os.Exit(code)
+}
+
+// sandbox is a temp git repo plus a temp home; gh and agent CLIs are kept off PATH.
+func sandbox(t *testing.T) (repo string, env []string) {
+	t.Helper()
+	root := t.TempDir()
+	repo = filepath.Join(root, "repo")
+	home := filepath.Join(root, "home")
+	for _, d := range []string{repo, home} {
+		if err := os.MkdirAll(d, 0o755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	gitPath, err := exec.LookPath("git")
+	if err != nil {
+		t.Skip("git not installed")
+	}
+	pathDir := filepath.Join(root, "bin")
+	os.MkdirAll(pathDir, 0o755)
+	if err := os.Symlink(gitPath, filepath.Join(pathDir, "git")); err != nil {
+		t.Fatal(err)
+	}
+	env = []string{
+		"HOME=" + home,
+		"SMITHY_HOME=" + filepath.Join(home, ".smithy"),
+		"SMITHY_CONFIG=" + filepath.Join(home, "config.json"),
+		"WARDEN_HOME=" + filepath.Join(home, "warden"),
+		"PATH=" + pathDir + string(os.PathListSeparator) + "/bin:/usr/bin",
+		"GIT_CONFIG_NOSYSTEM=1",
+		"GIT_AUTHOR_NAME=t", "GIT_AUTHOR_EMAIL=t@t", "GIT_COMMITTER_NAME=t", "GIT_COMMITTER_EMAIL=t@t",
+	}
+	for _, args := range [][]string{{"init", "-q", "-b", "main"}, {"commit", "-q", "--allow-empty", "-m", "init"}} {
+		c := exec.Command("git", args...)
+		c.Dir, c.Env = repo, env
+		if out, err := c.CombinedOutput(); err != nil {
+			t.Fatalf("git %v: %v\n%s", args, err, out)
+		}
+	}
+	return repo, env
+}
+
+func run(t *testing.T, dir string, env []string, args ...string) (stdout, stderr string, code int) {
+	t.Helper()
+	c := exec.Command(bin, args...)
+	c.Dir, c.Env = dir, env
+	c.Stdin = strings.NewReader("")
+	var o, e bytes.Buffer
+	c.Stdout, c.Stderr = &o, &e
+	err := c.Run()
+	var ee *exec.ExitError
+	if errors.As(err, &ee) {
+		code = ee.ExitCode()
+	} else if err != nil {
+		t.Fatal(err)
+	}
+	return o.String(), e.String(), code
+}
+
+func listed() []string {
+	var names []string
+	for n, c := range commands {
+		if c.help != "" {
+			names = append(names, n)
+		}
+	}
+	sort.Strings(names)
+	return names
+}
+
+func TestEveryCommandHelpAndUnknownOption(t *testing.T) {
+	repo, env := sandbox(t)
+	for _, name := range listed() {
+		t.Run(name, func(t *testing.T) {
+			for _, h := range [][]string{{"--help"}, {"-h"}, {"x", "--help"}} {
+				out, errOut, code := run(t, repo, env, append([]string{name}, h...)...)
+				if code != 0 || strings.TrimSpace(out) == "" {
+					t.Errorf("%s %v: exit %d, stdout %q, stderr %q", name, h, code, out, errOut)
+				}
+			}
+			out, errOut, code := run(t, repo, env, name, "--bogus-flag")
+			if code != 2 || !strings.Contains(errOut, "smithy "+name+": unknown option --bogus-flag") || out != "" {
+				t.Errorf("%s --bogus-flag: exit %d, stdout %q, stderr %q", name, code, out, errOut)
+			}
+		})
+	}
+	entries, _ := os.ReadDir(repo)
+	for _, e := range entries {
+		if e.Name() != ".git" {
+			t.Errorf("side effect: %s created", e.Name())
+		}
+	}
+}
+
+func TestUsageMistakesAndSilentFailures(t *testing.T) {
+	repo, env := sandbox(t)
+	outside := t.TempDir()
+	cases := []struct {
+		dir    string
+		args   []string
+		code   int
+		errHas string
+	}{
+		{repo, []string{"adr", "--bogus"}, 2, "unknown option"},
+		{outside, []string{"changed"}, 2, "not a git repo"},
+		{repo, []string{"comments", "no/such/file.go"}, 2, "no/such/file.go"},
+		{repo, []string{"commit", "fix: x"}, 2, "paths"},
+		{repo, []string{"skills", "no-such-skill"}, 1, "no-such-skill"},
+		{repo, []string{"config", "model", "cheap"}, 3, "cheap"},
+		{repo, []string{"tasks", "where"}, 3, "no task dir"},
+		{repo, []string{"cards", "get", "b", "01"}, 1, "no card"},
+		{repo, []string{"wait", "bogus:1"}, 2, "bogus:1"},
+		{repo, []string{"agent", "missing.md"}, 2, "prompt file not found: missing.md"},
+		{repo, []string{"search", "--", "--x"}, 1, "no match"},
+	}
+	for _, c := range cases {
+		out, errOut, code := run(t, c.dir, env, c.args...)
+		if code != c.code || !strings.Contains(errOut, c.errHas) {
+			t.Errorf("%v: exit %d (want %d), stdout %q, stderr %q (want %q)", c.args, code, c.code, out, errOut, c.errHas)
+		}
+	}
+	if _, err := os.Stat(filepath.Join(repo, "docs")); err == nil {
+		t.Error("adr --bogus created docs/")
+	}
+}
+
+func TestTasksAfterTaskDir(t *testing.T) {
+	repo, env := sandbox(t)
+	if _, e, code := run(t, repo, env, "config", "set", "--repo", "tasks.commit", "true"); code != 0 {
+		t.Fatal(e)
+	}
+	dir, e, code := run(t, repo, env, "task-dir", "demo")
+	if code != 0 {
+		t.Fatal(e)
+	}
+	dir = strings.TrimSpace(dir)
+	out, e, code := run(t, repo, env, "tasks", "add", "first")
+	if code != 0 || !strings.HasPrefix(strings.TrimSpace(out), dir) {
+		t.Fatalf("tasks add after task-dir: exit %d, out %q, err %q, dir %q", code, out, e, dir)
+	}
+	if out, e, code := run(t, repo, env, "tasks", "list"); code != 0 || !strings.Contains(out, "first") {
+		t.Fatalf("tasks list: exit %d, out %q, err %q", code, out, e)
+	}
+}

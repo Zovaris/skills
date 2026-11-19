@@ -1,10 +1,13 @@
 # Test agents
 
 Launch each as a fresh **subagent**: prompt = the agent file's text followed by an `## Inputs`
-block with exactly what the file lists. Agents that write tests work in their own git worktree
-(the harness's isolation option, or `git worktree add` yourself and pass the path); once their
-tests are merged into yours, remove those worktrees and branches (`smithy cleanup`). Launch them
-together so they run in parallel. Without a subagent tool: write each prompt to a file and run
+block with exactly what the file lists. Agents that write tests work in their own git worktree,
+cut from your current commit, never from the base branch: commit your work first, then
+`git worktree add <path> HEAD` (or the harness's isolation option when it starts from HEAD) and
+pass the path. Their tests are input, not files to ship: move the cases worth keeping into the
+repo's existing test files in its own naming, drop the rest and any reference to the agent or
+its spec, and never commit an agent's file as is. Then remove those worktrees and branches
+(`smithy cleanup`). Launch them together so they run in parallel. Without a subagent tool: write each prompt to a file and run
 `smithy agent --bg --cwd <worktree> --log <file> <prompt-file>` per agent, then read the logs.
 Read-only agents (spec-check, standards, security, builder) use `smithy agent --readonly`.
 Give every agent the absolute path of this skill's `scripts/smithy` as `<smithy>`: agents run in the

@@ -158,6 +158,10 @@ func PRStateMain(args []string) int {
 		fmt.Fprintln(os.Stderr, prStateUsage)
 		return 2
 	}
+	if _, err := ghx.Run("gh", "auth", "status"); err != nil {
+		fmt.Fprintln(os.Stderr, "smithy pr-state: gh is missing or signed out: install the GitHub CLI and run `gh auth login`")
+		return 3
+	}
 	view, err := ghx.Run("gh", "pr", "view", args[0], "--json", "url,number,state,mergeable,reviewDecision,statusCheckRollup,headRefName,baseRefName,headRepositoryOwner,headRepository")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)

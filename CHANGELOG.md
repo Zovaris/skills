@@ -6,6 +6,7 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 ## Unreleased
 
 ### CLI
+- `smithy pr-state <n>` with gh missing or signed out exits 3 with a one-line reason, like `wait` and `doctor`.
 - `smithy cleanup <repo> <branch>` says `no branch <x>` and exits 1 when neither the branch nor its worktree exists, instead of "cleaned".
 - `smithy commit "<msg>" <path>` with a path that is neither on disk nor tracked exits 2 with `no such path: <x>` before touching git.
 - `smithy drift` and `smithy version` exit 2 on a surplus argument (`unexpected argument <x>`).

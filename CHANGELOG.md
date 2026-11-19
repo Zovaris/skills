@@ -9,6 +9,8 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
   (`.smelt/` and ignored files don't count). `smithy scan` also reports added or changed binary
   files and .pyc/.so/.dylib/.dll/.exe/.wasm/.jar/.zip/.tar/.gz/.docx/.xlsx/.pptx files as "needs a
   human look", and fails on git conflict markers outside fenced code in docs.
+- ADRs 0001-0005 in `docs/adr/`: record decisions, gh optional, no decision-model adapter for now,
+  release branch for big changes, learning in repo docs.
 
 ## v0.10.0 — 2026-11-19
 

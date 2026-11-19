@@ -192,3 +192,18 @@ func TestVerifyRefusesAPRFromAnotherRepo(t *testing.T) {
 		t.Fatalf("exit %d, want 2", c)
 	}
 }
+
+func TestPRHelpAndMissingTemplate(t *testing.T) {
+	dir := t.TempDir()
+	exec.Command("git", "-C", dir, "init", "-q").Run()
+	t.Chdir(dir)
+	if c := PRMain([]string{"--help"}); c != 0 {
+		t.Fatalf("--help exit %d", c)
+	}
+	if c := PRMain([]string{"create", "--help"}); c != 0 {
+		t.Fatalf("create --help exit %d", c)
+	}
+	if c := PRMain([]string{"template"}); c != 1 {
+		t.Fatalf("template without one exit %d", c)
+	}
+}

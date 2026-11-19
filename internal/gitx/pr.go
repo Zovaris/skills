@@ -71,6 +71,12 @@ func PRMain(args []string) int {
 	if top == "" {
 		return die(p, "not a git repo")
 	}
+	for _, a := range args {
+		if a == "-h" || a == "--help" {
+			fmt.Println(prUsage)
+			return 0
+		}
+	}
 	if len(args) == 0 || (args[0] != "template" && args[0] != "create") {
 		fmt.Println(prUsage)
 		return 2
@@ -78,6 +84,7 @@ func PRMain(args []string) int {
 	if args[0] == "template" {
 		t := Templates(top)
 		if len(t) == 0 {
+			fmt.Fprintln(os.Stderr, "smithy pr template: no PR template in this repo; write what and why, tests, commands run")
 			return 1
 		}
 		fmt.Println(strings.Join(t, "\n"))

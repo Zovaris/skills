@@ -9,10 +9,14 @@ import (
 	"sort"
 	"strings"
 	"unicode/utf8"
+
+	"github.com/Zovaris/smithy/internal/gitx"
 )
 
-const driftUsage = `smithy drift: deterministic doc-drift report against a base (default: merge-base with the default branch).
+const driftUsage = `smithy drift: deterministic doc-drift report against a base (default: origin's default branch).
   smithy drift [base]
+A branch name diffs against its merge-base with origin/<branch> when that ref exists (as smithy
+scan does); a revision expression is used as given.
 Sections: changed code and the docs that mention it (by path or exported symbol); paths and
 ` + "`name()`" + ` symbols named in docs that no longer exist; public API added or changed without any
 doc change in the diff. Report only: always exits 0. Judgement comes after (references/DRIFT.md).`
@@ -54,24 +58,6 @@ func Symbols(text string) map[string]bool {
 		}
 	}
 	return found
-}
-
-func gitTrim(args ...string) string { return strings.TrimSpace(git(args...)) }
-
-func defaultBase() string {
-	head := gitTrim("symbolic-ref", "-q", "--short", "refs/remotes/origin/HEAD")
-	for _, ref := range []string{head, "origin/main", "main", "origin/master", "master"} {
-		if ref != "" && gitTrim("rev-parse", "--verify", "-q", ref) != "" {
-			mb := gitTrim("merge-base", "HEAD", ref)
-			if mb != "" && mb != gitTrim("rev-parse", "HEAD") {
-				return mb
-			}
-		}
-	}
-	if gitTrim("rev-parse", "--verify", "-q", "HEAD~1") != "" {
-		return "HEAD~1"
-	}
-	return "HEAD"
 }
 
 // DocFiles lists the Markdown docs drift reads: everything under docs/ plus any README.md,
@@ -203,12 +189,11 @@ func Drift(args []string) int {
 		fmt.Fprintln(os.Stderr, "smithy drift:", err)
 		return 1
 	}
-	base := ""
+	arg := ""
 	if len(args) > 0 {
-		base = args[0]
-	} else {
-		base = defaultBase()
+		arg = args[0]
 	}
+	base, label := gitx.ResolveBase(".", arg)
 	changedSet := map[string]bool{}
 	for _, f := range strings.Fields(git("diff", "--name-only", base)) {
 		changedSet[f] = true
@@ -227,7 +212,7 @@ func Drift(args []string) int {
 	for _, p := range DocFiles() {
 		docs = append(docs, doc{p, readOrEmpty(p)})
 	}
-	fmt.Printf("base: %s\n", base)
+	fmt.Printf("base: %s\n", label)
 
 	fmt.Println("\n## Changed code and the docs that mention it")
 	anyPair := false

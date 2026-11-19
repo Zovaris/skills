@@ -20,6 +20,7 @@ Two JSON files, the repo's first: `<repo>/.smithy/config.json` (this repo only) 
 | `warden.merge` | unset (warden asks once per batch) | Unset: warden asks once per batch in its plan line (auto or manual); `auto`: workers merge green PRs; `manual`: they stop at ready. A value you save counts as your words. |
 | `warden.cleanup` | `auto` | End finished workers and remove their worktrees and branches without asking. |
 | `warden.max` / `warden.mode` | `3` / `smelt fast` | Parallel workers; how workers build: `smelt fast`, `smelt normal`, `smelt full` or `plain`. |
+| `warden.max_attempts` | `3` | Launches per item, the first included; past it a stuck item is `blocked` and listed for you instead of relaunched. |
 | `tend.watch` / `tend.label` | `prs` / `agent` | What `/tend watch` follows; the issue label it may queue. |
 | `git.branch` | `{type}/{key}-{slug}` | Branch names (`smithy names`); e.g. `agent/{key}-{slug}`. |
 | `git.worktree` | `{parent}/worktrees/{repo}-{branch}` | Where worktrees go. |

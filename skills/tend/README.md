@@ -17,7 +17,7 @@ Started by you: `/tend …` ([how to start a skill in your harness](../../README
 
 - Routine work (reading state, reruns, rebases, replies) runs on your cheap model; real code
   fixes go to a fresh subagent on the strong one.
-- Waiting on CI is one `smithy wait pr:<n>`: no tokens until something happens.
+- Waiting on CI is one `smithy wait pr:<pr-url>`: no tokens until something happens.
 - A flaky test is rerun once; a second real failure, an unsafe conflict or a decision that is
   yours comes back as `needs you <url>: <why>`.
 - Merges only when told the PR is `merge auto`, never into the production branch.

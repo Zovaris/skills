@@ -16,10 +16,10 @@ rules if installed): no talk between tool calls, one line per PR at the end.
 | Command | Does |
 |---|---|
 | `smithy pr-state <pr>` | Compact PR state: checks, mergeable, review, unresolved threads, behind |
-| `smithy verify <repo-dir> <branch> [pr]` | Pushed head, checks, mergeable; `draft` (exit 3) when all green but still a draft (`<repo-dir>`: the local checkout, `.` for here) |
+| `smithy verify <repo-dir> <branch> [pr-url]` | Pushed head, checks, mergeable; `draft` (exit 3) when all green but still a draft, `pending`/`red` exit 1 (`<repo-dir>`: the local checkout, `.` for here; a URL that isn't that checkout's repo exits 2) |
 | `smithy commit` | Commits in the repo's style |
 | `smithy names` | Worktree path for a PR branch |
-| `smithy wait <target>…` | Zero-token wait on GitHub: `pr:<n>`, `run:<id>`, `branch:<name>`, `prs`, `issues:<label>` |
+| `smithy wait <target>…` | Zero-token wait on GitHub: `pr:<url>` (a bare number means the current checkout's repo), `run:<id>`, `branch:<name>`, `prs`, `issues:<label>` |
 | `smithy wait watch[:prs\|issues\|all]` | Watch mode: wait for new or updated PRs / labeled issues (scope from `tend.watch`) |
 | `smithy consult` | One tool-less call to the user's strong model for a technical choice |
 | `smithy config` | The user's models and tend settings |
@@ -76,7 +76,7 @@ inside the repo). Then repeat:
      with "needs you". Conflicts you can't resolve from both sides' intent → "needs you".
    - **unresolved review threads** (human or bot) → `references/RECEIVING.md`. At most 3 rounds
      per PR; the count lives in the card's `review_rounds` or `.tend/<pr>.rounds`.
-   - **checks pending** → `smithy wait pr:<pr>` in the background (foreground where the
+   - **checks pending** → `smithy wait pr:<pr-url>` in the background (foreground where the
      harness can't wake on exit); it returns one line when checks finish, the PR merges or closes,
      or a review lands. Never sleep-then-check turns.
    - **green, mergeable, approved or no review required** → `green` (`smithy verify` says `draft`

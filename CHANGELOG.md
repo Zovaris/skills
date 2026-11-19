@@ -46,6 +46,8 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 - `smithy verify` says `draft` (exit 3) for a draft PR that is otherwise green, instead of
   `pending`; `checks` reads `green`/`red`/`pending`/`none` in `verify`, `pr-state` and `wait`
   alike (was `pass`/`fail` in the first two).
+- `smithy verify` takes a PR URL and exits 2 when it belongs to another repo than the checkout's
+  origin; tend and smelt pass URLs to `verify` and `wait`, so a bare number can't hit the wrong PR.
 - tend reads the PR state before any worktree, and only uses the main checkout when the PR
   branch is already there and clean.
 - smelt: agents work silently and send questions up; ship hands the PR to a tend subagent when

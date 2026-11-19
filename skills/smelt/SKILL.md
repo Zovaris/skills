@@ -125,7 +125,7 @@ else update the docs the change touched (`references/DOCS.md`). Then:
   **tend** when it is installed (`smithy skills tend` prints its path): one silent **subagent** on
   the cheap tier, prompt "Read <tend-skill> and follow it for `/tend <pr-url>`; never merge", that
   keeps CI green, rebases and answers review until the PR is mergeable or needs the user. Without
-  tend, wait for the checks with `smithy wait pr:<n>` (background where the harness wakes on exit),
+  tend, wait for the checks with `smithy wait pr:<pr-url>` (background where the harness wakes on exit),
   never sleep loops. (2) **Merge locally** into the base only when the user asks. (3) **Keep** the
   branch for later. Discard work only when the user explicitly says to.
 - **Clean up** once merged or discarded: `smithy cleanup <repo> <branch> [<worktree>]`,

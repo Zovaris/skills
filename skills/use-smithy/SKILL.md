@@ -87,7 +87,7 @@ Never propose one the user declined, and not under `/hush`. Ideas from
 | "A comment will explain it" | Put the why in the module README or an ADR. |
 | "Done, it should work" | Run it; quote the command and result. |
 | "I'll launch warden, it's faster" | It costs sessions: propose it, wait for a yes. |
-| "I'll sleep 2 minutes and check CI again" | `smithy wait pr:<n>` in the background: no tokens, no missed finish. |
+| "I'll sleep 2 minutes and check CI again" | `smithy wait pr:<pr-url>` in the background: no tokens, no missed finish. |
 | "I've typed this pipeline three times" | Propose it as a script at the end of the task. |
 
 ## 6 · Settings and setup

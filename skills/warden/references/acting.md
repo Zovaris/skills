@@ -23,14 +23,18 @@ yourself: `smithy cards set <batch> <id> state=working decision_key=`. Log low a
 
 ## verify (`pr_open`, `ready`)
 
-`smithy verify <repo> <branch> <pr>`:
-- `unpushed` or `red`: back to the worker in one line.
+`smithy verify <repo> <branch> <pr-url>` prints one verdict:
+- `green`: merge auto and not into production → merge if the worker hasn't (card
+  `note=merge-blocked` means it was refused: `gh pr merge` yourself; refused again → list it with
+  the doctor's permission hint). Production without the user's yes, or merge manual → card
+  `state=ready`, listed for the user.
+- `pending`: wait (`smithy wait pr:<pr-url>`).
 - `draft`: green but still a draft; list it for the user, never merge it.
-- `ready` with `note=merge-blocked` in merge auto: merge it yourself (`gh pr merge`); refused here
-  too → list it for the user, with the doctor's permission hint.
-- other `ready`: list it as waiting for the user's merge.
+- `unpushed` or `red`: back to the worker in one line.
+- `merged`: next section.
 - `closed` (closed without merge): `state=dropped note="PR closed without merge"`, `smithy cleanup`,
   **end** the worker, set the source to `dropped`, name it in the final message.
+- `no-pr`: the worker said `pr_open` without a PR; back to the worker.
 
 ## merged
 

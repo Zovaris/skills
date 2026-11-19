@@ -30,8 +30,8 @@ One rule per line, nothing else but the header:
 `scripts/SCRIPTS.md` has a header and one line per script:
 
 ```
-- <name> — <what it does> — <when to use it>
+- `scripts/<name>` — <what it does> — <when to use it>
 ```
 
-Add a line when a script is saved; delete it when the script is deleted. Same budget idea: a
+The backticked path is what `smithy drift` checks. Add a line when a script is saved; delete it when the script is deleted. Same budget idea: a
 script nobody uses any more is removed along with its line.

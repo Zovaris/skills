@@ -18,4 +18,4 @@ Started by the agent when a decision or doc is involved, or by you: `/ledger …
 | `comments [paths]` | Flags explanatory comments, TODOs and commented-out code (`smithy comments`) |
 | `search <query>` | Searches past decisions before anything is re-decided |
 
-A decision gets an ADR only when it is hard to reverse, surprising, or a real trade-off.
+A decision gets an ADR only when it is hard to reverse, surprising, and a real trade-off.

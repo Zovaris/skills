@@ -18,19 +18,20 @@ it. User instructions win over this file, and the repo's AGENTS.md / CLAUDE.md w
 `smithy <command>` in this skill means `<skill-dir>/scripts/smithy <command>` (`<skill-dir>` is this file's folder); run it by that path, nothing needs to be on PATH.
 
 Run `smithy skills --list` once per session. Only
-offer skills that are listed. To use a user-invoked skill yourself, read the SKILL.md path it
-prints and follow it: you can't run it as a slash command.
+offer skills that are listed. Every skill can be run by you or by the user: to run one, read the
+SKILL.md path it prints and follow it. Each harness has its own way for the user to start a skill
+by name (a slash command, `$name`, `@name` or plain words); never assume one.
 
 ## 2 · Route
 
 | The user wants… | Use | How |
 |---|---|---|
 | to build, change or fix code | **smelt** | Announce "Using smelt `<route>` `<speed>`" in one line, read smelt's SKILL.md and follow it: no plan → `plan`, a plan, spec or task → `build`, a bug → `debug`. Trivial work is `fast`. Its approval gates still apply. |
-| several tasks done at once, or a task list run in parallel | **warden** | Spawns sessions and costs tokens: propose it with the task list and wait for a yes, or tell the user to run `/warden`. |
-| a fact, a comparison, "why does X", "can we Y" | **scout** | Model-invoked; read-only; answers with sources. |
+| several tasks done at once, or a task list run in parallel | **warden** | Spawns sessions and costs tokens: propose it with the task list and wait for a yes, then run it. |
+| a fact, a comparison, "why does X", "can we Y" (not past project decisions: ledger search) | **scout** | Model-invoked; read-only; answers with sources. |
 | a decision recorded, docs, module READMEs, comment policy, a codebase map, to search past decisions | **ledger** | Model-invoked. Search past decisions with its `search` mode before re-deciding anything. |
-| open PRs kept green, rebased, review comments handled; new PRs or labeled issues watched | **tend** | Suggest `/tend <pr>` or `/tend watch [prs\|issues\|all]`; smelt and warden launch it for their own PRs. Issues it accepts become task files in `~/.smithy/plans/<repo>/inbox/` for warden. |
-| the work done without conversation | **hush** | Only when the user runs `/hush` or asks for no talk. |
+| open PRs kept green, rebased, review comments handled; new PRs or labeled issues watched | **tend** | Run it on the PR URLs, or in watch mode when asked; smelt and warden launch it for their own PRs. Issues it accepts become task files in `~/.smithy/plans/<repo>/inbox/` for warden. |
+| the work done without conversation | **hush** | When the user asks for no talk or no questions; every launched agent follows it too. |
 | — every reply | **simple** | If installed, write every reply its way unless the user says "normal mode". |
 
 Not installed? Do the work the plain way and, once, mention the skill that would help.
@@ -42,6 +43,11 @@ Not installed? Do the work the plain way and, once, mention the skill that would
 - Waiting on anything external (CI, a PR, a workflow run, new issues) is one `smithy wait`
   call in the background (smelt, warden and tend ship it), never sleep-then-check turns: it
   costs no tokens and returns one line when something happens.
+- **Merges.** Only the session that talks to the user decides them: warden for its batch, else
+  the session running smelt. Tend and workers merge only when the one that launched them says
+  `merge auto`. A PR into the production branch merges only on the user's explicit yes, given
+  up front ("merge to production when done") or asked once the PR is green; never from a
+  setting, a default or another agent. Without that yes, stop at green and ask.
 - Agents work silently (`hush` rules): a subagent or worker reports once, ending in `done:`, and
   sends its questions up to whoever launched it; only the top session talks to the user.
 - Evidence over claims: "done", "passes", "fixed" always name the command and its result.
@@ -55,7 +61,7 @@ Not installed? Do the work the plain way and, once, mention the skill that would
   one line ("cheap <model>, mid <model>, strong <model> for this harness, ok?") and on a yes run
   `smithy config accept-models`. If it prints none, ask the user to name each tier and save them with
   `smithy config set-model <tier> <name>`. Ask once per harness; until then use the session's model.
-  Under `/hush`, don't ask: use the session's model and say so at the end.
+  Under hush, don't ask: use the session's model and say so at the end.
 - Ask only for decisions that are the user's: scope, money, prod, data, security, irreversible
   actions, pushing, merging. Other decisions that would stop the work: low impact, decide;
   medium, one `smithy consult` call to the user's strong model (smelt, warden, tend ship it; it
@@ -74,7 +80,7 @@ line ("Save as scripts: `wait-deploy.sh` (polls the deploy URL), ok?"). On a yes
   stderr and a non-zero exit;
 - add one line to `scripts/SCRIPTS.md`: name, what it does, usage.
 
-Never propose one the user declined, and not under `/hush`. Ideas from
+Never propose one the user declined, and not under hush. Ideas from
 [scriptify](https://github.com/pfcoperez/scriptify).
 
 ## 5 · Red flags
@@ -87,6 +93,7 @@ Never propose one the user declined, and not under `/hush`. Ideas from
 | "A comment will explain it" | Put the why in the module README or an ADR. |
 | "Done, it should work" | Run it; quote the command and result. |
 | "I'll launch warden, it's faster" | It costs sessions: propose it, wait for a yes. |
+| "It's green, I'll merge to production" | Only with the user's explicit yes for this PR. |
 | "I'll sleep 2 minutes and check CI again" | `smithy wait pr:<pr-url>` in the background: no tokens, no missed finish. |
 | "I've typed this pipeline three times" | Propose it as a script at the end of the task. |
 

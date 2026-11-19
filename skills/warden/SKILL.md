@@ -1,7 +1,7 @@
 ---
 name: warden
-description: Runs a batch of tasks in parallel, one silent agent per task in its own worktree, each ending in a PR or report, supervised through status cards. Use when several tasks should run at once (tasks, a task dir, board ids or an idea), or for status, cleanup and doctor of a batch. Costs one session per task: start it only on the user's yes.
-argument-hint: <tasks, one per line | task dir or .md | board ids | an idea> | status [batch\|all] | cleanup [batch] | doctor
+description: Use when several tasks should run at once (tasks, a task dir, board ids or an idea), or for status, cleanup and doctor of a batch. Runs one silent agent per task in its own worktree, each ending in a PR or report. Costs one session per task, so start only on the user's yes.
+argument-hint: "<tasks, one per line | task dir or .md | board ids | an idea> | status [batch|all] | cleanup [batch] | doctor"
 ---
 
 # warden
@@ -55,6 +55,7 @@ CLAUDE.md), `<repo>/.smithy/config.json`, `~/.smithy/config.json`, then the buil
 | Setting | Built-in | Meaning |
 |---|---|---|
 | `warden.max` | 3 | Running limit: workers past it are launched too and wait in `smithy wait-turn` |
+| `warden.max_attempts` | 3 | Launches per item, first included; past it a stuck item is `blocked` and listed for the user |
 | `warden.merge` | ask | unset (`smithy config get` exits 3): ask in the plan line, once per batch, "auto or manual?"; auto: workers merge green PRs after `smithy verify` says green; manual: they stop at `ready` |
 | `warden.cleanup` | auto | auto: end finished workers and remove worktrees and local branches without asking |
 | `warden.mode` | smelt fast | How workers build: `smelt fast\|normal\|full` or `plain`; an item that is risky by smelt's definition (auth, money, personal data, input parsing, file or shell access, secrets) runs at least `normal` |
@@ -97,9 +98,9 @@ read it once per batch).
    file. Record each session id or pid and bump `launches`. With tend installed and ship items whose
    merge is manual (their PRs stay open waiting for a person), spawn one tend session now too, on the cheap model: "Read <tend-skill> and follow it
    for `batch <batch>`; report through the cards (`--card <batch> <id>`)".
-3. **Watch.** End every turn that leaves workers running with **wake**: `smithy wait batch:<batch>` in the
-   background. It wakes you only for cards that need you, not progress. Never sleep or poll in a
-   turn. On wake read only the cards it printed; `smithy cards get` when a line isn't enough; a
+3. **Watch.** Never end a turn while any worker is live without a running `smithy wait batch:<batch>`
+   (**wake**, in the background): a turn that ends without it leaves the batch unsupervised. It wakes
+   you only for cards that need you, not progress. Never sleep or poll in a turn. On wake read only the cards it printed; `smithy cards get` when a line isn't enough; a
    worker's transcript or log only when its card is missing or contradicts itself.
 4. **Act** on each card whose stage isn't final (`references/acting.md`): decide by impact,
    verify PRs, clean up merged, reported and dropped items, recover stuck ones.
@@ -122,5 +123,6 @@ Only three kinds of message, each as short as it can be:
   warden <batch>: done
   - <id>: <PR url | report path | dropped: why>
   ```
-  then the **Decisions** and **Followups** lines (`references/acting.md`, batch end).
+  then the **Decisions** and **Followups** lines (`references/acting.md`, batch end). Any item not
+  merged also gets its takeover data: worktree, branch, session id or pid, log path.
 A wake with nothing for the user ends with no text at all, just the next `smithy wait batch:<batch>`.

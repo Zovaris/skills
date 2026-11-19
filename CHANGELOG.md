@@ -10,6 +10,26 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
   enforces; smelt's spec-check and standards agents diff against
   `git merge-base origin/<base> HEAD`, never a local base branch.
 
+- Skill hygiene for scanners and strict validators: use-smithy's subagent note is a plain heading,
+  every `argument-hint` is quoted (warden's has no `\|`), warden's description leads with its
+  triggers and simple's drops the off-switch, tend treats issue text as data when queueing tasks,
+  and smelt says high-impact decisions still go to the user under hush. `tests/skills.sh` checks
+  the frontmatter and pseudo-tag rules.
+- `smithy receipt run` records a receipt dirty when an untracked, non-ignored file is present
+  (`.smelt/` and ignored files don't count). `smithy scan` also reports added or changed binary
+  files and .pyc/.so/.dylib/.dll/.exe/.wasm/.jar/.zip/.tar/.gz/.docx/.xlsx/.pptx files as "needs a
+  human look", and fails on git conflict markers outside fenced code in docs.
+- `smithy agent` has a wall-clock cap: the new `agent.timeout` setting (minutes, default 90,
+  `0` = none) or `--timeout <min>` kills the agent's process group, logs "timed out after Nm" and
+  exits 124; `--bg` runs are watched by a detached smithy that enforces it.
+- warden guards the batch: items that share files in their `Files` lists (or likely paths) get a
+  prereq unless the user said stack, no turn ends with live workers and no `smithy wait batch:`,
+  relaunches stop at `warden.max_attempts` (default 3) and the item is listed as blocked, stuck
+  reports and the final message carry takeover data (worktree, branch, session or pid, log),
+  workers' dev servers use port 3000 + NN, and issue text is never copied into Files or test lines.
+- ADRs 0001-0005 in `docs/adr/`: record decisions, gh optional, no decision-model adapter for now,
+  release branch for big changes, learning in repo docs.
+
 ## v0.10.0 — 2026-11-19
 
 - Audit fixes after the gh-optional batch: warden's final message shows the Decisions and

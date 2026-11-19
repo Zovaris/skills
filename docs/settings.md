@@ -13,6 +13,7 @@ Two JSON files, the repo's first: `<repo>/.smithy/config.json` (this repo only) 
 |---|---|---|
 | `models.<harness>.cheap` / `.mid` / `.strong` | ask | Stored per harness in your user config (`smithy config set-model <tier> <name>`); smithy ships no model names, so the first skill that needs a tier asks you to name it. The router (`smithy route`) picks a tier per task: cheap for small, mechanical or read-only work, mid for most features, strong for risky, hard or large work and the last fix round. |
 | `agent.effort` | `medium` | Reasoning effort for every agent smithy starts (`smithy agent`, `smithy consult`, warden workers): `low` or `medium`. It is also the cap: `high`, `xhigh` or `max` run at `medium`. Passed as `--effort` (Claude Code) or `-c model_reasoning_effort` (Codex) and as `$AGENT_EFFORT`; CLIs without an effort flag keep their own default. Speed (`fast`/`normal`/`full`) adds agents, never effort. |
+| `agent.timeout` | `90` | Minutes before `smithy agent` (warden workers, `--bg` runs too) kills the agent's whole process group, logs "timed out after Nm" and exits 124; `0` means no limit; a value that is not a number warns and uses 90. `--timeout <min>` overrides it for one run. |
 | `warden.worker_model` | `route` | `route`: a tier per task; `session`: the parent's model; or one model name for every worker. |
 | `tasks.commit` | ask | Commit specs and tasks (`docs/specs/`) or keep them out of git (`.docs/specs/`). |
 | `tasks.ignore` | ask | When not committed: a committed `.gitignore` line, or `.git/info/exclude` (this machine only). |
@@ -20,6 +21,7 @@ Two JSON files, the repo's first: `<repo>/.smithy/config.json` (this repo only) 
 | `warden.merge` | unset (warden asks once per batch) | Unset: warden asks once per batch in its plan line (auto or manual); `auto`: workers merge green PRs; `manual`: they stop at ready. A value you save counts as your words. |
 | `warden.cleanup` | `auto` | End finished workers and remove their worktrees and branches without asking. |
 | `warden.max` / `warden.mode` | `3` / `smelt fast` | Parallel workers; how workers build: `smelt fast`, `smelt normal`, `smelt full` or `plain`. |
+| `warden.max_attempts` | `3` | Launches per item, the first included; past it a stuck item is `blocked` and listed for you instead of relaunched. |
 | `tend.watch` / `tend.label` | `prs` / `agent` | What `/tend watch` follows; the issue label it may queue. |
 | `git.branch` | `{type}/{key}-{slug}` | Branch names (`smithy names`); e.g. `agent/{key}-{slug}`. |
 | `git.worktree` | `{parent}/worktrees/{repo}-{branch}` | Where worktrees go. |

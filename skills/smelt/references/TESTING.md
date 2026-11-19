@@ -4,7 +4,7 @@ Launch each as a fresh **subagent**: prompt = the agent file's text, a `## You g
 exactly what the file lists, and the report contract below. Agents that write tests work in
 their own git worktree, cut from your current commit, never from the base branch: make a WIP commit first
 (`git commit -m "wip: test agents"`; at ship, `git reset --soft <base>` and make the atomic commits), then
-`git worktree add <absolute path outside the repo> HEAD` (`smithy names worktree <branch>-<agent>`
+`git worktree add -b <branch>-<agent> <absolute path outside the repo> HEAD` (`smithy names worktree <branch>-<agent>`
 gives one) (or the harness's isolation option when it starts from HEAD) and
 pass the path. Their tests are input, not files to ship: move the cases worth keeping into the
 repo's existing test files in its own naming, drop the rest and any reference to the agent or
@@ -30,7 +30,7 @@ All test agents of a speed run together, in parallel, before review. Which ones 
 
 | Agent | Run when | Cost | Writes tests |
 |---|---|---|---|
-| `agents/adversary.md` | any non-trivial logic; run 2 when the logic is risky | medium | yes |
+| `agents/adversary.md` | any non-trivial runtime logic (not for docs or test-script-only diffs); run 2 when the logic is risky | medium | yes |
 | `agents/regression.md` | every bug fix | low | no (runs the fixer's test) |
 | `agents/property.md` | parsers, serializers, math, money, sorting, state machines, invariants such as length bounds or round-trips on pure functions | medium | yes |
 | `agents/mutation.md` | before merge on core logic, when `smithy stack` shows a mutation tool | high CPU | proposes |

@@ -67,7 +67,7 @@ or secrets. Under hush, never ask: pick the speed yourself and say which at the 
 ## Phases
 
 **0 · Context** (always). Read, if they exist: the repo's agent instructions (AGENTS.md /
-CLAUDE.md), `docs/GLOSSARY.md`, titles of `docs/adr/*` (open the ones that touch the task),
+CLAUDE.md), CONTRIBUTING.md (its rules count, e.g. changelog entries), `docs/GLOSSARY.md`, titles of `docs/adr/*` (open the ones that touch the task),
 `docs/agents/STANDARDS.md`, and the spec/task given. With the ledger skill installed
 (`smithy skills ledger`), follow its context rules; else `references/DOCS.md`.
 Run `smithy stack` once and use its commands instead of guessing. Note whether you're in a
@@ -122,6 +122,8 @@ listed; the rest are named as dropped.
 
 ## Always
 
+- Scratch files (logs, PR bodies, notes) go in `.smelt/` or the system temp dir, never next to
+  the worktree or in the repo outside `.smelt/`.
 - Every agent works silently, the `hush` way: no narration between tool calls, the report is its
   only output, ending in `done:` with its findings (the report contract in
   `references/TESTING.md`). A question it can't settle goes in the report; you answer it by the rule below and ask the user only when the

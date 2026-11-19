@@ -23,8 +23,9 @@ else update the docs the change touched (`references/DOCS.md`). Then:
   write the PR body file inside the worktree's `.smelt/` or the system temp dir, never next to
   the worktree. From a task file: `smithy tasks set <file> status=done pr=<url>`. Then hand the
   PR to **tend** when it is installed (`smithy skills tend` prints its path): one silent
-  **subagent** on the cheap tier, prompt "Read <tend-skill> and follow it for <pr-url>; never merge;
-  stay until merged or closed; on merge, clean up <branch> <worktree>" plus the report
+  **subagent** on the tier `smithy route --agent tend` gives, prompt "Read <tend-skill> and follow it for <pr-url>; never merge;
+  stay until merged or closed; on merge, clean up <branch> [<worktree>]" (name the worktree only
+  when smelt created it; a harness-made one belongs to the harness) plus the report
   contract (`references/TESTING.md`); it keeps CI green, rebases and answers review until the PR
   is mergeable or needs the user, then waits for the merge so it can clean up. Without tend, wait
   with `smithy wait pr:<pr-url>`, in the background where the harness wakes on exit, else in the
@@ -37,8 +38,9 @@ else update the docs the change touched (`references/DOCS.md`). Then:
   skip the PR, tend and the wait, and say so in the final message.
 - **Clean up** once merged or discarded: `smithy cleanup <repo> <branch> [<worktree>]`,
   only for worktrees and branches smelt created. It refuses to drop unpushed work; never force it.
-  The merge usually comes later, from the user: give tend the branch and worktree to clean up
-  ("on merge, clean up <branch> <worktree>"), end the test and review agents as soon as their
+  The merge usually comes later, from the user: give tend the branch, and the worktree only
+  when smelt created it ("on merge, clean up <branch> [<worktree>]"); `smithy cleanup` never
+  removes a worktree it isn't given; end the test and review agents as soon as their
   reports are in, and if this session was started for the task, say in the final message that it
   can be archived once the PR merges.
 - **Lesson.** A finding, failed fix or wrong assumption that surprised you and isn't already in

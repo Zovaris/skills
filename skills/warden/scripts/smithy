@@ -3,7 +3,8 @@
 # features or other runtime. Order:
 #   1. $SMITHY_BIN, when set (your own build);
 #   2. a source checkout of the skills repo with Go installed: builds it once into
-#      ~/.smithy/bin/dev and rebuilds when a .go file changes (development);
+#      ~/.smithy/bin/dev/<checkout id> (one per checkout or worktree) and rebuilds when a .go
+#      file changes (development);
 #   3. ~/.smithy/bin/<VERSION>/smithy, downloaded once (gzipped, ~1.5 MB) from the GitHub
 #      release v<VERSION>, checked against the release's checksums.txt and its build attestation
 #      (needs gh with `gh attestation`; without it nothing is installed unless
@@ -22,9 +23,10 @@ link() { ln -sfn "$1" "$home/bin/smithy" 2>/dev/null || true; }
 # Development: the skill folder is inside a checkout of the repo (skills/<name>/scripts or shared).
 for root in "$here/../../.." "$here/.."; do
   if [ -f "$root/go.mod" ] && grep -q "^module github.com/$repo\$" "$root/go.mod" && command -v go >/dev/null 2>&1; then
-    root=$(cd "$root" && pwd -P); bin="$home/bin/dev/smithy"
+    root=$(cd "$root" && pwd -P); key=$(printf %s "$root" | cksum | cut -d ' ' -f 1)
+    bin="$home/bin/dev/$key/smithy"
     if [ ! -x "$bin" ] || [ -n "$(find "$root/cmd" "$root/internal" "$root/go.mod" -newer "$bin" -print 2>/dev/null | head -n 1)" ]; then
-      mkdir -p "$home/bin/dev"
+      mkdir -p "$home/bin/dev/$key"
       (cd "$root" && go build -trimpath -ldflags "-s -w -X main.version=dev" -o "$bin" ./cmd/smithy) >&2
     fi
     link "$bin"; exec "$bin" "$@"

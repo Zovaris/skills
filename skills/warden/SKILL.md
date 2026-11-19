@@ -55,14 +55,15 @@ CLAUDE.md), `<repo>/.smithy/config.json`, `~/.smithy/config.json`, then the buil
 | Setting | Built-in | Meaning |
 |---|---|---|
 | `warden.max` | 3 | Running limit: workers past it are launched too and wait in `smithy wait-turn` |
-| `warden.merge` | auto | auto: workers merge green PRs after `smithy verify` says green; manual: they stop at `ready` |
+| `warden.merge` | ask | unset (`smithy config get` exits 3): ask in the plan line, once per batch, "auto or manual?"; auto: workers merge green PRs after `smithy verify` says green; manual: they stop at `ready` |
 | `warden.cleanup` | auto | auto: end finished workers and remove worktrees and local branches without asking |
 | `warden.mode` | smelt fast | How workers build: `smelt fast\|normal\|full` or `plain` |
 | `warden.worker_model` | route | Models per item: `references/models.md` |
 
 A PR into the production branch is `manual` unless the user said, for this batch, to merge it to production (use-smithy: merges). The
 plan line states every value used; `batch.json` stores them as the user's standing permission for
-this batch.
+this batch. Merges need the user's words: their answer to the plan line, or a `warden.merge` they
+saved themselves; under hush, or in a session another one launched, `ask` means `manual`.
 
 ## Loop
 
@@ -99,9 +100,10 @@ read it once per batch).
 4. **Act** on each card whose stage isn't final (`references/acting.md`): decide by impact,
    verify PRs, clean up merged, reported and dropped items, recover stuck ones.
 5. **Finish** when every item is `merged`, `reported`, `dropped`, held or waiting on the user.
-   **End** every finished worker still running; leave `blocked` / `failed` ones open for the user.
+   **End** every finished worker still running, and the tend session once every item is final;
+   leave `blocked` / `failed` ones open for the user.
    Workers still `ready` end on their own when the PR closes where the harness auto-archives;
-   otherwise the final message says `/warden cleanup` finishes them after the merges.
+   otherwise the final message says running warden cleanup (e.g. `/warden cleanup`) finishes them after the merges.
 6. **Tend**, when installed, keeps the PRs green, rebased and answered (spawned in step 2); a PR it
    can't get green comes back as a card. Without tend, list the open PRs in the final message.
 

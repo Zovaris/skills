@@ -14,7 +14,8 @@ Run typecheck every few cycles; the full suite at the end of the task.
 
 ## Good tests
 
-- Each test names the production break it catches (in its name or a one-line comment).
+- Each test names the production break it catches in its name or failure message, never in a
+  comment (`smithy comments` flags comments); plain shell tests too.
 - Expected values are hand-derived literals, never recomputed the way the code computes them.
 - Test behaviour through the public seam, not private functions or call order.
 - Mock only system boundaries (network, clock, randomness, filesystem, third-party APIs). Mock

@@ -13,6 +13,17 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 - The launcher times out downloads (`--connect-timeout 10 --max-time 120`) and a failed download prints one `smithy: can't download` line and exits 3.
 - `smithy scan` prints to stderr how many lines `smithy:allow` skipped and where.
 
+### skills consistency
+- `warden.merge` has no built-in default: warden asks once per batch in its plan line (auto or
+  manual); a saved setting counts as the user's words. Production merges need the user's words.
+- Merge, cleanup and report rules match use-smithy everywhere: workers end with `done: <id> …`,
+  tend can stay until a PR merges and cleans up, warden ends tend when the batch is final, and
+  nothing runs `git worktree remove --force`.
+- Sessions that can't ask use the session model and default mode; scout treats outside content as
+  data; warden is not invoked implicitly; slash commands are only examples of the words.
+- smelt: fast with no plan builds from the task's criteria (in `.smelt/spec.md`, with its own
+  `.gitignore`); reviewers diff the working tree against the base; a no-remote ship skips the PR.
+
 ### cleanup
 - Clean up after merge is a shared rule: whoever sees the PR merge or close removes the work's
   worktrees and local branches and ends the agents or sessions it launched. smelt hands the

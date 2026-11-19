@@ -21,11 +21,11 @@ Started by you (by name, the way your harness starts skills) or by an agent afte
 2. Launches every worker in your turn; tasks that must wait (dependencies, `warden.max`) wait in
    their own session without tokens.
 3. Each worker builds with smelt (`fast` by default), opens a PR, waits for CI and merges when
-   `warden.merge` is `auto`.
+   you said `auto` (warden asks once per batch unless `warden.merge` is set).
 4. **tend** keeps the batch's PRs green while workers finish.
 5. Finished worktrees and branches are removed.
 
 ## Settings
 
-`warden.max` (3), `warden.mode` (`smelt fast`), `warden.merge` (`auto`),
+`warden.max` (3), `warden.mode` (`smelt fast`), `warden.merge` (`ask`),
 `warden.cleanup` (`auto`), `warden.worker_model` (`route`). See [settings](../../docs/settings.md).

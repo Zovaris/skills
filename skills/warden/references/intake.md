@@ -18,8 +18,8 @@ Work out what you were given, in this order, and say in the plan line which it w
 4. **Just an idea** (one goal, no split): ask once, recommendation first, offering only what is
    installed:
    - "Do you have a plan or task file? Give me the path or the board."
-   - "Plan it with smelt" (when installed): the user runs `/smelt plan <idea>`; when its task list
-     exists, continue at 1.
+   - "Plan it with smelt" (when installed): the user runs smelt plan on the idea
+     (e.g. `/smelt plan <idea>`); when its task list exists, continue at 1.
    - "I split it quickly": read the code, propose 2–6 tasks in the task-file format (vertical
      slices, real blockers only) in one message, write them once approved to the dir
      `smithy task-dir <slug>` gives (same settings and questions as smelt), continue at 1.
@@ -30,6 +30,7 @@ Work out what you were given, in this order, and say in the plan line which it w
 
 Once per batch, unless the user said it or `warden.mode` is set: with smelt installed ask "smelt
 (fast / normal / full) or plain?", default `smelt fast`. Without smelt: `plain`, no question.
+Under hush, or in a session another one launched, don't ask: use `smelt fast` and say so.
 Store it as `mode` in `batch.json`. A `(full)` item overrides the batch speed.
 
 ## Kinds
@@ -43,7 +44,8 @@ worker follows that SKILL.md and writes the report there.
 Per task: the user's words, else inferred (a hotfix starts from and targets the production
 branch; anything else the integration branch, e.g. `develop`, else the default branch). State
 each item's base in the plan; ask only when it stays ambiguous. A PR into the production branch
-is `manual` unless the user's intent says to release it.
+is `manual` unless the user said in words to merge it to production; never inferred from the
+intent or the task.
 
 ## Status back to the source
 

@@ -102,7 +102,7 @@ t "model saved per harness" '[ "$($S/smithy config model cheap)" = mini ] && jq 
 
 (cd "$T/repo" && $S/smithy config set --repo tasks.commit false >/dev/null)
 t "repo setting overrides, false kept as false" '[ "$(cd "$T/repo" && $S/smithy config get tasks.commit)" = false ]'
-t "default applies when unset" '[ "$(cd "$T/repo" && $S/smithy config get warden.merge)" = auto ]'
+t "default applies when unset" '[ "$(cd "$T/repo" && $S/smithy config get warden.cleanup)" = auto ]'
 t "no default → exit 3" '(cd "$T/repo" && $S/smithy config get tasks.ignore); [ $? -eq 3 ]'
 t "task-dir asks for tasks.ignore" 'o="$(cd "$T/repo" && $S/smithy task-dir pay)"; [ $? -eq 3 ] && grep -q "^ask tasks.ignore" <<<"$o"'
 (cd "$T/repo" && $S/smithy config set --repo tasks.ignore exclude >/dev/null && $S/smithy task-dir pay >/dev/null && $S/smithy task-dir pay >/dev/null)
@@ -148,7 +148,11 @@ L="$T/launch"; mkdir -p "$L/curl" "$L/gh"; cp "$S/smithy" "$L/smithy"; echo 0.0.
 printf '#!/bin/sh\necho "$@" > "%s/curl.args"\necho "curl: (22) The requested URL returned error: 404" >&2\nexit 22\n' "$L" > "$L/curl/curl"
 printf '#!/bin/sh\necho "release not found" >&2\nexit 1\n' > "$L/gh/gh"
 chmod +x "$L/curl/curl" "$L/gh/gh"
-LR() { env -u SMITHY_BIN SMITHY_HOME="$L/home" PATH="$1:/usr/bin:/bin" "$L/smithy" version 2>"$L/err"; }
+mkdir -p "$L/sys"
+for p in /bin/* /usr/bin/*; do
+  n=${p##*/}; [ "$n" = gh ] || [ "$n" = curl ] || [ -e "$L/sys/$n" ] || ln -s "$p" "$L/sys/$n"
+done
+LR() { env -u SMITHY_BIN SMITHY_HOME="$L/home" PATH="$1:$L/sys" "$L/smithy" version 2>"$L/err"; }
 t "launcher: curl 404 exits 3 with one line" 'LR "$L/curl"; [ $? -eq 3 ] && [ "$(wc -l < "$L/err")" -eq 2 ] && grep -q "^smithy: can.t download v0.0.0 (smithy-.*\.gz): .*404" "$L/err" && ! grep -q awk "$L/err"'
 t "launcher: curl has timeouts" 'grep -q -- "--connect-timeout 10 --max-time 120" "$L/curl.args"'
 t "launcher: gh failure exits 3 with one line" 'LR "$L/gh"; [ $? -eq 3 ] && grep -q "^smithy: can.t download v0.0.0 (smithy-.*\.gz): release not found" "$L/err" && ! grep -q awk "$L/err"'

@@ -21,9 +21,12 @@ when you can't ask. Effort is never raised: every agent runs at `agent.effort` (
 
 ## Pick the entry point
 
+The slash form is one example: the same words in plain text work in any harness ("smelt plan
+<idea>", "build the next task").
+
 | Command | Runs |
 |---|---|
-| `/smelt <task>` | infer: no agreed plan → `plan`; plan/spec/task exists → `build`; a bug → `debug` |
+| `/smelt <task>` | infer: no agreed plan → `plan` (at `fast`: `build`, criteria from the task); plan/spec/task exists → `build`; a bug → `debug` |
 | `/smelt brainstorm <idea>` | `references/BRAINSTORM.md` only: the why, approaches, a draft design |
 | `/smelt plan <idea>` | brainstorm → grill → spec → builder check (`full` or a long spec) → task list → ask how to run it |
 | `/smelt build next [dir]` | `smithy tasks next`, mark it `doing`, build it to `ship`, mark it `done` |
@@ -34,19 +37,22 @@ when you can't ask. Effort is never raised: every agent runs at `agent.effort` (
 | `/smelt adr <title>` · `/smelt init` | with the ledger skill installed (`smithy skills ledger`), follow its `adr` / `init` mode; else `references/DOCS.md`. **Done:** the files are written and listed |
 
 Already have a plan in your head or in the chat? That *is* the spec: start at `build` and treat
-the agreed points as the acceptance criteria; don't re-plan. Write them to `.smelt/spec.md`
-(git ignores `.smelt/`) so the agents can read them by path.
+the agreed points as the acceptance criteria; don't re-plan. Any criteria that live only in the
+chat or the task line (at `fast` too) go to `.smelt/spec.md`, and the agents and reviewers get
+that path. If `.smelt/` doesn't exist yet, create `.smelt/.gitignore` containing `*` first so git
+ignores it.
 
 ## Pick the speed
 
-Say the speed and the phases you'll run in one line before starting.
+The top session tells the user the speed and the phases it will run, in one line, before
+starting; a subagent or worker running smelt stays silent and puts them in its report.
 
 | | fast | normal (default) | full |
 |---|---|---|---|
 | For | small or clear changes, warden workers | most features and fixes | risky logic, money, data, auth, public APIs |
 | Plan / spec | skipped; criteria from the task | spec if none exists | brainstorm + grill + spec + builder check + tasks |
 | Build | TDD on the acceptance criteria only | TDD on every behaviour | TDD on every behaviour |
-| Test agents | regression (bugs) | + adversary; property or e2e when the change fits | + 2 adversaries, property, mutation, e2e when applicable; hostile after review when it runs |
+| Test agents | regression (bugs); none for a feature | + adversary; property or e2e when the change fits | + 2 adversaries, property, mutation, e2e when applicable; hostile after review when it runs |
 | Review | a fresh spec-check agent (self-check against `agents/spec-check.md` only without a subagent tool); security only if the change is risky | spec-check + standards (+ security if risky) | spec-check + standards + security |
 | Verify gate | always | always | always |
 | Docs | ADR only if forced | glossary/ADR when they apply | glossary/ADR when they apply + retro |

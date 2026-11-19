@@ -20,6 +20,7 @@ Started by you (by name, the way your harness starts skills), or by smelt and wa
 - Waiting on CI is one `smithy wait pr:<pr-url>`: no tokens until something happens.
 - A flaky test is rerun once; a second real failure, an unsafe conflict or a decision that is
   yours comes back as `needs you <url>: <why>`.
-- Merges only when told the PR is `merge auto`, never into the production branch.
+- Merges only when told the PR is `merge auto`; into the production branch only with your yes
+  for that PR.
 
 Ends with one line per PR: `merged`, `green`, `closed` or `needs you`.

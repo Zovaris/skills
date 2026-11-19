@@ -14,7 +14,8 @@ A `model` the user named, for the batch or one item, always wins. The plan line 
 tier and model; `batch.json` stores it as `model`.
 
 Unset tiers print `-`: in the plan line ask the user to name each unset tier and save them with
-`smithy config set-model <tier> <name>`. Until then that item uses the session default.
+`smithy config set-model <tier> <name>`. Until then that item uses the session default. Under
+hush, or in a session another one launched, don't ask: use the session's model and say so.
 
 Other roles: `smithy consult` uses `strong`; tend runs on `cheap` and hands code fixes to `strong`.
 

@@ -88,7 +88,8 @@ current step, so the warden sees where you are without asking.
   never pr_open.
 - Green and reviewed (`<warden-dir>/scripts/smithy verify <repo> <branch> <pr-url>` says `green`):
   tests_run=<commands actually run>, risks=<or none>. merge auto → merge into
-  <base>, state=merged; manual → state=ready. A PR into the production branch is manual unless
+  <base>, state=merged, then from <repo> run `<warden-dir>/scripts/smithy cleanup <repo> <branch>
+  <worktree>` (never forced); manual → state=ready. A PR into the production branch is manual unless
   the batch says the user approved a production merge. If the merge itself
   is refused (permission rule, branch protection, a classifier): don't retry around it;
   state=ready note=merge-blocked, and the warden merges.
@@ -108,6 +109,6 @@ current step, so the warden sees where you are without asking.
 Reminder: no text between tool calls at any point; this line is your only message.
 <warden channel: "Send it to the warden with SendMessage, to: <address>." | "Put it in the card's note.">
 End each turn with exactly one line and nothing else:
-"ok <id>: PR <url>" | "ok <id>: ready <url>" | "ok <id>: reported" | "decide <id>: <question>" |
-"blocked <id>: <why>".
+"done: <id> PR <url>" | "done: <id> ready <url>" | "done: <id> reported" |
+"done: <id> decide: <question>" | "done: <id> blocked: <why>".
 ```

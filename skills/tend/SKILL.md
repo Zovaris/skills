@@ -42,6 +42,9 @@ named in your reply.
   - `issues`: new issues with `--label` (default `agent`); see "Issues" below. Never builds them.
   - `all`: both.
   The default scope is `smithy config get tend.watch` when set, else `prs`.
+- `stay until merged` in the launch (smelt asks for it): at green, don't stop; wait with
+  `smithy wait pr:<pr-url>` until the PR merges or closes, then act as **merged / closed** below.
+  Red, conflicts or new review threads in the meantime go back through the loop.
 - `--card <batch> <id>`: when warden launched you, mirror your state on that card
   (`smithy cards set <batch> <id> key=value…`; cards are shared through `~/.smithy/warden`).
 
@@ -88,7 +91,8 @@ inside the repo). Then repeat:
    - **green, mergeable, approved or no review required** → `green` (`smithy verify` says `draft`
      for a draft PR: report `green (draft)` and leave it a draft). Merge only if whoever launched
      you said `merge auto`, never a draft, and into the production branch only when the launch
-     says the user approved it (use-smithy: merges); otherwise stop at green.
+     says the user approved it (use-smithy: merges); otherwise stop at green (or keep waiting when
+     told to stay until merged).
 3. Commit fixes with `smithy commit` (style once, one concern per commit); push without force
    unless the rebase rule above allows it.
 
@@ -117,11 +121,12 @@ user's task settings (`smithy config get tasks.location|tasks.commit`): `~/.smit
 when local, else `docs/specs/inbox/` (committed) or `.docs/specs/inbox/` (not committed); then
 add one line to the issue ("queued for an agent"). Not
 accepted → leave it alone. Report the queued ones: on the card's `note`, or one line each at the
-end (`queued <issue-url> → <task file>`). Building them is warden's job (`/warden <inbox dir>`).
+end (`queued <issue-url> → <task file>`). Building them is warden's job (start warden on the inbox dir).
 
 ## End
 
-One line per PR or issue, nothing else:
+One line per PR or issue, nothing else; when launched as a subagent, a last line
+`done: <result>` follows them:
 
 ```
 merged <url>
@@ -129,4 +134,5 @@ green <url>
 closed <url>
 needs you <url>: <why, one line>
 queued <issue-url> → <task file>
+done: <one-line result>      (subagent only)
 ```

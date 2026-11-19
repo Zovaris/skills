@@ -98,7 +98,8 @@ func PRMain(args []string) int {
 		switch rest[0] {
 		case "--base", "--title", "--body-file":
 			if len(rest) < 2 {
-				return die(p, use)
+				die(p, use)
+				return 2
 			}
 			switch rest[0] {
 			case "--base":
@@ -113,11 +114,13 @@ func PRMain(args []string) int {
 			draft = true
 			rest = rest[1:]
 		default:
-			return die(p, "unknown option %s", rest[0])
+			die(p, "unknown option %s", rest[0])
+			return 2
 		}
 	}
 	if fi, err := os.Stat(body); base == "" || title == "" || err != nil || !fi.Mode().IsRegular() {
-		return die(p, use)
+		die(p, use)
+		return 2
 	}
 	branch := git("branch", "--show-current")
 	var open []struct {

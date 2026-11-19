@@ -74,10 +74,10 @@ source), `references/state.md` (batch dir, cards, states and stages), `reference
 `references/harness.md` (how to **spawn**, **tell**, **wake**, **end** and run a **subagent** here;
 read it once per batch).
 
-1. **Preflight and plan.** `smithy doctor --quiet`; on `not ready` show the FAIL lines with the
+1. **Preflight and plan.** `smithy doctor --quiet` (it reports the GitHub mode: `gh` full experience; `GH_TOKEN`/`GITHUB_TOKEN` API mode, works but no `gh` log/rerun helpers; neither: warden and tend can't open or tend PRs, say so up front); on `not ready` show the FAIL lines with the
    plan line and keep planning: only launch (step 2) and merges wait until doctor says ready. Work
    out the input and items (`references/intake.md`), check duplicates (a card with that id in
-   another batch, an open PR covering it via `gh pr list --search "<id>"`, a task file already
+   another batch, an open PR covering it (`gh pr list --search "<id>"` when `gh` is installed, else the GitHub web search), a task file already
    `done`; someone else's PR → `dropped` with a pointer), write `batch.json`
    (`references/state.md`) and tell the user in one line: input type, worker mode, what starts
    now and what waits on what, each item's base, kind, model, merge and cleanup mode. Questions

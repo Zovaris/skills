@@ -67,7 +67,7 @@ requirements from the intent and the code"; out of scope if the user named it>
   `git fetch origin && git merge origin/<base>` (or the prereq's branch when stacked) so you
   start from the merged prereqs.">
 <relaunch: "- This is a relaunch. Read <batch-dir>/<id>.inbox.md first if it exists. Before any
-  outside action, check git log, git status and `gh pr list --head <branch>`; continue from what
+  outside action, check git log, git status and `gh pr list --head <branch>` (when `gh` is installed); continue from what
   exists, never open a second PR or force-push (tend may rebase the branch after you end).">
 - Stay current with the base: `git fetch origin && git merge origin/<base>` (resolve, run the
   tests) before opening the PR and again right before merging. Other workers merge into the same

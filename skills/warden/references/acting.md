@@ -26,7 +26,7 @@ yourself: `smithy cards set <batch> <id> state=working decision_key=`. Log low a
 `smithy verify <repo> <branch> <pr-url>` prints one verdict:
 - `green`: merge auto, and either not the production branch or the user approved a production
   merge for this batch → merge if the worker hasn't (card `note=merge-blocked` means it was
-  refused: `gh pr merge` yourself; refused again → list it with the doctor's permission hint).
+  refused: `smithy pr merge <pr>` yourself; refused again → list it with the doctor's permission hint).
   Production without that yes, or merge manual → card `state=ready`, listed for the user.
 - `pending`: wait (`smithy wait pr:<pr-url>`).
 - `draft`: green but still a draft; list it for the user, never merge it.

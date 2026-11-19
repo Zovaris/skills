@@ -5,6 +5,11 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+- Skills treat `gh` as optional: smelt ship, tend and warden doctor describe the three GitHub modes
+  (gh, token, neither: pushed branch plus compare URL), `gh pr merge` became `smithy pr merge`,
+  remaining `gh` mentions say "when installed". README requirements say gh is optional and add a
+  Roadmap (other forges later).
+
 - smithy works without the GitHub CLI: every GitHub call goes through one seam (`internal/ghx`)
   that uses gh when present, else the GitHub API with `GH_TOKEN`/`GITHUB_TOKEN` (origin's repo,
   `GH_HOST` for Enterprise), else fails with "needs the GitHub CLI or GH_TOKEN"; with neither,

@@ -6,6 +6,10 @@ argument-hint: "<pr-url|number|branch> [...] | batch <warden batch> | watch [prs
 
 # tend
 
+GitHub modes: with `gh`, full experience; with `GH_TOKEN`/`GITHUB_TOKEN` instead, the same
+`smithy` commands use the GitHub API (log and rerun steps below need `gh` and are skipped without
+it); with neither, tend can't run: say "needs gh or GH_TOKEN" up front and stop (`smithy doctor`).
+
 You look after PRs someone else opened (a person, a smelt session, a warden worker) until they
 can merge. You fix what blocks them; you don't add scope. Work silently (the `hush` skill's
 rules if installed): no talk between tool calls, one line per PR at the end. Silent means no running narration, never hiding work: the report lists every change, command and PR.
@@ -73,8 +77,8 @@ inside the repo). Then repeat:
    - **merged / closed** → stop this PR. Remove the worktree you created, and the branch and
      worktree the launcher names as its own (`smithy cleanup <repo> <branch> [<worktree>]`,
      never forced); report `merged <url>, cleaned <what>` so the launcher can end its sessions.
-   - **checks red** → `gh run view <run> --log-failed`. Same test passes on a plain rerun and
-     nothing in the diff touches it → flaky: rerun once (`gh run rerun <run> --failed`) and note
+   - **checks red** → `gh run view <run> --log-failed` when `gh` is installed (else open the failing check's page from the PR). Same test passes on a plain rerun and
+     nothing in the diff touches it → flaky: rerun once (`gh run rerun <run> --failed` when `gh` is installed) and note
      it. Otherwise it is a real failure: hand it to the fix model, failing test first when it is
      a bug, and push the fix. Red again after a second real fix → "needs you".
    - **conflicting or behind base** → follow the repo: rebase if its history is linear (no merge
@@ -88,7 +92,7 @@ inside the repo). Then repeat:
    - **checks pending** → `smithy wait pr:<pr-url>` in the background (foreground where the
      harness can't wake on exit); it returns one line when checks finish, the PR merges or closes,
      or a review lands. Exit 0: read the state again. Exit 4 (heartbeat): wait again. Exit 2 or 3
-     (bad target, gh missing or signed out): "needs you". Never sleep-then-check turns.
+     (bad target, no gh and no token, or signed out): "needs you". Never sleep-then-check turns.
    - **green, mergeable, approved or no review required** → `green` (`smithy verify` says `draft`
      for a draft PR: report `green (draft)` and leave it a draft). Merge only if whoever launched
      you said `merge auto`, never a draft, and into the production branch only when the launch

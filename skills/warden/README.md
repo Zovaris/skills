@@ -13,7 +13,7 @@ Started by you (by name, the way your harness starts skills) or by an agent afte
 | `/warden <tasks>` | One task per line, a task dir, board ids, or an idea it offers to plan with smelt |
 | `/warden status` · `status all` | The current batch, or every task list and batch on this machine |
 | `/warden cleanup` | Re-verify waiting PRs after the batch, end their workers |
-| `/warden doctor` | Checks git, gh, the agent CLI, models and permissions for this harness |
+| `/warden doctor` | Checks git, GitHub access (gh, a token or neither), the agent CLI, models and permissions for this harness |
 
 ## How a batch runs
 

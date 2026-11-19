@@ -55,14 +55,15 @@ CLAUDE.md), `<repo>/.smithy/config.json`, `~/.smithy/config.json`, then the buil
 | Setting | Built-in | Meaning |
 |---|---|---|
 | `warden.max` | 3 | Running limit: workers past it are launched too and wait in `smithy wait-turn` |
-| `warden.merge` | auto | auto: workers merge green PRs after `smithy verify` says green; manual: they stop at `ready` |
+| `warden.merge` | ask | unset (`smithy config get` exits 3): ask in the plan line, once per batch, "auto or manual?"; auto: workers merge green PRs after `smithy verify` says green; manual: they stop at `ready` |
 | `warden.cleanup` | auto | auto: end finished workers and remove worktrees and local branches without asking |
 | `warden.mode` | smelt fast | How workers build: `smelt fast\|normal\|full` or `plain` |
 | `warden.worker_model` | route | Models per item: `references/models.md` |
 
 A PR into the production branch is `manual` unless the user said, for this batch, to merge it to production (use-smithy: merges). The
 plan line states every value used; `batch.json` stores them as the user's standing permission for
-this batch.
+this batch. Merges need the user's words: their answer to the plan line, or a `warden.merge` they
+saved themselves; under hush, or in a session another one launched, `ask` means `manual`.
 
 ## Loop
 

@@ -17,7 +17,8 @@ Two JSON files, the repo's first: `<repo>/.smithy/config.json` (this repo only) 
 | `tasks.commit` | ask | Commit specs and tasks (`docs/specs/`) or keep them out of git (`.docs/specs/`). |
 | `tasks.ignore` | ask | When not committed: a committed `.gitignore` line, or `.git/info/exclude` (this machine only). |
 | `tasks.location` | `repo` | `repo`, `local` (`~/.smithy/plans`) or `board`. |
-| `warden.merge` / `warden.cleanup` | `auto` / `auto` | Merge green PRs; end finished workers and remove their worktrees and branches without asking. |
+| `warden.merge` | `ask` | `ask`: warden asks once per batch in its plan line (auto or manual); `auto`: workers merge green PRs; `manual`: they stop at ready. A value you save counts as your words. |
+| `warden.cleanup` | `auto` | End finished workers and remove their worktrees and branches without asking. |
 | `warden.max` / `warden.mode` | `3` / `smelt fast` | Parallel workers; how workers build: `smelt fast`, `smelt normal`, `smelt full` or `plain`. |
 | `tend.watch` / `tend.label` | `prs` / `agent` | What `/tend watch` follows; the issue label it may queue. |
 | `git.branch` | `{type}/{key}-{slug}` | Branch names (`smithy names`); e.g. `agent/{key}-{slug}`. |

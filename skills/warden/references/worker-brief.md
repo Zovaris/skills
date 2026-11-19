@@ -100,7 +100,7 @@ current step, so the warden sees where you are without asking.
   auto-archive of this session when the PR closes. A draft or unfinished PR is state=blocked,
   never pr_open.
 - Green and reviewed (`<warden-dir>/scripts/smithy verify <repo> <branch> <pr-url>` says `green`):
-  tests_run=<commands actually run>, risks=<or none>. merge auto → merge into
+  tests_run=<commands actually run>, risks=<or none>. merge auto → `<warden-dir>/scripts/smithy pr merge <pr-url>` into
   <base>, state=merged, then from <repo> run `<warden-dir>/scripts/smithy cleanup <repo> <branch>
   <worktree>` (never forced). Use the repo's usual merge method; if a rebase merge is refused because
   syncing the base left merge commits, use a merge commit, never a force-push. Manual → state=ready. A PR into the production branch is manual unless

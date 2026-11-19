@@ -12,7 +12,7 @@ Work out what you were given, in this order, and say in the plan line which it w
    `~/.smithy/plans/<repo>/<slug>/`; `smithy tasks where` lists them; an `NN-*.md`; or "the tasks we
    just planned"): `smithy tasks ready <dir>` gives what can start; blocked ones wait for their
    blockers. Id = `<slug>-NN`. Source = the file.
-2. **Board ids** (GitHub issues, Linear, Jira keys): read each with `gh` (when installed) or the harness's tracker
+2. **Board ids** (GitHub issues, Linear, Jira keys): read each with `gh` (when installed), the GitHub API when a token is set, or the harness's tracker
    tools. Id = the key. Source = the board.
 3. **Tasks inline**, one per line: id `task-<slug>`. Source = none (only `batch.json`). When
    tasks depend on each other, write a task dir instead (`smithy task-dir <slug>`, then

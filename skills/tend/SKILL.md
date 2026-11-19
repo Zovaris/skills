@@ -94,7 +94,7 @@ inside the repo). Then repeat:
      or a review lands. Exit 0: read the state again. Exit 4 (heartbeat): wait again. Exit 2 or 3
      (bad target, no gh and no token, or signed out): "needs you". Never sleep-then-check turns.
    - **green, mergeable, approved or no review required** → `green` (`smithy verify` says `draft`
-     for a draft PR: report `green (draft)` and leave it a draft). Merge only if whoever launched
+     for a draft PR: report `green (draft)` and leave it a draft). Merge (`smithy pr merge <pr>`) only if whoever launched
      you said `merge auto`, never a draft, and into the production branch only when the launch
      says the user approved it (use-smithy: merges); otherwise stop at green (or keep waiting when
      told to stay until merged).

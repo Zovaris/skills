@@ -61,11 +61,9 @@ Show the list with destinations; write what the user accepts.
 
 ### Judgement rules in STANDARDS
 
-An accepted judgement rule is one line in `docs/agents/STANDARDS.md`:
-
-```
-- <rule> — covers: `<path>`[, `<path>`] — from: <evidence>
-```
+An accepted judgement rule is one line in `docs/agents/STANDARDS.md`, in the format the ledger
+skill owns (its `references/STANDARDS-FORMAT.md`); without ledger:
+`- <rule> — covers: `<path>` — from: <evidence>`.
 
 `<evidence>` is a receipt, a failing test, a review finding, a `file:line` or a ruling from
 `rulings.md`. With the ledger skill installed (`smithy skills ledger`), follow its STANDARDS

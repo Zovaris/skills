@@ -17,6 +17,7 @@ import (
 	"github.com/Zovaris/smithy/internal/agents"
 	"github.com/Zovaris/smithy/internal/cards"
 	"github.com/Zovaris/smithy/internal/config"
+	"github.com/Zovaris/smithy/internal/ghx"
 	"github.com/Zovaris/smithy/internal/harness"
 )
 
@@ -201,19 +202,37 @@ var findSkill = agents.FindSkill
 
 var allowRe = regexp.MustCompile(`"behavior"\s*:\s*"allow"`)
 
+// githubMode reports how smithy reaches GitHub: gh, token or none.
+func githubMode(r *report) {
+	switch ghx.Mode() {
+	case "gh":
+		r.ok("gh found")
+		if exec.Command("gh", "auth", "status").Run() == nil {
+			r.ok("gh signed in")
+			r.ok("github: gh (the GitHub CLI)")
+		} else {
+			r.bad("gh not signed in", "gh auth login (or set GH_TOKEN)")
+		}
+	case "token":
+		r.ok("github: token (" + ghx.TokenVar() + ", the GitHub API; gh not used)")
+	default:
+		r.bad("github: none (no gh, no GH_TOKEN): can't open, merge, verify or watch PRs; smithy pr create only prints a compare URL",
+			"install gh (brew install gh) and run gh auth login, or set GH_TOKEN")
+	}
+}
+
 // Doctor runs `smithy doctor [--quiet]`: one line per check, exit 1 when something failed.
 func Doctor(args []string) int {
 	r := &report{quiet: len(args) > 0 && args[0] == "--quiet"}
 	if !r.quiet {
 		fmt.Println("warden doctor")
 	}
-	for _, t := range []string{"git", "gh"} {
-		if have(t) {
-			r.ok(t + " found")
-		} else {
-			r.bad(t+" missing", "install "+t+" (brew install "+t+")")
-		}
+	if have("git") {
+		r.ok("git found")
+	} else {
+		r.bad("git missing", "install git (brew install git)")
 	}
+	githubMode(r)
 	h, adapter := harness.Detect()
 	r.ok(fmt.Sprintf("harness: %s (adapter: %s; override with WARDEN_HARNESS)", h, adapter))
 	cli := ""
@@ -235,13 +254,6 @@ func Doctor(args []string) int {
 		r.bad("no headless agent CLI on PATH (needed to spawn workers here)", "install one (claude, codex, opencode, gemini, cursor agent, pi, dsh) or set AGENT_CMD")
 	default:
 		r.warn("no headless agent CLI on PATH (only consult needs it here)", "optional: install one or set AGENT_CMD")
-	}
-	if have("gh") {
-		if exec.Command("gh", "auth", "status").Run() == nil {
-			r.ok("gh signed in")
-		} else {
-			r.bad("gh not signed in", "gh auth login")
-		}
 	}
 	for _, s := range []string{"smelt", "hush", "scout", "tend", "use-smithy"} {
 		if p, ok := findSkill(s); ok {

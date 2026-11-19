@@ -187,6 +187,8 @@ func newDoctor(t *testing.T, tools ...string) doctorEnv {
 	t.Setenv("WARDEN_HARNESS", "codex")
 	t.Setenv("WARDEN_TEST_SKILLS", "smelt hush scout tend use-smithy")
 	t.Setenv("AGENT_CMD", "my-agent")
+	t.Setenv("GH_TOKEN", "")
+	t.Setenv("GITHUB_TOKEN", "")
 	writeFile(t, filepath.Join(root, "work", "AGENTS.md"), "x")
 	writeFile(t, filepath.Join(root, "config.json"), `{"models":{"codex":{"cheap":"mini","strong":"big"}}}`)
 	return d
@@ -211,6 +213,7 @@ func TestDoctorAllGood(t *testing.T) {
 		"  ok    harness: codex (adapter: any; override with WARDEN_HARNESS)",
 		"  ok    agent CLI: AGENT_CMD",
 		"  ok    gh signed in",
+		"  ok    github: gh (the GitHub CLI)",
 		"  ok    smelt skill: /skills/smelt",
 		"  ok    use-smithy skill: /skills/use-smithy",
 		"  ok    model cheap: mini",
@@ -246,18 +249,26 @@ func TestDoctorFailures(t *testing.T) {
 	t.Run("git and gh missing", func(t *testing.T) {
 		newDoctor(t)
 		o, c := doctor(t)
-		if c != 1 || !strings.Contains(o, "  FAIL  git missing\n        fix: install git (brew install git)") || !strings.Contains(o, "  FAIL  gh missing") || !strings.HasSuffix(o, "not ready\n") {
+		if c != 1 || !strings.Contains(o, "  FAIL  git missing\n        fix: install git (brew install git)") || !strings.Contains(o, "  FAIL  github: none (no gh, no GH_TOKEN)") || !strings.HasSuffix(o, "not ready\n") {
 			t.Errorf("%d\n%s", c, o)
 		}
 		if strings.Contains(o, "gh signed in") || strings.Contains(o, "gh not signed in") {
 			t.Errorf("auth checked without gh:\n%s", o)
 		}
 	})
+	t.Run("no gh but a token", func(t *testing.T) {
+		newDoctor(t, "git")
+		t.Setenv("GITHUB_TOKEN", "secret-value")
+		o, c := doctor(t)
+		if c != 0 || !strings.Contains(o, "  ok    github: token (GITHUB_TOKEN, the GitHub API; gh not used)") || strings.Contains(o, "secret-value") {
+			t.Errorf("%d\n%s", c, o)
+		}
+	})
 	t.Run("gh signed out", func(t *testing.T) {
 		d := newDoctor(t, "git", "gh")
 		writeFile(t, filepath.Join(d.root, "signedout"), "")
 		o, c := doctor(t)
-		if c != 1 || !strings.Contains(o, "  FAIL  gh not signed in\n        fix: gh auth login") {
+		if c != 1 || !strings.Contains(o, "  FAIL  gh not signed in\n        fix: gh auth login (or set GH_TOKEN)") {
 			t.Errorf("%d\n%s", c, o)
 		}
 	})

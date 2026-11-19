@@ -3,6 +3,7 @@ package gitx
 import (
 	"encoding/json"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -161,5 +162,33 @@ func TestSummarize(t *testing.T) {
 func TestVerifyUsageNamesALocalPath(t *testing.T) {
 	if !strings.Contains(verifyUsage, "local checkout path") {
 		t.Fatalf("usage: %q", verifyUsage)
+	}
+}
+
+func TestPRRepoAndOrigin(t *testing.T) {
+	if PRRepo("https://github.com/Zovaris/smithy/pull/5") != "Zovaris/smithy" || PRRepo("5") != "" {
+		t.Fatal("PRRepo")
+	}
+	for url, want := range map[string]string{
+		"git@github.com:Zovaris/smithy.git":       "Zovaris/smithy",
+		"https://github.com/Zovaris/smithy.git\n": "Zovaris/smithy",
+		"https://github.com/o/r":                  "o/r",
+		"":                                        "",
+	} {
+		if got := OriginRepo(url); got != want {
+			t.Errorf("OriginRepo(%q) = %q, want %q", url, got, want)
+		}
+	}
+}
+
+func TestVerifyRefusesAPRFromAnotherRepo(t *testing.T) {
+	dir := t.TempDir()
+	if out, err := exec.Command("git", "-C", dir, "init", "-q").CombinedOutput(); err != nil {
+		t.Fatal(err, string(out))
+	}
+	exec.Command("git", "-C", dir, "remote", "add", "origin", "git@github.com:o/r.git").Run()
+	t.Chdir(dir)
+	if c := VerifyMain([]string{dir, "b", "https://github.com/other/repo/pull/1"}); c != 2 {
+		t.Fatalf("exit %d, want 2", c)
 	}
 }

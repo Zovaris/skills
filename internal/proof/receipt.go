@@ -8,14 +8,17 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path/filepath"
 	"regexp"
 	"runtime"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/Zovaris/smithy/internal/ghx"
@@ -60,15 +63,42 @@ func Run(root, claim string, argv []string, out io.Writer) (Receipt, error) {
 	h := sha256.New()
 	w := io.MultiWriter(out, h)
 	cmd.Stdout, cmd.Stderr = w, w
+	ownGroup(cmd)
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM)
+	defer signal.Stop(sigs)
 	start := time.Now()
-	err := cmd.Run()
+	if err := cmd.Start(); err != nil {
+		return Receipt{}, err
+	}
+	done := make(chan error, 1)
+	go func() { done <- cmd.Wait() }()
+	var got os.Signal
+	var err error
+wait:
+	for {
+		select {
+		case s := <-sigs:
+			got = s
+			forward(cmd, s)
+		case err = <-done:
+			break wait
+		}
+	}
+	if got != nil {
+		code := 130
+		if n, ok := got.(syscall.Signal); ok {
+			code = 128 + int(n)
+		}
+		return Receipt{}, &Interrupted{Code: code}
+	}
 	exit := 0
 	if err != nil {
 		ee, ok := err.(*exec.ExitError)
 		if !ok {
 			return Receipt{}, err
 		}
-		exit = ee.ExitCode()
+		exit = exitCode(ee)
 	}
 	sha, dirty := head(root)
 	if claim == "" {
@@ -80,6 +110,20 @@ func Run(root, claim string, argv []string, out io.Writer) (Receipt, error) {
 		At: start.UTC().Format(time.RFC3339), Millis: time.Since(start).Milliseconds(),
 		Platform: runtime.GOOS + "/" + runtime.GOARCH,
 	}, nil
+}
+
+// Interrupted is Run's error when smithy itself got SIGINT/SIGTERM: the signal went to the
+// command, it was waited for, and no receipt was made. Code is 128+signal.
+type Interrupted struct{ Code int }
+
+func (e *Interrupted) Error() string { return fmt.Sprintf("interrupted (exit %d)", e.Code) }
+
+// exitCode is the command's exit code, or 128+signal for a command killed by a signal.
+func exitCode(ee *exec.ExitError) int {
+	if ws, ok := ee.Sys().(syscall.WaitStatus); ok && ws.Signaled() {
+		return 128 + int(ws.Signal())
+	}
+	return ee.ExitCode()
 }
 
 // Append adds r to the repo's receipt log.
@@ -220,12 +264,20 @@ func ReceiptMain(args []string) int {
 			return 2
 		}
 		r, err := Run(root, claim, rest[1:], os.Stdout)
+		var in *Interrupted
+		if errors.As(err, &in) {
+			fmt.Fprintln(os.Stderr, "receipt: interrupted, nothing recorded")
+			return in.Code
+		}
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "receipt:", err)
 			return 127
 		}
 		if err := Append(root, r); err != nil {
 			fmt.Fprintln(os.Stderr, "receipt: not recorded:", err)
+			if r.Exit == 0 {
+				return 1
+			}
 			return r.Exit
 		}
 		state := "fresh"

@@ -159,9 +159,20 @@ func ageMin(card map[string]any) (float64, bool) {
 	return time.Since(t).Minutes(), true
 }
 
+// held reports whether an item is on hold: `"hold": true` or a non-empty reason string.
+func held(item map[string]any) bool {
+	switch v := item["hold"].(type) {
+	case bool:
+		return v
+	case string:
+		return v != ""
+	}
+	return false
+}
+
 // Stage is what the warden has to do with an item now; first match wins.
 func Stage(card, item map[string]any) string {
-	if s(item, "hold") != "" {
+	if held(item) {
 		return "held"
 	}
 	if card == nil {
@@ -250,8 +261,11 @@ func Rows(batch string) ([]Row, error) {
 		if r.Text == "" {
 			r.Text = s(card, "note")
 		}
-		if h := s(item, "hold"); h != "" {
-			r.Text = "hold: " + h
+		if held(item) {
+			r.Text = "hold"
+			if h, ok := item["hold"].(string); ok {
+				r.Text = "hold: " + h
+			}
 		}
 		if u := s(card, "updated"); u != "" {
 			r.Updated = &u

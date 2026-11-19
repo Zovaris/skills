@@ -145,6 +145,68 @@ func MissingRefs(p, text string, corpus func() string) []string {
 	return missing
 }
 
+var codeSymRx = regexp.MustCompile(`^[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)?$`)
+
+// fileExtRx matches a short lower-case extension: `README.md` is a file, not Type.Method.
+var fileExtRx = regexp.MustCompile(`\.[a-z]{1,4}$`)
+
+// codeShaped reports whether a backticked token looks like a code symbol rather than a word:
+// Ident or Type.Method with an upper-case letter, an underscore or a dot.
+func codeShaped(tok string) bool {
+	if len(tok) < 3 || !codeSymRx.MatchString(tok) || fileExtRx.MatchString(tok) {
+		return false
+	}
+	return strings.ContainsAny(tok, "ABCDEFGHIJKLMNOPQRSTUVWXYZ_.")
+}
+
+// GoneSymbols lists the backticked code symbols (Ident or Type.Method) in one doc that were in
+// the code at base and are gone now; inBase and inNow report whether a word is in that code.
+func GoneSymbols(p, text string, inBase, inNow func(string) bool) []string {
+	var gone []string
+	set := map[string]bool{}
+	for _, m := range backtickRx.FindAllStringSubmatch(text, -1) {
+		if codeShaped(m[1]) {
+			set[m[1]] = true
+		}
+	}
+	for _, tok := range sortedKeys(set) {
+		parts := strings.Split(tok, ".")
+		last := parts[len(parts)-1]
+		if inNow(last) {
+			continue
+		}
+		existed := true
+		for _, w := range parts {
+			existed = existed && inBase(w)
+		}
+		if existed {
+			gone = append(gone, fmt.Sprintf("%s: symbol `%s` (in the code at base, gone now)", p, tok))
+		}
+	}
+	return gone
+}
+
+// srcSpecs are git pathspecs for the source files drift reads.
+func srcSpecs() []string {
+	var specs []string
+	for _, ext := range sortedKeys(srcExts) {
+		specs = append(specs, "*"+ext)
+	}
+	return specs
+}
+
+// codeHas reports whether word is in the source files of rev (the work tree when rev is "").
+func codeHas(rev, word string) bool {
+	args := []string{"grep", "-q", "-w", "-F", "-e", word}
+	if rev != "" {
+		args = append(args, rev)
+	} else {
+		args = append(args, "--untracked")
+	}
+	args = append(append(args, "--"), srcSpecs()...)
+	return exec.Command("git", args...).Run() == nil
+}
+
 func hasAnyPrefix(s string, prefixes ...string) bool {
 	for _, p := range prefixes {
 		if strings.HasPrefix(s, p) {
@@ -157,11 +219,12 @@ func hasAnyPrefix(s string, prefixes ...string) bool {
 // AddedAPI scans a -U0 diff for added lines that declare a public symbol, as "file: name".
 func AddedAPI(diff string) []string {
 	var flagged []string
-	current := "None"
+	current, header := "", false
 	for _, line := range splitLines(diff) {
-		if strings.HasPrefix(line, "+++ b/") {
-			current = line[6:]
-		} else if strings.HasPrefix(line, "+") && !strings.HasPrefix(line, "+++") {
+		if diffHeader(line, &current, &header) {
+			continue
+		}
+		if strings.HasPrefix(line, "+") {
 			if s := ExportedName(line[1:]); s != "" {
 				flagged = append(flagged, current+": "+s)
 			}
@@ -223,6 +286,10 @@ func Drift(args []string) int {
 
 	fmt.Println("\n## Changed code and the docs that mention it")
 	anyPair := false
+	related := map[string]bool{}
+	for _, f := range changedDocs {
+		related[f] = true
+	}
 	for _, f := range changedSrc {
 		syms := map[string]bool{}
 		if exists(f) {
@@ -231,6 +298,7 @@ func Drift(args []string) int {
 		var hits []string
 		for _, d := range docs {
 			if why := MentionReasons(f, syms, d.text); len(why) > 0 {
+				related[d.path] = true
 				hits = append(hits, fmt.Sprintf("%s (%s)", d.path, strings.Join(why, ", ")))
 			}
 		}
@@ -260,6 +328,11 @@ func Drift(args []string) int {
 	var missing []string
 	for _, d := range docs {
 		missing = append(missing, MissingRefs(d.path, d.text, corpus)...)
+		if related[d.path] {
+			missing = append(missing, GoneSymbols(d.path, d.text,
+				func(w string) bool { return codeHas(base, w) },
+				func(w string) bool { return codeHas("", w) })...)
+		}
 	}
 	if len(missing) == 0 {
 		fmt.Println("- none")

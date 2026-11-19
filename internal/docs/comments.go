@@ -20,11 +20,14 @@ reported. Heuristic: languages ts tsx js jsx mjs cjs py go rs java kt sh. Exit 1
 var (
 	slashExts = map[string]bool{".ts": true, ".tsx": true, ".js": true, ".jsx": true, ".mjs": true, ".cjs": true,
 		".go": true, ".rs": true, ".java": true, ".kt": true, ".kts": true}
-	hashExts   = map[string]bool{".py": true, ".sh": true, ".bash": true}
-	jsdocExts  = map[string]bool{".ts": true, ".tsx": true, ".js": true, ".jsx": true, ".mjs": true, ".cjs": true, ".java": true, ".kt": true, ".kts": true}
-	taskRx     = regexp.MustCompile(`\b(TODO|FIXME|HACK|XXX)\b`)
-	headerRx   = regexp.MustCompile(`(?i)(SPDX-License-Identifier|Copyright|Licensed under|License)`)
-	codeishRx  = regexp.MustCompile(`(;\s*$|[{}]\s*$|^\s*(return|if|for|while|const|let|var|def|func|import|from)\b|\w+\(.*\)\s*;?\s*$|=)`)
+	hashExts  = map[string]bool{".py": true, ".sh": true, ".bash": true}
+	jsdocExts = map[string]bool{".ts": true, ".tsx": true, ".js": true, ".jsx": true, ".mjs": true, ".cjs": true, ".java": true, ".kt": true, ".kts": true}
+	taskRx    = regexp.MustCompile(`\b(TODO|FIXME|HACK|XXX)\b`)
+	headerRx  = regexp.MustCompile(`(?i)(SPDX-License-Identifier|Copyright|Licensed under|License)`)
+	// codeishRx matches comment text shaped like code, not prose that happens to hold a
+	// keyword or "O(1)": a line ending in ; { or }, a lone call, an assignment, an import,
+	// a short return, or a block header ending in ( { or :.
+	codeishRx  = regexp.MustCompile(`(;\s*$|[{}]\s*$|^\s*[\w.$]+\(.*\)\s*;?\s*$|\S\s*(:=|[-+*/]?=)\s*\S|^\s*(import|from|package)\s+[\w./"'@-]+(\s+import\s+.*)?\s*$|^\s*return(\s+\S+){0,2}\s*;?\s*$|^\s*(if|for|while|def|func|class|elif|else)\b.*[({:]\s*$)`)
 	goDeclRx   = regexp.MustCompile(`^(func(\s*\([^)]*\))?|type|var|const)\s+[A-Z]`)
 	goPkgRx    = regexp.MustCompile(`^package\s`)
 	goFieldRx  = regexp.MustCompile(`^\s+[A-Z]\w*(\s|$|\()`)
@@ -332,13 +335,45 @@ func commentFiles(args []string) []string {
 
 var hunkRe = regexp.MustCompile(`^@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))?`)
 
+// diffHeader tracks the file of a unified diff: file headers count only between
+// `diff --git` and the first hunk, so an added line starting with "++ " is never one.
+// It reports whether l was a header line.
+func diffHeader(l string, file *string, header *bool) bool {
+	switch {
+	case strings.HasPrefix(l, "diff --git "):
+		*header, *file = true, ""
+		return true
+	case *header && strings.HasPrefix(l, "@@"):
+		*header = false
+		return false
+	case *header && strings.HasPrefix(l, "+++ "):
+		*file = diffName(strings.TrimPrefix(l, "+++ "))
+		return true
+	}
+	return *header
+}
+
+// diffName turns a `+++` path into a repo path: git's C-style quoting is undone and the
+// b/ prefix dropped; /dev/null is "".
+func diffName(s string) string {
+	s = strings.TrimSuffix(s, "\t")
+	if strings.HasPrefix(s, "\"") {
+		if u, err := strconv.Unquote(s); err == nil {
+			s = u
+		}
+	}
+	if s == "/dev/null" {
+		return ""
+	}
+	return strings.TrimPrefix(s, "b/")
+}
+
 // AddedLines maps each file in a -U0 unified diff to the line numbers it adds.
 func AddedLines(diff string) map[string]map[int]bool {
 	out := map[string]map[int]bool{}
-	file := ""
+	file, header := "", false
 	for _, l := range strings.Split(diff, "\n") {
-		if strings.HasPrefix(l, "+++ ") {
-			file = strings.TrimSuffix(strings.TrimPrefix(strings.TrimPrefix(l, "+++ "), "b/"), "\t")
+		if diffHeader(l, &file, &header) {
 			continue
 		}
 		m := hunkRe.FindStringSubmatch(l)

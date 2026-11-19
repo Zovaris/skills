@@ -187,7 +187,7 @@ func ScanMain(args []string) int {
 		fmt.Fprintln(os.Stderr, "scan:", err)
 		return 2
 	}
-	added, _ := ghx.Run("git", "-C", root, "diff", "-z", "--name-only", "--diff-filter=A", base, "--")
+	added, _ := ghx.Run("git", "-C", root, "diff", "-z", "-M", "--name-only", "--diff-filter=AR", base, "--")
 	untracked, _ := ghx.Run("git", "-C", root, "ls-files", "-z", "--others", "--exclude-standard")
 	news := strings.Split(strings.Trim(untracked, "\x00"), "\x00")
 	dfs, allowed := scanDiff(diff)

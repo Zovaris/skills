@@ -301,8 +301,8 @@ func TestHostileFindings(t *testing.T) {
 
 	os.RemoveAll(filepath.Join(dir, ".smelt"))
 	os.WriteFile(filepath.Join(dir, ".smelt"), nil, 0o644)
-	if c := ReceiptMain([]string{"run", "--", "true"}); c != 0 {
-		t.Fatalf("receipt failure replaced the exit code: %d", c)
+	if c := ReceiptMain([]string{"run", "--", "true"}); c != 1 {
+		t.Fatalf("unrecorded success must fail: %d", c)
 	}
 }
 

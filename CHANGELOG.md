@@ -37,6 +37,17 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 - `smithy route` exits 2 for an unknown `--kind` or `--speed` and for a flag without its value.
 - `smithy config` reports a config file that isn't a JSON object (including `null`) on reads too, and `set` refuses one instead of overwriting it; it rejects empty or malformed keys, harness names and model names, and locks the file around writes so concurrent `set` calls keep every value.
 - `smithy scan` prints to stderr how many lines `smithy:allow` skipped and where.
+- `smithy config` writes its pid in the lock and reclaims a lock whose pid is gone or that is older than 30s, so a killed writer no longer blocks every later write.
+- `smithy config` writes through a symlinked config (the link stays), keeps the file mode, and refuses a read-only config with exit 1.
+- `smithy comments --diff` and `smithy drift` read a file header only right after `diff --git` (an added line starting with "++ " is not one) and unquote quoted names.
+- `smithy scan` checks files added by a rename (`git mv README .env`) as secret-bearing names too.
+- `smithy receipt run` exits 1 when the command passed but the receipt could not be written, records a signal kill as 128+signal, and on SIGINT/SIGTERM forwards the signal to the command (run in its own process group), waits for it and writes no receipt.
+- The launcher stops `gh release download` and `gh attestation verify` after 120s (`SMITHY_DOWNLOAD_TIMEOUT` overrides) with exit 3, and removes its temp dir before running the installed binary.
+- `smithy stack` gives Go `go test -count=1 ./...` (cached results made receipts look fresh) and prints `base:` from origin/main or origin/master when origin/HEAD is unset.
+- `smithy wait-turn` says `batch.json unreadable: stack must be true or false` (not "no batch") for a non-bool `stack`, and `smithy cards board` holds an item only for `"hold": true` or a reason, not `"hold": false`.
+- `smithy doctor` prints the agent CLI line only for the cli and any adapters, not under desktop.
+- `smithy drift` lists under "Missing references" the backticked code symbols (`Put`, `Store.Put`) in changed docs and docs that mention changed files that were in the code at base and are gone now.
+- `smithy comments` labels only code-shaped text "commented-out code"; prose such as "a map because lookups must be O(1)" is an explanatory comment.
 
 ### skills consistency
 - `warden.merge` has no built-in default: warden asks once per batch in its plan line (auto or

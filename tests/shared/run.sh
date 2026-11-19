@@ -160,4 +160,25 @@ t "launcher: curl 404 exits 3 with one line" 'LR "$L/curl"; [ $? -eq 3 ] && [ "$
 t "launcher: curl has timeouts" 'grep -q -- "--connect-timeout 10 --max-time 120" "$L/curl.args"'
 t "launcher: gh failure exits 3 with one line" 'LR "$L/gh"; [ $? -eq 3 ] && grep -q "^smithy: can.t download v0.0.0 (smithy-.*\.gz): release not found" "$L/err" && ! grep -q awk "$L/err"'
 
+# launcher watchdog: a hanging gh is stopped (SMITHY_DOWNLOAD_TIMEOUT shortens the wait)
+mkdir -p "$L/hang" "$L/slowatt" "$L/okgh" "$L/tmp"
+printf '#!/bin/sh\nexec sleep 30\n' > "$L/hang/gh"
+cat > "$L/fakegh" <<'EOF'
+#!/bin/sh
+if [ "$1" = release ]; then
+  d=; a=; while [ $# -gt 0 ]; do case $1 in -D) d=$2; shift ;; -p) [ -z "$a" ] && a=$2; shift ;; esac; shift; done
+  printf '#!/bin/sh\necho fake-smithy\n' | gzip > "$d/$a"
+  echo "$( (command -v sha256sum >/dev/null 2>&1 && sha256sum "$d/$a" || shasum -a 256 "$d/$a") | awk '{print $1}')  $a" > "$d/checksums.txt"
+  exit 0
+fi
+[ "$3" = --help ] && exit 0
+[ -n "$HANG_ATTEST" ] && exec sleep 30
+exit 0
+EOF
+cp "$L/fakegh" "$L/slowatt/gh"; cp "$L/fakegh" "$L/okgh/gh"; chmod +x "$L/hang/gh" "$L/slowatt/gh" "$L/okgh/gh"
+LW() { env -u SMITHY_BIN SMITHY_HOME="$L/home$2" TMPDIR="$L/tmp" SMITHY_DOWNLOAD_TIMEOUT=1 HANG_ATTEST="$3" PATH="$1:$L/sys" "$L/smithy" version 2>"$L/err"; }
+t "launcher: hanging gh download times out with exit 3" 's=$(date +%s); LW "$L/hang" a ""; c=$?; [ $c -eq 3 ] && [ $(( $(date +%s) - s )) -lt 10 ] && grep -q "^smithy: can.t download v0.0.0 (smithy-.*\.gz): timed out" "$L/err"'
+t "launcher: hanging attestation times out with exit 3" 'LW "$L/slowatt" b 1; [ $? -eq 3 ] && grep -q "^smithy: can.t verify .*timed out" "$L/err"'
+t "launcher: install leaves no temp dir" 'rm -rf "$L/tmp"/*; [ "$(LW "$L/okgh" c "")" = fake-smithy ] && [ -z "$(ls "$L/tmp")" ]'
+
 echo "shared: $pass passed, $fail failed"; [ $fail -eq 0 ]

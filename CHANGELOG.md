@@ -9,7 +9,7 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
   finding (REVIEW.md), holdout tests stay untouched until their final run, `smithy scan` prints
   binaries as warnings and counts a bare `=======` only next to a conflict start, the attempt cap
   is a fixed 3 (no setting), no port rule, `CHANGELOG.md` merges with `merge=union`, worker briefs
-  name `state=working` and `smithy scan <base>`, prose-only changes skip test agents.
+  name `state=working` and `smithy scan --base <base>`, prose-only changes skip test agents.
 - smelt: the adversary's tests are a holdout: hidden from the implementer, re-run on the final
   commit as the `holdout` receipt; passing visible but failing holdout is blocking.
 - smelt: spec-check flags test files the spec doesn't name and diffs over ~400 non-test lines.

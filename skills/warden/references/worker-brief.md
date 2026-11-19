@@ -69,7 +69,7 @@ requirements from the intent and the code"; out of scope if the user named it>
   alone are not reasons to stop.
 - Same obstacle twice after a real fix attempt: state=blocked with the one thing you need; stop.
 - Do not create worktrees or issues; never start, fork or hand off sessions.
-- Waiting on CI or a PR: one blocking `<warden-dir>/scripts/smithy wait pr:<pr>` (or `run:<id>`,
+- Waiting on CI or a PR: one blocking `<warden-dir>/scripts/smithy wait pr:<pr-url>` (or `run:<id>`,
   `branch:<name>`); it prints one line when something happens. No sleep-then-check turns.
 
 ## Status card

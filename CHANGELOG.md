@@ -5,6 +5,10 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+- `smithy agent` has a wall-clock cap: the new `agent.timeout` setting (minutes, default 90,
+  `0` = none) or `--timeout <min>` kills the agent's process group, logs "timed out after Nm" and
+  exits 124; `--bg` runs are watched by a detached smithy that enforces it.
+
 ## v0.10.0 — 2026-11-19
 
 - Audit fixes after the gh-optional batch: warden's final message shows the Decisions and

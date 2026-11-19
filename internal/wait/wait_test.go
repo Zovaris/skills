@@ -671,3 +671,25 @@ func TestMainListTargetError(t *testing.T) {
 		t.Errorf("%d %q", c, er)
 	}
 }
+
+type flaky struct{ fails, calls int }
+
+func (f *flaky) poll() ([]string, error) {
+	f.calls++
+	if f.calls <= f.fails {
+		return nil, fmt.Errorf("transient")
+	}
+	return []string{"ok"}, nil
+}
+
+func TestFirstPollRetriesTransientErrors(t *testing.T) {
+	f := &flaky{fails: 2}
+	lines, err := firstPoll(f, 3, 0)
+	if err != nil || len(lines) != 1 || f.calls != 3 {
+		t.Fatalf("lines=%v err=%v calls=%d", lines, err, f.calls)
+	}
+	g := &flaky{fails: 5}
+	if _, err := firstPoll(g, 3, 0); err == nil || g.calls != 3 {
+		t.Fatalf("want error after 3 tries, calls=%d", g.calls)
+	}
+}

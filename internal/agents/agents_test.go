@@ -30,6 +30,9 @@ func TestBuild(t *testing.T) {
 		{"gemini", Options{ReadOnly: true}, nil, "", []string{"gemini", "--approval-mode", "plan", "-p", "P"}, false, "gemini"},
 		{"cursor", Options{Model: "m"}, nil, "", []string{"agent", "-p", "--force", "--model", "m", "P"}, false, "cursor"},
 		{"pi", Options{ReadOnly: true}, nil, "", []string{"pi", "-p", "--tools", "read", "P"}, false, "pi"},
+		{"claude", Options{Effort: "medium"}, nil, "", []string{"claude", "-p", "--permission-mode", "auto", "--effort", "medium"}, true, "claude-cli"},
+		{"codex", Options{ReadOnly: true, Effort: "low"}, nil, "", []string{"codex", "exec", "--sandbox", "read-only", "-c", "model_reasoning_effort=low", "-"}, true, "codex"},
+		{"gemini", Options{Effort: "medium"}, nil, "", []string{"gemini", "--approval-mode", "yolo", "-p", "P"}, false, "gemini"},
 		{"dsh", Options{ReadOnly: true, Model: "ignored"}, nil, "", []string{"dsh", "headless", "--approval-policy", "never", "--permission-mode", "read-only", "-"}, true, "dsh"},
 	}
 	for _, c := range cases {
@@ -48,6 +51,33 @@ func TestBuild(t *testing.T) {
 	}
 	if _, err := Build("", Options{}, "", nil, "", none); err != ErrNoCLI {
 		t.Errorf("no CLI: %v", err)
+	}
+}
+
+func TestClampEffort(t *testing.T) {
+	for in, want := range map[string][2]any{
+		"": {"medium", false}, "low": {"low", false}, "minimal": {"low", false}, " Medium ": {"medium", false},
+		"high": {"medium", true}, "xhigh": {"medium", true}, "max": {"medium", true}, "bogus": {"medium", true},
+	} {
+		if e, c := ClampEffort(in); e != want[0] || c != want[1] {
+			t.Errorf("ClampEffort(%q) = %q, %v; want %v", in, e, c, want)
+		}
+	}
+}
+
+func TestDefaultEffort(t *testing.T) {
+	t.Setenv("SMITHY_CONFIG", filepath.Join(t.TempDir(), "c.json"))
+	t.Setenv("AGENT_EFFORT", "high")
+	if e := DefaultEffort(); e != "medium" {
+		t.Errorf("env high → %q", e)
+	}
+	t.Setenv("AGENT_EFFORT", "low")
+	if e := DefaultEffort(); e != "low" {
+		t.Errorf("env low → %q", e)
+	}
+	t.Setenv("AGENT_EFFORT", "")
+	if e := DefaultEffort(); e != "medium" {
+		t.Errorf("default → %q", e)
 	}
 }
 
@@ -74,8 +104,8 @@ func TestResolveCLI(t *testing.T) {
 }
 
 func TestEnv(t *testing.T) {
-	got := Env([]string{"CLAUDECODE=1", "AI_AGENT=x", "PATH=/bin", "WARDEN_HARNESS=old"}, Spec{Harness: "pi"}, Options{PromptFile: "/p", ReadOnly: true})
-	want := []string{"PATH=/bin", "AGENT_PROMPT_FILE=/p", "AGENT_MODEL=", "AGENT_READONLY=1", "WARDEN_HARNESS=pi"}
+	got := Env([]string{"CLAUDECODE=1", "AI_AGENT=x", "PATH=/bin", "WARDEN_HARNESS=old"}, Spec{Harness: "pi"}, Options{PromptFile: "/p", ReadOnly: true, Effort: "low"})
+	want := []string{"PATH=/bin", "AGENT_PROMPT_FILE=/p", "AGENT_MODEL=", "AGENT_EFFORT=low", "AGENT_READONLY=1", "WARDEN_HARNESS=pi"}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("Env = %q", got)
 	}

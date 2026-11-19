@@ -113,7 +113,7 @@ func ConsultMain(args []string) int {
 		if model != "" {
 			a = append(a, "--model", model)
 		}
-		a = append(a, "--tools", "", "--strict-mcp-config", "--disable-slash-commands", "--setting-sources", "", "--no-session-persistence")
+		a = append(a, "--effort", DefaultEffort(), "--tools", "", "--strict-mcp-config", "--disable-slash-commands", "--setting-sources", "", "--no-session-persistence")
 		in, err := os.Open(pf)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
@@ -131,5 +131,5 @@ func ConsultMain(args []string) int {
 	if model == "" {
 		model = os.Getenv("AGENT_MODEL")
 	}
-	return Run(Options{Cwd: tmp, Model: model, ReadOnly: true, PromptFile: pf})
+	return Run(Options{Cwd: tmp, Model: model, Effort: DefaultEffort(), ReadOnly: true, PromptFile: pf})
 }

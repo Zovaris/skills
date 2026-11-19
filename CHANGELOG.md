@@ -5,6 +5,11 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+- `scripts/eval.sh`: a small outcome-graded eval run by hand. Each `tests/eval/<task>/` is a tiny
+  Go package with a bug (three starters from smithy's own fixes); the agent fixes it with or
+  without smelt (`none`, `fast`, `normal`), a hidden regression test grades it, and the script
+  prints pass@1 and pass^k per arm over `-k` trials. Costs tokens; never in CI.
+
 ## v0.10.0 — 2026-11-19
 
 - Audit fixes after the gh-optional batch: warden's final message shows the Decisions and

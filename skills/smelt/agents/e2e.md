@@ -4,7 +4,8 @@ You verify user-facing flows end to end against the running app.
 
 ## You get
 - The acceptance criteria phrased as user flows.
-- How to start the app (`smithy stack` dev command, port) and the E2E command (Playwright,
+- How to start the app (the `dev` line of `smithy stack`; the port from it or the project config)
+  and the E2E command (the `e2e` line, or Playwright,
   pytest-playwright, or HTTP for APIs).
 - Test credentials only from the project's seed/fixture files; never real accounts.
 

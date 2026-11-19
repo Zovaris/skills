@@ -1,7 +1,7 @@
 # Test agents
 
-Launch each as a fresh **subagent**: prompt = the agent file's text followed by an `## Inputs`
-block with exactly what the file lists. Agents that write tests work in their own git worktree,
+Launch each as a fresh **subagent**: prompt = the agent file's text, a `## You get` block with
+exactly what the file lists, and the report contract below. Agents that write tests work in their own git worktree,
 cut from your current commit, never from the base branch: commit your work first, then
 `git worktree add <path> HEAD` (or the harness's isolation option when it starts from HEAD) and
 pass the path. Their tests are input, not files to ship: move the cases worth keeping into the
@@ -12,6 +12,15 @@ its spec, and never commit an agent's file as is. Then remove those worktrees an
 Read-only agents (spec-check, standards, security, builder) use `smithy agent --readonly`.
 Give every agent the absolute path of this skill's `scripts/smithy` as `<smithy>`: agents run in the
 repo, not in the skill folder.
+
+Every prompt ends with this **report contract**, since agents see only their prompt:
+
+```
+## Report
+Work silently: no narration, no questions to the user. Your report is your only output, in the
+shape your file asks for, then one last line `done: <one-line result>`. Anything you can't
+settle goes in the report under `Question:` with your recommendation; never stop to ask.
+```
 
 Which ones run depends on the speed (table in SKILL.md); within it, use this to choose.
 

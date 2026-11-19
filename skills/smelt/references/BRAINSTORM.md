@@ -5,7 +5,7 @@ what they want is usually thinner than it feels.
 
 ## 0 · What do you already know?
 
-- **Everything that matters is in the request** ("make the icon blue"): skip to `build fast`.
+- **Everything that matters is in the request** ("make the icon blue"): skip to the build phase at `fast` speed.
 - **Something non-trivial is missing:** continue.
 
 Look before you ask: read what the user pointed at and the code it touches until you can say
@@ -42,4 +42,4 @@ Then grill the remaining open decisions (the plan phase's next step) and write t
 ## `/smelt brainstorm`
 
 Stops after step 3: the design is saved (`spec.md` with `Status: draft`) and nothing is split or
-built. Under `/hush`: skip the questions, pick the approach yourself and list what you assumed.
+built. Under hush: skip the questions, pick the approach yourself and list what you assumed.

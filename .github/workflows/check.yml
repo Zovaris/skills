@@ -41,3 +41,20 @@ jobs:
       - name: Launcher syntax
         run: |
           sh -n shared/smithy
+  windows-launcher:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Installs the released binary and fails clearly on a missing release
+        shell: cmd
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir "%RUNNER_TEMP%\l" & copy /y shared\smithy.cmd "%RUNNER_TEMP%\l\" >nul & copy /y shared\VERSION "%RUNNER_TEMP%\l\" >nul
+          set "SMITHY_HOME=%RUNNER_TEMP%\home"
+          call "%RUNNER_TEMP%\l\smithy.cmd" version || exit /b 1
+          echo 0.0.0> "%RUNNER_TEMP%\l\VERSION"
+          set "SMITHY_HOME=%RUNNER_TEMP%\home2"
+          call "%RUNNER_TEMP%\l\smithy.cmd" version 2> "%RUNNER_TEMP%\err.txt"
+          if not errorlevel 3 ( type "%RUNNER_TEMP%\err.txt" & exit /b 1 )
+          findstr /c:"can't download v0.0.0" "%RUNNER_TEMP%\err.txt" || exit /b 1

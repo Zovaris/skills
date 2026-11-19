@@ -13,8 +13,8 @@ What workers are:
   user.
 - Mode `smelt <speed>`: they follow smelt's build phases at that speed (a `(full)` item overrides
   it). Mode `plain`: the repo's agent instructions, else just the brief. A trivial change (copy, a
-  button, a style tweak) goes straight to a PR in either mode.
-- Effort: low for explicit, well-understood work; high for ambiguous investigation.
+  button, a style tweak) runs smelt `fast`: one test and the verify gate, then the PR.
+- Effort: `agent.effort` (default and cap medium); a harder item gets a stronger model, not more effort.
 - The prompt you spawn with is this brief's full text, never a pointer to the file.
 
 | Slot | Value | Drop the line when |

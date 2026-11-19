@@ -82,8 +82,8 @@ inside the repo). Then repeat:
      push: `--force-with-lease` only on branches of a warden batch you were given, or of a PR the
      user asked you to tend by name; on anyone else's branch, merge the base instead or stop
      with "needs you". Conflicts you can't resolve from both sides' intent → "needs you".
-   - **unresolved review threads** (human or bot) → `references/RECEIVING.md`. At most 3 rounds
-     per PR; the count lives in the card's `review_rounds` (`smithy cards set <batch> <id>
+   - **unresolved review threads** (human or bot) → `references/RECEIVING.md`. At most 3 bot rounds
+     per PR (a person you disagree with twice → "needs you"); the count lives in the card's `review_rounds` (`smithy cards set <batch> <id>
      review_rounds=<n>`); without a card, in `~/.smithy/tend/<owner>-<repo>-<n>.rounds`.
    - **checks pending** → `smithy wait pr:<pr-url>` in the background (foreground where the
      harness can't wake on exit); it returns one line when checks finish, the PR merges or closes,

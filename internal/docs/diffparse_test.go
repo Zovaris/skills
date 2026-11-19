@@ -22,7 +22,7 @@ const trickyDiff = "diff --git a/x.go b/x.go\n" +
 func TestAddedLinesHeaderOnlyAfterDiffGit(t *testing.T) {
 	got := AddedLines(trickyDiff)
 	want := map[string]map[int]bool{
-		"x.go":          {1: true, 2: true, 5: true},
+		"x.go":         {1: true, 2: true, 5: true},
 		"new\nline.go": {1: true},
 	}
 	if !reflect.DeepEqual(got, want) {

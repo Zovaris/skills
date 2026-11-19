@@ -64,6 +64,12 @@ Every finding comes with a command and its output. For each:
 
 Reject outright any change that weakens an assertion, deletes or skips a test, or edits source.
 
+**The adversary's tests are a holdout.** They stay in the adversary's worktree and are never
+shown to the implementer or builder: you fix from the finding (input, expected, actual), not from
+the test file. After the fixes, run the adversary's tests once more against the final commit and
+record that run as its own receipt (`smithy receipt run --claim "holdout" -- <command>`). Passing
+the visible tests but failing the holdout is a blocking finding.
+
 ## Deterministic gates (no agent needed)
 
 Prefer scripts and hooks for what they can decide: typecheck, lint, full suite, coverage on

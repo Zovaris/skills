@@ -8,7 +8,7 @@ else update the docs the change touched (`references/DOCS.md`). Then:
   for this work? Keep it. Never invent another naming scheme.
 - **Integrate:** full suite on the tree you're about to ship (after rebasing or merging the
   base), VERIFY gate. Red → back to build.
-- **Atomic commits** with `smithy commit`: `smithy commit style` once, then one commit per
+- **Atomic commits** with `smithy commit` (review read the working tree, so this comes after it): `smithy commit style` once, then one commit per
   concern (`smithy commit "<msg>" <paths>`), each building and passing on its own. Never
   `git add -A`, never `--no-verify`.
 - **Scan** with `smithy scan --base <base>` (a branch name resolves to `origin/<base>`) before
@@ -31,6 +31,8 @@ else update the docs the change touched (`references/DOCS.md`). Then:
   launched you said `merge auto` (a warden worker); into the production
   branch only on their explicit yes for this change. (3) **Keep** the branch for later. Discard
   work only when the user explicitly says to.
+- **No remote** (`git remote` prints nothing): commit, branch, receipts and scan as above, then
+  skip the PR, tend and the wait, and say so in the final message.
 - **Clean up** once merged or discarded: `smithy cleanup <repo> <branch> [<worktree>]`,
   only for worktrees and branches smelt created. It refuses to drop unpushed work; never force it.
   The merge usually comes later, from the user: give tend the branch and worktree to clean up

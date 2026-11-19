@@ -10,7 +10,8 @@ repo's existing test files in its own naming, drop the rest and any reference to
 its spec, and never commit an agent's file as is. Then remove those worktrees and branches
 (`smithy cleanup`). Launch them together so they run in parallel. Without a subagent tool: write each prompt to a file and run
 `smithy agent --bg --cwd <worktree> --log <file> <prompt-file>` per agent, then read the logs.
-Read-only agents (spec-check, standards, security, builder) use `smithy agent --readonly`.
+Read-only agents (spec-check, standards, security, builder) run as any fresh subagent (no
+particular type needed), or with `smithy agent --readonly` without a subagent tool.
 Give every agent the absolute path of this skill's `scripts/smithy` as `<smithy>`: agents run in the
 repo, not in the skill folder.
 

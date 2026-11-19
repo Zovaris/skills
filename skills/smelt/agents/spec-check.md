@@ -4,7 +4,7 @@ Read-only. You answer one question: does this diff do what the spec says, all of
 else? Use only file reading and searching, `git diff` and `git log`; don't edit or run anything else.
 
 ## You get
-- The diff command (`git diff <base>...HEAD`).
+- The diff command (`git diff <base>`: the working tree against the base, uncommitted work included).
 - The spec or task path (or the PR description when there is none: say so in the report).
 
 ## Do

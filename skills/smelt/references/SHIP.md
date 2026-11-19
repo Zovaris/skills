@@ -21,7 +21,8 @@ else update the docs the change touched (`references/DOCS.md`). Then:
   added. Title in the commit style: `smithy pr create --base <b> --title "<t>" --body-file <f>`.
   From a task file: `smithy tasks set <file> status=done pr=<url>`. Then hand the PR to **tend**
   when it is installed (`smithy skills tend` prints its path): one silent **subagent** on the
-  cheap tier, prompt "Read <tend-skill> and follow it for <pr-url>; never merge" plus the report
+  cheap tier, prompt "Read <tend-skill> and follow it for <pr-url>; never merge;
+  on merge, clean up <branch> <worktree>" plus the report
   contract (`references/TESTING.md`); it keeps CI green, rebases and answers review until the PR
   is mergeable or needs the user. Without tend, wait with `smithy wait pr:<pr-url>`, in the
   background where the harness wakes on exit, else in the foreground; never sleep loops.
@@ -30,6 +31,10 @@ else update the docs the change touched (`references/DOCS.md`). Then:
   work only when the user explicitly says to.
 - **Clean up** once merged or discarded: `smithy cleanup <repo> <branch> [<worktree>]`,
   only for worktrees and branches smelt created. It refuses to drop unpushed work; never force it.
+  The merge usually comes later, from the user: give tend the branch and worktree to clean up
+  ("on merge, clean up <branch> <worktree>"), end the test and review agents as soon as their
+  reports are in, and if this session was started for the task, say in the final message that it
+  can be archived once the PR merges.
 - **Lesson.** A finding, failed fix or wrong assumption that surprised you and isn't already in
   the code, a test or the repo's docs → one line through the retro rules (`references/DOCS.md`)
   proposed to the user. Nothing new → say "no lesson".

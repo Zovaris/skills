@@ -66,7 +66,9 @@ inside the repo). Then repeat:
 1. `smithy pr-state <pr>` → `{state, checks, mergeable, review, unresolved, behind}`; `checks` is
    `green`, `red`, `pending` or `none`, the same words `smithy wait` and `smithy verify` use.
 2. Act on the first thing that applies:
-   - **merged / closed** → stop this PR; remove the worktree you created.
+   - **merged / closed** → stop this PR. Remove the worktree you created, and the branch and
+     worktree the launcher names as its own (`smithy cleanup <repo> <branch> [<worktree>]`,
+     never forced); report `merged <url>, cleaned <what>` so the launcher can end its sessions.
    - **checks red** → `gh run view <run> --log-failed`. Same test passes on a plain rerun and
      nothing in the diff touches it → flaky: rerun once (`gh run rerun <run> --failed`) and note
      it. Otherwise it is a real failure: hand it to the fix model, failing test first when it is

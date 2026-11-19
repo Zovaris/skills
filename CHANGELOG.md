@@ -5,6 +5,11 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+### cleanup
+- Clean up after merge is a shared rule: whoever sees the PR merge or close removes the work's
+  worktrees and local branches and ends the agents or sessions it launched. smelt hands the
+  branch and worktree to tend, which cleans them up when the PR merges.
+
 ### models
 - smithy ships no model names: `smithy config suggest-models` and `accept-models` are gone. The
   first time a tier is needed the skill asks the user to name it and saves it with

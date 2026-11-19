@@ -1,7 +1,7 @@
 ---
 name: ledger
 description: "Keeps project docs in the repo: ADRs, glossary, module READMEs, doc comments, codebase map, drift checks and the no-inline-comments policy. Use to record a decision, document a module, sync docs with code, enforce comment rules, or search past decisions."
-argument-hint: "[init|adr <title>|module <path>|map|sync [base]|comments [paths]|search <query>]"
+argument-hint: "[init|adr <title>|standard <rule>|module <path>|map|sync [base]|comments [paths]|search <query>]"
 ---
 
 # ledger
@@ -20,7 +20,8 @@ runs. `smithy <command>` in this skill means `<skill-dir>/scripts/smithy <comman
 | Domain terms | `docs/GLOSSARY.md` (format: `references/GLOSSARY-FORMAT.md`) |
 | Why a module is the way it is, its entry points and invariants | `<module>/README.md` |
 | Codebase map for agents | `docs/agents/MAP.md` |
-| Judgement rules reviewers enforce | `docs/agents/STANDARDS.md` |
+| Judgement rules reviewers enforce | `docs/agents/STANDARDS.md` (format, budget, retiring: `references/STANDARDS-FORMAT.md`) |
+| Reusable scripts, one line each | `scripts/SCRIPTS.md` (same reference) |
 | API reference | generated from doc comments (TypeDoc, pdoc/mkdocstrings, pkgsite, Javadoc, rustdoc, Dokka) |
 
 The agent instructions file (AGENTS.md / CLAUDE.md) stays short: commands, the comment policy
@@ -29,17 +30,23 @@ line, and pointers to the files above.
 ## Modes
 
 - **init** — create `docs/README.md` (index), `docs/adr/0000-record-architecture-decisions.md`
-  (accepted: we use ADRs), `docs/GLOSSARY.md` and `docs/agents/STANDARDS.md` (headers only; the
-  standards file collects judgement rules the reviewers enforce). Add to AGENTS.md (or CLAUDE.md if
+  (accepted: we use ADRs), `docs/GLOSSARY.md`, `docs/agents/STANDARDS.md` and `scripts/SCRIPTS.md` (headers only; the
+  standards file collects judgement rules the reviewers enforce, the scripts file one line per
+  script: name — what — when). Add to AGENTS.md (or CLAUDE.md if
   that is what the repo uses; with neither, create AGENTS.md) a short block: where docs live and
   the comment policy. Detect the stack and offer the matching lint config from
   `references/COMMENTS.md`; write it only on yes. Headless (nobody to answer): don't write it,
-  report the snippet. Done: the four files exist and are listed in `docs/README.md`.
+  report the snippet. Done: the five files exist and are listed in `docs/README.md`.
 - **adr `<title>`** — run the ADR test below first; only when it passes, `smithy adr "<title>"` creates the
   next numbered file from its built-in template (the shape in `references/ADR-FORMAT.md`); fill it from the conversation and the code,
   status `proposed` until the user accepts it. Superseding: new ADR, then change only the old
   one's status line to `superseded by NNNN`. After writing, check every `path:line` it cites still
   points at the cited code. Done: the ADR file is filled, its citations hold, and its path given.
+- **standard `<rule>`** — add, merge or retire a line of `docs/agents/STANDARDS.md` per
+  `references/STANDARDS-FORMAT.md`: the line format, with evidence in `from`; past the budget,
+  merge or retire one in the same change; retire a rule that lint, tests or types now enforce.
+  Scripts: add or delete the matching line of `scripts/SCRIPTS.md`. Done: the file's lines all
+  match the format and `smithy drift` reports none of their paths missing.
 - **module `<path>`** — write `<path>/README.md`: purpose, public entry points, invariants, the
   "why" that would otherwise be inline comments, links to ADRs. Add or fix doc comments on every
   exported symbol (what it does, params, returns, errors; not how). Remove explanatory comments

@@ -81,12 +81,24 @@ func entry(name string, c command, args []string) ([]string, int, bool) {
 			fmt.Fprintln(os.Stderr, c.usage)
 			return nil, 2, true
 		}
-		if takesValue && i+1 < len(args) {
+		if takesValue {
+			if _, isFlag := c.flags[next(args, i)]; i+1 >= len(args) || isFlag || args[i+1] == "--" {
+				fmt.Fprintf(os.Stderr, "smithy %s: %s needs a value\n", name, a)
+				return nil, 2, true
+			}
 			i++
 			out = append(out, args[i])
 		}
 	}
 	return out, 0, false
+}
+
+// next is the arg after i, or "" at the end.
+func next(args []string, i int) string {
+	if i+1 < len(args) {
+		return args[i+1]
+	}
+	return ""
 }
 
 func isNumber(s string) bool {

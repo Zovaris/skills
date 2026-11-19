@@ -222,3 +222,21 @@ func TestFlagEqualsValue(t *testing.T) {
 		t.Errorf("route --json=x: exit %d, out %q, err %q", code, out, e)
 	}
 }
+
+func TestValueFlagWithoutValue(t *testing.T) {
+	repo, env := sandbox(t)
+	dir := filepath.Join(repo, "plan")
+	os.MkdirAll(dir, 0o755)
+	for _, args := range [][]string{
+		{"tasks", "add", dir, "x", "--blocked-by"},
+		{"tasks", "add", dir, "x", "--key", "--blocked-by", "01"},
+		{"search", "q", "--max"},
+	} {
+		if out, e, code := run(t, repo, env, args...); code != 2 || !strings.Contains(e, "needs a value") {
+			t.Errorf("%v: exit %d, out %q, err %q", args, code, out, e)
+		}
+	}
+	if entries, _ := os.ReadDir(dir); len(entries) != 0 {
+		t.Errorf("side effect: %d files in %s", len(entries), dir)
+	}
+}

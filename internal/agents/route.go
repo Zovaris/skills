@@ -15,7 +15,7 @@ const routeUsage = `Model router: picks the cheapest model tier that can do a ta
                [--agent <agent file or name>] [--speed fast|normal|full] [--json]
 --agent picks the kind from a smelt agent: spec-check, standards, security and builder are review;
 adversary, regression, property, mutation, e2e and hostile are test; implementer is ship (give
-the task with --file or --text).
+the task with --file or --text); tend and scout (or their SKILL.md) are their own kind.
 Prints ` + "`<tier> <model>  # reasons`" + `, or JSON with --json. <model> is the user's model for that
 tier in this harness (smithy config model <tier>); ` + "`-`" + ` when unset (use the session default, and
 ask the user to name the tier once and save it with ` + "`smithy config set-model`" + `). The caller may move one tier up or down with a stated reason;
@@ -117,6 +117,10 @@ func Route(text, kind, speed string) (string, []string) {
 // AgentKind maps a smelt agent file or name to its routing kind.
 func AgentKind(agent string) (string, bool) {
 	name := strings.TrimSuffix(agent[strings.LastIndex(agent, "/")+1:], ".md")
+	if name == "SKILL" {
+		dir := strings.TrimSuffix(agent, "/SKILL.md")
+		name = dir[strings.LastIndex(dir, "/")+1:]
+	}
 	switch name {
 	case "spec-check", "standards", "security", "builder":
 		return "review", true
@@ -124,6 +128,8 @@ func AgentKind(agent string) (string, bool) {
 		return "test", true
 	case "implementer":
 		return "ship", true
+	case "tend", "scout":
+		return name, true
 	}
 	return "", false
 }

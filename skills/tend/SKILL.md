@@ -16,7 +16,7 @@ rules if installed): no talk between tool calls, one line per PR at the end.
 | Command | Does |
 |---|---|
 | `smithy pr-state <pr>` | Compact PR state: checks, mergeable, review, unresolved threads, behind |
-| `smithy verify` | Pushed head, checks, mergeable |
+| `smithy verify <repo-dir> <branch> [pr]` | Pushed head, checks, mergeable (`<repo-dir>`: the local checkout, `.` for here) |
 | `smithy commit` | Commits in the repo's style |
 | `smithy names` | Worktree path for a PR branch |
 | `smithy wait <target>…` | Zero-token wait on GitHub: `pr:<n>`, `run:<id>`, `branch:<name>`, `prs`, `issues:<label>` |

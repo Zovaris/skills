@@ -101,8 +101,9 @@ Everything mechanical (settings, branch names, task lists, status cards, commits
 repo's style, waiting on CI) is one small Go binary, `smithy`. You never install it: each skill
 ships a launcher that downloads the binary for your platform from the matching release the first
 time it runs, verifies its checksum and its GitHub build attestation (with `gh`), and caches it
-in `~/.smithy/bin/`. Without `gh` it refuses to install unless you set
-`SMITHY_ALLOW_UNATTESTED=1`. Agents wait on GitHub without
+in `~/.smithy/bin/`. Without `gh` it downloads with `curl`, verifies the checksum only and prints
+a warning (install the GitHub CLI to verify the build's origin); a mismatch refuses. A `gh`
+too old for `gh attestation` still refuses unless you set `SMITHY_ALLOW_UNATTESTED=1`. Agents wait on GitHub without
 spending tokens:
 
 ```bash

@@ -192,4 +192,27 @@ t "launcher: hanging gh download times out with exit 3" 's=$(date +%s); LW "$L/h
 t "launcher: hanging attestation times out with exit 3" 'LW "$L/slowatt" b 1; [ $? -eq 3 ] && grep -q "^smithy: can.t verify .*timed out" "$L/err"'
 t "launcher: install leaves no temp dir" 'rm -rf "$L/tmp"/*; [ "$(LW "$L/okgh" c "")" = fake-smithy ] && [ -z "$(ls "$L/tmp")" ]'
 
+# launcher without gh: curl download, checksum only, warning once
+mkdir -p "$L/nogh" "$L/nogh-bad"
+cat > "$L/fakecurl" <<'EOF'
+#!/bin/sh
+o=; u=; while [ $# -gt 0 ]; do case $1 in -o) o=$2; shift ;; http*) u=$1 ;; esac; shift; done
+f=${u##*/}
+case $f in
+  checksums.txt)
+    d=$(dirname "$o"); a=$(ls "$d" | grep '\.gz$' | head -n 1)
+    h=$( (command -v sha256sum >/dev/null 2>&1 && sha256sum "$d/$a" || shasum -a 256 "$d/$a") | awk '{print $1}')
+    [ "$BAD_SUM" = empty ] && : > "$o" && exit 0
+    [ -n "$BAD_SUM" ] && h=0000000000000000000000000000000000000000000000000000000000000000
+    echo "$h  $a" > "$o" ;;
+  *) printf '#!/bin/sh\necho fake-smithy\n' | gzip > "$o" ;;
+esac
+EOF
+cp "$L/fakecurl" "$L/nogh/curl"; cp "$L/fakecurl" "$L/nogh-bad/curl"; chmod +x "$L/nogh/curl" "$L/nogh-bad/curl"
+LN() { env -u SMITHY_BIN -u SMITHY_ALLOW_UNATTESTED SMITHY_HOME="$L/home$2" TMPDIR="$L/tmp" BAD_SUM="$3" PATH="$1:$L/sys" "$L/smithy" version 2>"$L/err"; }
+t "launcher: no gh installs on checksum with one warning" '[ "$(LN "$L/nogh" d "")" = fake-smithy ] && [ "$(grep -c "installed with checksum only: install the GitHub CLI to verify the build.s origin" "$L/err")" -eq 1 ]'
+t "launcher: no gh, second run is silent" '[ "$(LN "$L/nogh" d "")" = fake-smithy ] && ! grep -q "checksum only" "$L/err"'
+t "launcher: no gh + bad checksum refuses" 'LN "$L/nogh-bad" e 1; [ $? -eq 3 ] && grep -q "checksum mismatch" "$L/err" && [ ! -e "$L/home"e/bin/0.0.0/smithy ]'
+t "launcher: no gh + empty checksums.txt refuses" 'LN "$L/nogh-bad" g empty; [ $? -eq 3 ] && [ ! -e "$L/home"g/bin/0.0.0/smithy ]'
+
 echo "shared: $pass passed, $fail failed"; [ $fail -eq 0 ]

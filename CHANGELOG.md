@@ -5,6 +5,10 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+- The launcher installs without `gh`: it downloads with curl, verifies the SHA-256 against the
+  release checksums and warns once that the build origin is unverified (smithy and smithy.cmd).
+  With `gh` the attestation is still required.
+||||||| 44a4543
 - README: how smithy learns across sessions (evidence-backed lessons, STANDARDS and SCRIPTS owned by
   ledger) and branch names from `smithy names`.
 - Skill contradictions fixed: worker effort follows the medium cap, trivial warden items still

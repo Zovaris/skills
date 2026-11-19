@@ -27,5 +27,5 @@ Started by you (by name, the way your harness starts skills) or by an agent afte
 
 ## Settings
 
-`warden.max` (3), `warden.mode` (`smelt fast`), `warden.merge` (`ask`),
+`warden.max` (3), `warden.mode` (`smelt fast`), `warden.merge` (unset: warden asks once per batch),
 `warden.cleanup` (`auto`), `warden.worker_model` (`route`). See [settings](../../docs/settings.md).

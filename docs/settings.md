@@ -17,13 +17,13 @@ Two JSON files, the repo's first: `<repo>/.smithy/config.json` (this repo only) 
 | `tasks.commit` | ask | Commit specs and tasks (`docs/specs/`) or keep them out of git (`.docs/specs/`). |
 | `tasks.ignore` | ask | When not committed: a committed `.gitignore` line, or `.git/info/exclude` (this machine only). |
 | `tasks.location` | `repo` | `repo`, `local` (`~/.smithy/plans`) or `board`. |
-| `warden.merge` | `ask` | `ask`: warden asks once per batch in its plan line (auto or manual); `auto`: workers merge green PRs; `manual`: they stop at ready. A value you save counts as your words. |
+| `warden.merge` | unset (warden asks once per batch) | Unset: warden asks once per batch in its plan line (auto or manual); `auto`: workers merge green PRs; `manual`: they stop at ready. A value you save counts as your words. |
 | `warden.cleanup` | `auto` | End finished workers and remove their worktrees and branches without asking. |
 | `warden.max` / `warden.mode` | `3` / `smelt fast` | Parallel workers; how workers build: `smelt fast`, `smelt normal`, `smelt full` or `plain`. |
 | `tend.watch` / `tend.label` | `prs` / `agent` | What `/tend watch` follows; the issue label it may queue. |
 | `git.branch` | `{type}/{key}-{slug}` | Branch names (`smithy names`); e.g. `agent/{key}-{slug}`. |
 | `git.worktree` | `{parent}/worktrees/{repo}-{branch}` | Where worktrees go. |
-| `watch.events` / `watch.every` / `watch.max` | all / `30` / `50` | What wakes a waiting agent, seconds between polls, minutes before a heartbeat. |
+| `watch.events` / `watch.every` / `watch.max` | `checks,merged,closed,conflict,review,comment,push,new,updated` / `30` / `50` | What wakes a waiting agent, seconds between polls, minutes before a heartbeat. |
 
 Coming from 0.7 (`~/.agents/`): the first run moves your settings, plans and batches to
 `~/.smithy/` (`smithy config migrate` does it by hand).

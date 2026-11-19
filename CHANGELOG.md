@@ -27,6 +27,27 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 - Ship: scan before anything leaves the machine, receipts in the PR body, and one proposed
   lesson when something surprised you (or "no lesson").
 
+### from the first smelt run
+- `smithy scan --base <branch>` diffs against `origin/<branch>` (merge-base) when it exists, and
+  says which: `scan: clean against origin/main (merge-base dbcdb0e)`.
+- `smithy scan` now reads untracked files' content, handles non-ASCII names, isn't fooled by
+  added lines that start with `++`, refuses a `--base` that looks like an option, and without
+  an origin default branch or upstream scans the whole history instead of only edits.
+- Receipts: tokens in a recorded command are masked in `list`; a write failure keeps the
+  command's exit code; a cut last line no longer swallows the next receipt.
+- Receipts: one taken with (or followed by) uncommitted changes shows as `dirty`, not `stale`; commands keep their
+  quotes (`sh -c 'bun run test'`); `.smelt/` writes its own `.gitignore`; `list` says how many
+  receipts from other commits it hid.
+- `smithy config set agent.effort high` saves `medium` and says so; other values than `low` or
+  `medium` are refused. New `smithy config unset [--repo] <key>`. `set` refuses a config file
+  that isn't JSON instead of overwriting it.
+- `smithy stack` gives `bun run test` (the package's script), not `bun test` (Bun's runner).
+- `smithy wait --help` prints its usage; `smithy verify` usage says `<repo-dir>` is a local path.
+- smelt: agents work silently and send questions up; ship hands the PR to a tend subagent when
+  tend is installed; review and scan use `origin/<base>`; test-agent worktrees start from your
+  commit and their files are folded into the repo's tests, never committed as is; another review
+  look only when the fix pays for it; agents that didn't apply are listed in the PR body.
+
 ### tests
 - Go unit tests for cards, config, harness, ghx, tasks, wait and warden (each 96–100%); total
   Go coverage 66%.

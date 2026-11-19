@@ -65,7 +65,8 @@ Not installed? Do the work the plain way and, once, mention the skill that would
   one line ("cheap <model>, mid <model>, strong <model> for this harness, ok?") and on a yes run
   `smithy config accept-models`. If it prints none, ask the user to name each tier and save them with
   `smithy config set-model <tier> <name>`. Ask once per harness; until then use the session's model.
-  Under hush, don't ask: use the session's model and say so at the end.
+  Under hush, or in a session another one launched (it can't ask), don't ask: use the session's
+  model and say so at the end. `smithy route --agent <file>` routes a smelt agent.
 - Ask only for decisions that are the user's: scope, money, prod, data, security, irreversible
   actions, pushing, merging. Other decisions that would stop the work: low impact, decide;
   medium, one `smithy consult` call to the user's strong model (smelt, warden, tend ship it; it

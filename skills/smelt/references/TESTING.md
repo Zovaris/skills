@@ -3,7 +3,8 @@
 Launch each as a fresh **subagent**: prompt = the agent file's text, a `## You get` block with
 exactly what the file lists, and the report contract below. Agents that write tests work in
 their own git worktree, cut from your current commit, never from the base branch: commit your work first, then
-`git worktree add <path> HEAD` (or the harness's isolation option when it starts from HEAD) and
+`git worktree add <absolute path outside the repo> HEAD` (`smithy names worktree <branch>-<agent>`
+gives one) (or the harness's isolation option when it starts from HEAD) and
 pass the path. Their tests are input, not files to ship: move the cases worth keeping into the
 repo's existing test files in its own naming, drop the rest and any reference to the agent or
 its spec, and never commit an agent's file as is. Then remove those worktrees and branches
@@ -23,7 +24,7 @@ shape your file asks for (its status block included), then one last line
 recommendation; never stop to ask.
 ```
 
-Which ones run depends on the speed (table in SKILL.md); within it, use this to choose.
+All test agents of a speed run together, in parallel, before review. Which ones run depends on the speed (table in SKILL.md); within it, use this to choose.
 
 | Agent | Run when | Cost | Writes tests |
 |---|---|---|---|

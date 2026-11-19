@@ -5,6 +5,15 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+- `smithy cleanup` removes a worktree only when it is passed and never the folder it runs in; a
+  branch checked out in a worktree it wasn't given is kept (a cleanup removed a harness worktree).
+- `smithy names worktree` from inside a worktree names it after the main checkout.
+- `smithy route --agent tend|scout` (or their SKILL.md path) routes those skills.
+- smelt reads CONTRIBUTING.md in context and gives it to standards; scratch files go in `.smelt/`
+  or the temp dir; test-agent worktrees get a branch so cleanup can remove them; adversary is
+  skipped for docs or test-script-only diffs; a second look covers any blocking finding; tend
+  is told to clean up a worktree only when smelt created it.
+
 - warden workers on smelt now run every phase from build to ship (test agents, review agents,
   receipts, scan); a real batch showed workers stopping after build and skipping review.
 - README: proof (receipts, scan), your say on merges, and who can start each skill; the flow

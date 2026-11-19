@@ -108,11 +108,10 @@ t "task-dir asks for tasks.ignore" 'o="$(cd "$T/repo" && $S/smithy task-dir pay)
 (cd "$T/repo" && $S/smithy config set --repo tasks.ignore exclude >/dev/null && $S/smithy task-dir pay >/dev/null && $S/smithy task-dir pay >/dev/null)
 t "exclude adds .docs/ once" '[ "$(grep -c "^.docs/$" "$(cd "$T/repo" && git rev-parse --git-path info/exclude)")" = 1 ] && [ -d "$T/repo/.docs/specs/pay" ]'
 
-# model suggestions
-t "suggestions only where aliases are stable" 'WARDEN_HARNESS=codex $S/smithy config suggest-models; [ $? -eq 3 ]'
-t "claude suggests haiku/sonnet/opus" '[ "$(WARDEN_HARNESS=claude-cli $S/smithy config suggest-models | paste -sd, -)" = "cheap haiku,mid sonnet,strong opus" ]'
-WARDEN_HARNESS=claude-cli $S/smithy config accept-models >/dev/null
-t "accept saves them for that harness" '[ "$(WARDEN_HARNESS=claude-cli $S/smithy config model strong)" = opus ]'
+# no model names in smithy: the user names each tier
+t "no suggest command" 'WARDEN_HARNESS=claude-cli $S/smithy config suggest-models 2>/dev/null; [ $? -eq 2 ]'
+WARDEN_HARNESS=claude-cli $S/smithy config set-model strong opus >/dev/null
+t "set-model saves it for that harness" '[ "$(WARDEN_HARNESS=claude-cli $S/smithy config model strong)" = opus ]'
 
 # smithy route
 $S/smithy config set-model mid midm >/dev/null

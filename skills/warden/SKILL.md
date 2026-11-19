@@ -28,7 +28,7 @@ when the user has something to decide or the batch is done.
 | `smithy agent` | Runs any headless agent CLI (claude, codex, opencode, gemini, cursor, pi, dsh, `$AGENT_CMD`) |
 | `smithy task-dir <slug>` · `smithy tasks list\|ready\|set\|add\|board\|where` | Where a new task list goes; the shared task list (same format as smelt) |
 | `smithy commit` · `smithy pr` · `smithy cleanup` | Atomic commits, PRs from the template, removing a finished worktree and local branch |
-| `smithy names` | Branch and worktree names (`branch <key> "<title>"`, `worktree <branch>`), from `git.branch` / `git.worktree` |
+| `smithy names` | Branch and worktree names (`branch <key> "<title>"`, `worktree <branch> [repo-dir]`), from `git.branch` / `git.worktree` |
 | `smithy skills <name>` | Absolute path of an installed skill's SKILL.md (smelt, hush, scout, tend) |
 
 ## Usage

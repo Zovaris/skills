@@ -31,7 +31,7 @@ var Known = []Setting{
 	{"warden.cleanup", "auto", "warden", "auto: end finished workers and remove worktrees and local branches without asking"},
 	{"warden.max", "3", "warden", "parallel workers (a token-cost cap)"},
 	{"warden.mode", "smelt fast", "warden", "worker mode: smelt fast, smelt normal, smelt full or plain"},
-	{"warden.worker_model", "route", "warden", "route: pick cheap/mid/strong per task (route.js); session: same model as the parent session; or one model name for every worker"},
+	{"warden.worker_model", "route", "warden", "route: pick cheap/mid/strong per task; session: same model as the parent session; or one model name for every worker"},
 	{"agent.effort", "medium", "smelt warden scout tend", "reasoning effort for every agent smithy starts: low or medium; anything higher is capped at medium"},
 	{"watch.events", "checks,merged,closed,conflict,review,comment,push,new,updated", "smithy wait", "which events wake an agent waiting on GitHub"},
 	{"watch.every", "30", "smithy wait", "seconds between GitHub polls"},

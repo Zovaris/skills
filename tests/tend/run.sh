@@ -11,7 +11,7 @@ echo "tend"
 head -1 $S/SKILL.md | grep -qx -- '---' && pass "frontmatter opens" || bad "frontmatter opens"
 grep -q '^name: tend$' $S/SKILL.md && pass "name: tend" || bad "name: tend"
 grep -q '^description: .\{40,\}' $S/SKILL.md && pass "description present" || bad "description present"
-grep -q '^disable-model-invocation: true$' $S/SKILL.md && pass "user-invoked" || bad "user-invoked"
+grep -q '^disable-model-invocation:' $S/SKILL.md && bad "must be model-invocable" || pass "model-invocable"
 for r in $(grep -oE 'references/[A-Za-z-]+\.md|scripts/[a-z.-]+\.sh' $S/SKILL.md | sort -u); do
   [ -e "$S/$r" ] && pass "exists $r" || bad "missing $r"
 done

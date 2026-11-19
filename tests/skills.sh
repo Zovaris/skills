@@ -3,7 +3,7 @@
 # intended one, English only in fixed outputs, no agent-kit, referenced files exist.
 set -uo pipefail
 cd "$(dirname "$0")/.."
-USER_INVOKED="smelt warden hush tend"
+USER_INVOKED=""
 fail=0; bad() { echo "FAIL: $*"; fail=1; }
 for d in skills/*/; do
   s="$(basename "$d")"; f="$d/SKILL.md"

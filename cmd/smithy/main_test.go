@@ -241,6 +241,18 @@ func TestValueFlagWithoutValue(t *testing.T) {
 	}
 }
 
+func TestTasksFlagsPerSubcommand(t *testing.T) {
+	repo, env := sandbox(t)
+	for _, args := range [][]string{{"tasks", "ready", "--all"}, {"tasks", "list", "--key", "x"}, {"tasks", "board", "--key=x"}} {
+		if out, e, code := run(t, repo, env, args...); code != 2 || !strings.Contains(e, "unknown option") {
+			t.Errorf("%v: exit %d, out %q, err %q", args, code, out, e)
+		}
+	}
+	if _, e, _ := run(t, repo, env, "tasks", "board", "--all"); strings.Contains(e, "unknown option") {
+		t.Errorf("tasks board --all: %q", e)
+	}
+}
+
 func TestRepeatedValueFlagLastWins(t *testing.T) {
 	repo, env := sandbox(t)
 	if out, e, code := run(t, repo, env, "route", "--speed", "bogus", "--speed=fast", "--text", "x"); code != 0 {

@@ -6,6 +6,7 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 ## Unreleased
 
 ### CLI
+- `smithy tasks` checks flags per subcommand: `--all` only for `board`, `--blocked-by`/`--key` only for `add` (`tasks ready --all` exits 2).
 - A repeated value flag: the last one wins for every command (`smithy route` kept the first).
 - A value flag with no value (`smithy tasks add "x" --blocked-by`) exits 2 with `<flag> needs a value` and writes nothing.
 - Value flags accept `--flag=value` as well as `--flag value` (`smithy search --max=1`, `smithy tasks add --key=X`).

@@ -21,6 +21,8 @@ type command struct {
 	usage string
 	flags map[string]bool
 	run   func(args []string) int
+	// subs, when set, holds the flags of each subcommand (the first arg) instead of flags.
+	subs map[string]map[string]bool
 }
 
 var commands = map[string]command{}
@@ -30,11 +32,25 @@ var commands = map[string]command{}
 // "=" marking one that takes a value. A bare "--" in flags means the command reads `--` itself;
 // for every other command entry drops the first `--` so only clean positionals reach it.
 func register(name, help, usage, flags string, run func(args []string) int) {
+	commands[name] = command{help: help, usage: usage, flags: parseFlags(flags), run: run}
+}
+
+// registerSub sets the flags one subcommand of a registered command accepts.
+func registerSub(name, sub, flags string) {
+	c := commands[name]
+	if c.subs == nil {
+		c.subs = map[string]map[string]bool{}
+	}
+	c.subs[sub] = parseFlags(flags)
+	commands[name] = c
+}
+
+func parseFlags(flags string) map[string]bool {
 	f := map[string]bool{}
 	for _, x := range strings.Fields(flags) {
 		f[strings.TrimSuffix(x, "=")] = strings.HasSuffix(x, "=") || x == "--"
 	}
-	commands[name] = command{help, usage, f, run}
+	return f
 }
 
 func init() {
@@ -55,6 +71,11 @@ func entry(name string, c command, args []string) ([]string, int, bool) {
 		if a == "-h" || a == "--help" {
 			fmt.Println(c.usage)
 			return nil, 0, true
+		}
+	}
+	if len(args) > 0 {
+		if f, ok := c.subs[args[0]]; ok {
+			c.flags = f
 		}
 	}
 	var out []string

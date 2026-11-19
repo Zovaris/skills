@@ -120,11 +120,14 @@ func TestEffectiveValueTypes(t *testing.T) {
 	}
 }
 
-func TestEffectiveBrokenFileIgnored(t *testing.T) {
+func TestEffectiveBrokenFileReported(t *testing.T) {
 	e := setup(t)
 	write(t, e.user, `{not json`)
-	if v, src, _ := Effective("warden.max"); v != "3" || src != "default" {
-		t.Fatalf("%q %q", v, src)
+	if _, _, err := Effective("warden.max"); err == nil || errors.Is(err, ErrUnset) || !strings.Contains(err.Error(), e.user) {
+		t.Fatalf("err = %v", err)
+	}
+	if got := Get("warden.max", "fb"); got != "fb" {
+		t.Fatalf("Get = %q", got)
 	}
 }
 

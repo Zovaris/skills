@@ -3,10 +3,11 @@ package gitx
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
-const cleanupUsage = "usage: smithy cleanup <repo> <branch> [<worktree>] [--force]"
+const cleanupUsage = "usage: smithy cleanup <repo> <branch> [<worktree>] [--force]\n  removes <worktree> only when it is passed, and never the folder it runs in; a branch checked\n  out in another worktree is kept"
 
 // WorktreeOf finds the worktree path that has branch checked out in `git worktree list --porcelain` output.
 func WorktreeOf(porcelain, branch string) string {
@@ -36,13 +37,20 @@ func CleanupMain(args []string) int {
 			wt = a
 		}
 	}
+	caller, _ := os.Getwd()
 	if err := os.Chdir(repo); err != nil {
 		fmt.Fprintln(os.Stderr, "smithy cleanup:", err)
 		return 2
 	}
 	_ = quiet("git", "fetch", "-q", "--prune", "origin")
 	if wt == "" {
-		wt = WorktreeOf(git("worktree", "list", "--porcelain"), branch)
+		if other := WorktreeOf(git("worktree", "list", "--porcelain"), branch); other != "" && !samePath(other, repo) {
+			fmt.Printf("kept %s: checked out in %s; pass that worktree to remove it\n", branch, other)
+			return 1
+		}
+	} else if inside(caller, wt) {
+		fmt.Printf("kept %s: %s is the folder this runs in\n", branch, wt)
+		return 1
 	}
 	removed := false
 	if fi, err := os.Stat(wt); wt != "" && err == nil && fi.IsDir() {
@@ -93,4 +101,20 @@ func CleanupMain(args []string) int {
 func landed(branch, base string) bool {
 	out := git("cherry", base, branch)
 	return out != "" && !strings.Contains("\n"+out, "\n+")
+}
+
+func realPath(p string) string {
+	if r, err := filepath.EvalSymlinks(p); err == nil {
+		p = r
+	}
+	a, _ := filepath.Abs(p)
+	return a
+}
+
+func samePath(a, b string) bool { return realPath(a) == realPath(b) }
+
+// inside reports whether dir is wt or a folder under it.
+func inside(dir, wt string) bool {
+	d, w := realPath(dir), realPath(wt)
+	return d == w || strings.HasPrefix(d, w+string(filepath.Separator))
 }

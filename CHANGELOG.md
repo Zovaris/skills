@@ -6,6 +6,8 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 ## Unreleased
 
 ### CLI
+- `smithy cleanup` removes a branch whose commits already landed under new hashes (a rebase
+  merge), instead of keeping it as unpushed.
 - Every command: `-h`/`--help` anywhere prints its usage on stdout and exits 0 before any repo
   check, gh call or side effect; an unknown option prints `smithy <cmd>: unknown option <x>`
   and the usage on stderr, exit 2 (so `smithy adr --bogus` no longer writes an ADR).

@@ -4,7 +4,7 @@ Many tasks at once. Each task gets one silent worker in its own git worktree, en
 PR (or a report). warden supervises them from small status cards and a watcher that costs no
 tokens, and only talks to you for decisions that are yours.
 
-Started by you: `/warden …` ([how to start a skill in your harness](../../README.md#harnesses)).
+Started by you (by name, the way your harness starts skills) or by an agent after your yes.
 
 ## Commands
 

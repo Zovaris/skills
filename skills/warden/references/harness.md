@@ -53,8 +53,9 @@ to their CLI. **wake**: OpenCode and DeepSeek Harness resume the session when a 
 command ends; Gemini only with `tools.shell.backgroundCompletionBehavior: "inject"`; Codex, Pi and
 Cursor don't, so run `smithy wait batch:<batch>` in the foreground there (it returns within `--max` minutes).
 
-Workers are one-shot headless runs of whatever agent CLI is installed (`AGENT_CMD` overrides:
-codex, opencode, gemini, aider, a custom wrapper). They can't receive messages mid-run, so:
+Workers are one-shot headless runs of whatever agent CLI is installed (`AGENT_CLI` picks claude,
+codex, opencode, gemini, cursor, pi or dsh; `AGENT_CMD` runs any other command, with no
+unattended flags added). They can't receive messages mid-run, so:
 - A worker that needs a decision writes its card and exits.
 - To answer, append the answer to `<id>.inbox.md` and respawn it in the same worktree. The brief's
   relaunch line plus "Read <id>.inbox.md first" lets it continue from what exists.

@@ -1,7 +1,6 @@
 ---
 name: warden
-description: Runs a batch of tasks in parallel, one silent agent per task in its own worktree, each ending in a PR or report, supervised through status cards. Use for /warden with tasks, a task dir, board ids or an idea, or for status, cleanup and doctor.
-disable-model-invocation: true
+description: Runs a batch of tasks in parallel, one silent agent per task in its own worktree, each ending in a PR or report, supervised through status cards. Use when several tasks should run at once (tasks, a task dir, board ids or an idea), or for status, cleanup and doctor of a batch. Costs one session per task: start it only on the user's yes.
 argument-hint: <tasks, one per line | task dir or .md | board ids | an idea> | status [batch\|all] | cleanup [batch] | doctor
 ---
 
@@ -59,7 +58,7 @@ CLAUDE.md), `<repo>/.smithy/config.json`, `~/.smithy/config.json`, then the buil
 | `warden.mode` | smelt fast | How workers build: `smelt fast\|normal\|full` or `plain` |
 | `warden.worker_model` | route | Models per item: `references/models.md` |
 
-A PR into the production branch is `manual` unless the user's intent says to release it. The
+A PR into the production branch is `manual` unless the user said, for this batch, to merge it to production (use-smithy: merges). The
 plan line states every value used; `batch.json` stores them as the user's standing permission for
 this batch.
 

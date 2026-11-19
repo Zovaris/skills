@@ -6,7 +6,7 @@ Fill the `<…>` slots and drop the lines that don't apply. `<intent>` is copied
 `smithy`), `<batch-dir>` is `~/.smithy/warden/<batch>/` and `<repo>` the repo's absolute path.
 
 What workers are:
-- They can't run `/smelt` or `/hush` as commands (user-invoked skills). `<hush-skill>` and
+- They can't run `/smelt` or hush as commands (user-invoked skills). `<hush-skill>` and
   `<smelt-skill>` are the absolute paths `scripts/smithy skills hush|smelt` prints: workers read
   those files and follow them, which works in any harness.
 - Silent: their only outputs are the status card and one closing line; they never address the
@@ -54,7 +54,7 @@ requirements from the intent and the code"; out of scope if the user named it>
   start from the merged prereqs.">
 <relaunch: "- This is a relaunch. Read <batch-dir>/<id>.inbox.md first if it exists. Before any
   outside action, check git log, git status and `gh pr list --head <branch>`; continue from what
-  exists, never open a second PR or rewrite pushed history.">
+  exists, never open a second PR or force-push (tend may rebase the branch after you end).">
 - Stay current with the base: `git fetch origin && git merge origin/<base>` (resolve, run the
   tests) before opening the PR and again right before merging. Other workers merge into the same
   base while you work.
@@ -84,10 +84,10 @@ current step, so the warden sees where you are without asking.
 - PR opened: state=pr_open. If your harness supports it, turn on PR watching, CI auto-fix and
   auto-archive of this session when the PR closes. A draft or unfinished PR is state=blocked,
   never pr_open.
-- Green and reviewed (`<warden-dir>/scripts/smithy verify <repo> <branch> <pr>` says so):
+- Green and reviewed (`<warden-dir>/scripts/smithy verify <repo> <branch> <pr-url>` says `green`):
   tests_run=<commands actually run>, risks=<or none>. merge auto → merge into
   <base>, state=merged; manual → state=ready. A PR into the production branch is manual unless
-  the intent says to release it. If the merge itself
+  the batch says the user approved a production merge. If the merge itself
   is refused (permission rule, branch protection, a classifier): don't retry around it;
   state=ready note=merge-blocked, and the warden merges.
 - Work found after your PR merged: small and inside this task's intent (a missed case, a typo, a

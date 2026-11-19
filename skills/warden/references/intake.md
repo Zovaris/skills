@@ -20,7 +20,7 @@ Work out what you were given, in this order, and say in the plan line which it w
      slices, real blockers only) in one message, write them once approved to the dir
      `smithy task-dir <slug>` gives (same settings and questions as smelt), continue at 1.
    - "Run it as one task": continue at 3 with the idea as the only line.
-   Under `/hush`, don't ask: split when the idea clearly has independent parts, else one task.
+   Under hush, don't ask: split when the idea clearly has independent parts, else one task.
 
 ## Worker mode
 

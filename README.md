@@ -99,6 +99,8 @@ smithy wait pr:42                 # checks finished (with failed names), merged,
 smithy wait run:123 branch:main   # a workflow run, or every run on the branch's latest commit
 smithy wait watch                 # new or updated PRs and labeled issues
 smithy status                     # every task list and warden batch on this machine
+smithy receipt run -- go test ./... # record a verify run (exit, output digest, commit) for the PR
+smithy scan                       # keys, tokens and secret files in what the change adds
 ```
 
 To use `smithy` in your own terminal, accept the PATH offer in use-smithy setup (on Windows, add

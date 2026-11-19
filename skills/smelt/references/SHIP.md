@@ -22,10 +22,11 @@ else update the docs the change touched (`references/DOCS.md`). Then:
   From a task file: `smithy tasks set <file> status=done pr=<url>`. Then hand the PR to **tend**
   when it is installed (`smithy skills tend` prints its path): one silent **subagent** on the
   cheap tier, prompt "Read <tend-skill> and follow it for <pr-url>; never merge;
-  on merge, clean up <branch> <worktree>" plus the report
+  stay until merged or closed; on merge, clean up <branch> <worktree>" plus the report
   contract (`references/TESTING.md`); it keeps CI green, rebases and answers review until the PR
-  is mergeable or needs the user. Without tend, wait with `smithy wait pr:<pr-url>`, in the
-  background where the harness wakes on exit, else in the foreground; never sleep loops.
+  is mergeable or needs the user, then waits for the merge so it can clean up. Without tend, wait
+  with `smithy wait pr:<pr-url>`, in the background where the harness wakes on exit, else in the
+  foreground; never sleep loops; on merge, clean up yourself.
   (2) **Merge** the PR or locally into the base only when the user asks or the session that
   launched you said `merge auto` (a warden worker); into the production
   branch only on their explicit yes for this change. (3) **Keep** the branch for later. Discard

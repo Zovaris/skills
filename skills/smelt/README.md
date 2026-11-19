@@ -31,6 +31,6 @@ Every speed builds test-first and passes the verify gate: no "done" without fres
 
 - A spec and a task list (`NN-<slug>.md`) in `docs/specs/`, `.docs/specs/` or `~/.smithy/plans/`.
 - Atomic commits in your repo's style and a PR filled from your template.
-- A branch named `<type>/<key>-<slug>`, cleaned up after merge.
+- A branch named by `smithy names branch` (your `git.branch` setting), cleaned up after merge.
 
 Hand the task list to **warden** to build it in parallel.

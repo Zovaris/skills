@@ -57,7 +57,7 @@ CLAUDE.md), `<repo>/.smithy/config.json`, `~/.smithy/config.json`, then the buil
 | `warden.max` | 3 | Running limit: workers past it are launched too and wait in `smithy wait-turn` |
 | `warden.merge` | ask | unset (`smithy config get` exits 3): ask in the plan line, once per batch, "auto or manual?"; auto: workers merge green PRs after `smithy verify` says green; manual: they stop at `ready` |
 | `warden.cleanup` | auto | auto: end finished workers and remove worktrees and local branches without asking |
-| `warden.mode` | smelt fast | How workers build: `smelt fast\|normal\|full` or `plain` |
+| `warden.mode` | smelt fast | How workers build: `smelt fast\|normal\|full` or `plain`; an item that is risky by smelt's definition (auth, money, personal data, input parsing, file or shell access, secrets) runs at least `normal` |
 | `warden.worker_model` | route | Models per item: `references/models.md` |
 | `stack` (batch only) | false | Asked in the plan line when an item has prereqs: false (wait for merge): the dependent starts from `<base>` after its prereqs merge; true (stacked): it starts from the prereq's branch at once and merges only after the prereq has merged |
 

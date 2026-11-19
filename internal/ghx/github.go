@@ -31,16 +31,17 @@ var (
 	httpClient   = &http.Client{Timeout: 30 * time.Second}
 
 	hostRe   = regexp.MustCompile(`^[A-Za-z0-9]([A-Za-z0-9.-]*[A-Za-z0-9])?(:[0-9]{1,5})?$`)
-	pullRe   = regexp.MustCompile(`/([^/\s]+/[^/\s]+)/pull/(\d+)`)
+	pullRe   = regexp.MustCompile(`/([^/\s]+/[^/\s]+)/pull/(\d+)/?$`)
+	nameRe   = regexp.MustCompile(`^[A-Za-z0-9_.-]+$`)
 	runRe    = regexp.MustCompile(`/([^/\s]+/[^/\s]+)/actions/runs/(\d+)`)
 	digitsRe = regexp.MustCompile(`^\d+$`)
 )
 
 func token() string {
-	if t := os.Getenv("GH_TOKEN"); t != "" {
+	if t := strings.TrimSpace(os.Getenv("GH_TOKEN")); t != "" {
 		return t
 	}
-	return os.Getenv("GITHUB_TOKEN")
+	return strings.TrimSpace(os.Getenv("GITHUB_TOKEN"))
 }
 
 // TokenVar names the env var the token comes from, or "".
@@ -76,7 +77,8 @@ func Ready() error {
 		}
 		return nil
 	case "token":
-		return nil
+		_, _, _, err := endpoints()
+		return err
 	}
 	return ErrNoGitHub
 }
@@ -105,6 +107,7 @@ func endpoints() (rest, gql, web string, err error) {
 
 // CompareURL is the web page that opens a PR from head into base.
 func CompareURL(repo, base, head string) string {
+	base, head = refEscape(base), refEscape(head)
 	web := "https://" + host()
 	if !hostRe.MatchString(host()) {
 		web = "https://github.com"
@@ -114,15 +117,17 @@ func CompareURL(repo, base, head string) string {
 
 func repoFromRemote(remote string) string {
 	re := regexp.MustCompile(`^(?:[a-z+]+://)?(?:[^@/]+@)?` + regexp.QuoteMeta(host()) + `(?::\d+)?[:/]([^/\s]+)/([^/\s]+?)(?:\.git)?/?$`)
-	if m := re.FindStringSubmatch(strings.TrimSpace(remote)); m != nil {
+	if m := re.FindStringSubmatch(strings.TrimSpace(remote)); m != nil && okName(m[1]) && okName(m[2]) {
 		return m[1] + "/" + m[2]
 	}
 	return ""
 }
 
+func okName(s string) bool { return nameRe.MatchString(s) && s != "." && s != ".." }
+
 func splitRepo(repo string) (string, string, error) {
 	o, n, ok := strings.Cut(repo, "/")
-	if !ok || o == "" || n == "" || strings.Contains(n, "/") {
+	if !ok || !okName(o) || !okName(n) {
 		return "", "", fmt.Errorf("not a GitHub repo: %q", repo)
 	}
 	return url.PathEscape(o), url.PathEscape(n), nil
@@ -250,13 +255,27 @@ func prNumber(ref string) (string, int, error) {
 	if err != nil {
 		return "", 0, err
 	}
-	if m := pullRe.FindStringSubmatch(ref); m != nil {
-		n, _ := strconv.Atoi(m[2])
+	if _, _, err := splitRepo(repo); err != nil {
+		return "", 0, err
+	}
+	n := 0
+	switch {
+	case pullRe.MatchString(ref):
+		u, err := url.Parse(ref)
+		if err != nil || (u.Scheme != "https" && u.Scheme != "http") || !strings.EqualFold(u.Host, host()) || strings.Contains(u.Path, "..") {
+			return "", 0, fmt.Errorf("not a %s pull request URL: %q", host(), ref)
+		}
+		n, _ = strconv.Atoi(pullRe.FindStringSubmatch(ref)[2])
+	case digitsRe.MatchString(strings.TrimPrefix(ref, "#")):
+		n, _ = strconv.Atoi(strings.TrimPrefix(ref, "#"))
+	case strings.Contains(ref, "://"):
+		return "", 0, fmt.Errorf("not a pull request URL: %q", ref)
+	}
+	if n > 0 {
 		return repo, n, nil
 	}
 	if digitsRe.MatchString(strings.TrimPrefix(ref, "#")) {
-		n, _ := strconv.Atoi(strings.TrimPrefix(ref, "#"))
-		return repo, n, nil
+		return "", 0, fmt.Errorf("not a pull request number: %q", ref)
 	}
 	var prs []struct{ Number int }
 	if err := apiPRList(repo, ref, "all", &prs); err != nil {
@@ -605,6 +624,11 @@ func Compare(repo, base, head string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	for _, r := range []string{base, head} {
+		if r == "" || strings.Contains(r, "..") || strings.HasPrefix(r, "-") {
+			return nil, fmt.Errorf("not a branch name: %q", r)
+		}
+	}
 	path := "repos/" + o + "/" + n + "/compare/" + refEscape(base) + "..." + refEscape(head)
 	var b []byte
 	err = via(func() error {
@@ -627,10 +651,13 @@ const threadsQuery = `query($owner:String!,$name:String!,$num:Int!){repository(o
 
 // ReviewThreads is the raw GraphQL JSON of a PR's review threads (isResolved each).
 func ReviewThreads(repo string, num int) ([]byte, error) {
-	o, n, ok := strings.Cut(repo, "/")
-	if !ok {
-		return nil, fmt.Errorf("not a GitHub repo: %q", repo)
+	if _, _, err := splitRepo(repo); err != nil {
+		return nil, err
 	}
+	if num <= 0 {
+		return nil, fmt.Errorf("not a pull request number: %d", num)
+	}
+	o, n, _ := strings.Cut(repo, "/")
 	var b []byte
 	err := via(func() error {
 		s, err := Run("gh", "api", "graphql", "-F", "owner="+o, "-F", "name="+n, "-F", "num="+strconv.Itoa(num), "-f", "query="+threadsQuery)

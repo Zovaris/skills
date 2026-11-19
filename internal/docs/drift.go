@@ -16,7 +16,8 @@ import (
 const driftUsage = `smithy drift: deterministic doc-drift report against a base (default: origin's default branch).
   smithy drift [base]
 A branch name diffs against its merge-base with origin/<branch> when that ref exists (as smithy
-scan does); a revision expression is used as given.
+scan does); a revision expression is used as given. Without an origin default branch or upstream
+the report covers the whole history.
 Sections: changed code and the docs that mention it (by path or exported symbol); paths and
 ` + "`name()`" + ` symbols named in docs that no longer exist; public API added or changed without any
 doc change in the diff. Report only: always exits 0. Judgement comes after (references/DRIFT.md).`

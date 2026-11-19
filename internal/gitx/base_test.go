@@ -61,3 +61,30 @@ func TestResolveBaseWithoutRemoteIsWholeHistory(t *testing.T) {
 		t.Fatalf("no origin, no upstream: %s", sha)
 	}
 }
+
+func TestResolveBaseRejectsOptionLikeBase(t *testing.T) {
+	dir, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	gitIn(t, dir, "init", "-q")
+	commitFile(t, dir, "a.txt")
+	if sha, label := ResolveBase(dir, "--output=x"); strings.HasPrefix(sha, "-") || !strings.Contains(label, "not a revision") {
+		t.Fatalf("option-like base passed through: %s %q", sha, label)
+	}
+}
+
+func TestResolveBaseLocalBranchWithoutOrigin(t *testing.T) {
+	dir, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	gitIn(t, dir, "init", "-q")
+	commitFile(t, dir, "a.txt")
+	gitIn(t, dir, "switch", "-q", "-c", "feat")
+	commitFile(t, dir, "b.txt")
+	want, _ := exec.Command("git", "-C", dir, "rev-parse", "main").Output()
+	if sha, label := ResolveBase(dir, "main"); sha != strings.TrimSpace(string(want)) || !strings.HasPrefix(label, "main (merge-base ") {
+		t.Fatalf("local branch: %s %q", sha, label)
+	}
+}

@@ -15,8 +15,11 @@ func branchName(s string) bool { return s != "HEAD" && !strings.ContainsAny(s, "
 // ResolveBase returns the commit to diff against and a label for it, for the repo at root.
 // A branch name means its merge-base with origin/<branch> when that ref exists, a revision
 // expression is used as given, and "" means origin's default branch (else the upstream, else
-// the whole history).
+// the whole history). A base starting with "-" is never passed to git.
 func ResolveBase(root, base string) (sha, label string) {
+	if strings.HasPrefix(base, "-") {
+		return EmptyTree, base + " is not a revision; diffing the whole history"
+	}
 	ref := ""
 	switch {
 	case base == "":

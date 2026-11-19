@@ -26,6 +26,9 @@ t "branch from issue, type from title" '[ "$($S/smithy names branch "#42" "Fix n
 t "branch without key" '[ "$($S/smithy names branch - "Update README")" = docs/update-readme ]'
 t "branch slug capped at 40" 'b="$($S/smithy names branch 03 "a very long title that keeps going and going past forty chars")" && [ ${#b} -le 52 ]'
 t "worktree is a sibling" '[ "$($S/smithy names worktree feat/x)" = "$(cd "$T" && pwd -P)/worktrees/repo-feat-x" ]'
+git worktree add -q -b nw "$T/repo/.claude/wt-nw" HEAD 2>/dev/null
+t "worktree name from inside a worktree uses the main checkout" '[ "$(cd "$T/repo/.claude/wt-nw" && $S/smithy names worktree feat/y)" = "$(cd "$T" && pwd -P)/worktrees/repo-feat-y" ]'
+git worktree remove --force "$T/repo/.claude/wt-nw"; git branch -q -D nw; rm -rf "$T/repo/.claude"
 t "branch template setting" '$S/smithy config set git.branch "agent/{key}-{slug}" && [ "$($S/smithy names branch 7 "Add x")" = agent/7-add-x ] && $S/smithy config set git.branch "{type}/{key}-{slug}"'
 
 # smithy wait with a fake gh
@@ -80,12 +83,14 @@ t "template found once" '[ "$($S/smithy pr template | wc -l | tr -d " ")" = 1 ]'
 git worktree add -q -b t1 "$T/wt1" main; (cd "$T/wt1" && git commit -q --allow-empty -m "feat(x): wip")
 t "keeps unpushed branch" '! $S/smithy cleanup . t1 && git show-ref -q --verify refs/heads/t1'
 git push -q origin t1 2>/dev/null
-t "cleans pushed branch" '$S/smithy cleanup . t1 && ! git show-ref -q --verify refs/heads/t1'
+t "keeps a branch checked out in a worktree it wasn't given" '! $S/smithy cleanup . t1 && [ -d "$T/wt1" ] && git show-ref -q --verify refs/heads/t1'
+t "never removes the folder it runs in" '! (cd "$T/wt1" && $S/smithy cleanup "$T/repo" t1 "$T/wt1") && [ -d "$T/wt1" ]'
+t "cleans pushed branch" '$S/smithy cleanup . t1 "$T/wt1" && ! git show-ref -q --verify refs/heads/t1 && [ ! -d "$T/wt1" ]'
 git worktree add -q -b t2 "$T/wt2" main; echo dirty > "$T/wt2/x"
 t "keeps dirty worktree" '! $S/smithy cleanup . t2 && [ -d "$T/wt2" ]'
 git worktree add -q -b t3 "$T/wt3" origin/main; (cd "$T/wt3" && echo r > r.txt && git add r.txt && git commit -q -m "feat(x): rebased")
 git worktree add -q --detach "$T/wt4" origin/main; (cd "$T/wt4" && git commit -q --allow-empty -m "chore: other" && git cherry-pick t3 >/dev/null && git push -q origin HEAD:main 2>/dev/null); git worktree remove --force "$T/wt4"; git fetch -q origin
-t "cleans a branch whose commits landed rebased" '$S/smithy cleanup . t3 && ! git show-ref -q --verify refs/heads/t3'
+t "cleans a branch whose commits landed rebased" '$S/smithy cleanup . t3 "$T/wt3" && ! git show-ref -q --verify refs/heads/t3'
 
 # smithy tasks
 mkdir -p docs/specs/pay

@@ -11,7 +11,7 @@
    (`references/TESTING.md`), at the speed set in SKILL.md:
    - `agents/spec-check.md` always, with the diff command and the spec path.
    - `agents/standards.md` at `normal` and `full`, with the diff command and the paths of the
-     repo's rules (AGENTS.md / CLAUDE.md, `docs/agents/STANDARDS.md`, lint config); with none of
+     repo's rules (AGENTS.md / CLAUDE.md, CONTRIBUTING.md, `docs/agents/STANDARDS.md`, lint config); with none of
      those, the ground rules in use-smithy section 3 and the language's formatter and linter.
    - `agents/security.md` at `full` speed, and at any speed when the diff touches auth, money,
      personal data, input parsing, file or shell access, or secrets. Its high findings are the
@@ -20,8 +20,8 @@
    different questions.
 5. Handle each finding with the receiving-review rules: verify, then fix (bug findings: failing
    test first) or decline with one line of reason in the PR body or the final message.
-6. **The reviewer closes, not you.** At `full` speed, and at any speed for a blocking or high
-   security finding you fixed, send the fix's diff and the finding to a fresh subagent with the
+6. **The reviewer closes, not you.** At `full` speed, and at any speed for any blocking finding
+   you fixed or a high security finding you fixed, send the fix's diff and the finding to a fresh subagent with the
    same agent file, asked only "is this finding resolved, and did the fix add a new problem?".
    One bounded second look per finding; a finding it keeps open goes back to step 5, and a
    second "still open" goes to the user.

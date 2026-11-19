@@ -23,4 +23,5 @@ Started by you (by name, the way your harness starts skills), or by smelt and wa
 - Merges only when told the PR is `merge auto`; into the production branch only with your yes
   for that PR.
 
-Ends with one line per PR: `merged`, `green`, `closed` or `needs you`.
+Ends with one line per PR: `merged`, `green`, `closed` or `needs you`, plus
+`queued <issue-url> → <task file>` per queued issue; as a subagent, a last `done: <result>` line.

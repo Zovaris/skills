@@ -10,6 +10,13 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
   `GH_HOST` for Enterprise), else fails with "needs the GitHub CLI or GH_TOKEN"; with neither,
   `smithy pr create` prints the compare URL. New `smithy pr merge <pr> [--rebase|--merge|--squash]`;
   `smithy doctor` reports the GitHub mode (gh / token / none).
+||||||| 44a4543
+- The launcher installs without `gh`: it downloads with curl, verifies the SHA-256 against the
+  release checksums and warns once that the build origin is unverified (smithy and smithy.cmd).
+  With `gh` the attestation is still required.
+||||||| 44a4543
+- README: how smithy learns across sessions (evidence-backed lessons, STANDARDS and SCRIPTS owned by
+  ledger) and branch names from `smithy names`.
 - Skill contradictions fixed: worker effort follows the medium cap, trivial warden items still
   run smelt fast, tend caps bot review rounds (not people), smelt treats security, money and personal
   data as high impact, warden runs risky items at least at normal, smelt's README defers branch

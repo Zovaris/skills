@@ -16,5 +16,10 @@
 - `scripts/drill.sh` pressure-tests skills against a real agent CLI (`tests/drill/*.md`); it
   costs tokens, so run it by hand per harness.
 
+- `main` is protected: changes land through a pull request with green `check` and
+  `windows-launcher`; no direct pushes, force-pushes or deletion. A release is a PR that bumps
+  `shared/VERSION` and the CHANGELOG, then a `v*` tag on the merged commit.
+- Pull requests follow `.github/pull_request_template.md`.
+
 Commits are atomic and conventional (`smithy commit style` shows the rules); every change lands under
 **Unreleased** in [CHANGELOG.md](CHANGELOG.md) first.

@@ -474,3 +474,53 @@ func TestMainSetModelWriteError(t *testing.T) {
 		t.Fatal(code)
 	}
 }
+
+func TestSetEffortIsCapped(t *testing.T) {
+	setup(t)
+	if _, er, c := capture(t, func() int { return Main([]string{"config", "set", "agent.effort", "high"}[1:]) }); c != 0 || !strings.Contains(er, "capped at medium") {
+		t.Fatalf("high: %d %q", c, er)
+	}
+	if v, _, _ := Effective("agent.effort"); v != "medium" {
+		t.Fatalf("stored %q, want medium", v)
+	}
+	if _, _, c := capture(t, func() int { return Main([]string{"set", "agent.effort", "low"}) }); c != 0 {
+		t.Fatalf("low: %d", c)
+	}
+	if v, _, _ := Effective("agent.effort"); v != "low" {
+		t.Fatalf("stored %q, want low", v)
+	}
+	if _, er, c := capture(t, func() int { return Main([]string{"set", "agent.effort", "fast"}) }); c != 2 || !strings.Contains(er, "low or medium") {
+		t.Fatalf("bogus: %d %q", c, er)
+	}
+}
+
+func TestUnset(t *testing.T) {
+	e := setup(t)
+	capture(t, func() int { return Main([]string{"set", "agent.effort", "low"}) })
+	if out, _, c := capture(t, func() int { return Main([]string{"unset", "agent.effort"}) }); c != 0 || !strings.Contains(out, "removed agent.effort") {
+		t.Fatalf("unset: %d %q", c, out)
+	}
+	if v, src, _ := Effective("agent.effort"); v != "medium" || src != "default" {
+		t.Fatalf("after unset %q from %q, want the default", v, src)
+	}
+	if out, _, c := capture(t, func() int { return Main([]string{"unset", "agent.effort"}) }); c != 0 || !strings.Contains(out, "was not set") {
+		t.Fatalf("unset twice: %d %q", c, out)
+	}
+	if ok, err := Unset(e.user, "no.such.key"); ok || err != nil {
+		t.Fatalf("missing nested key: %v %v", ok, err)
+	}
+	if _, _, c := capture(t, func() int { return Main([]string{"unset"}) }); c != 2 {
+		t.Fatalf("no key: %d", c)
+	}
+}
+
+func TestSetRefusesUnreadableFile(t *testing.T) {
+	e := setup(t)
+	write(t, e.user, "not json")
+	if err := Set(e.user, "agent.effort", "low"); err == nil {
+		t.Fatal("overwrote a file that isn't JSON")
+	}
+	if b, _ := os.ReadFile(e.user); string(b) != "not json" {
+		t.Fatalf("file changed: %q", b)
+	}
+}

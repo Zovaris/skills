@@ -52,7 +52,7 @@ requirements from the intent and the code"; out of scope if the user named it>
   it once if the path is set.
 - Workflow: <mode smelt: "read <smelt-skill> and follow it yourself from the build phase to ship
   at speed <speed>, every phase in order (build test-first, the speed's test agents, review with
-  its fresh agents, verify with `smithy receipt run`, `smithy scan <base>`, PR body with `smithy receipt
+  its fresh agents, verify with `smithy receipt run`, `smithy scan --base <base>`, PR body with `smithy receipt
   list --md`); skipping a phase the speed lists is a failed task, not a shortcut; its references/,
   agents/ and scripts/ paths are relative to its folder.
   Don't try to invoke it as a slash command." | mode plain: "work the way the repo's agent instructions

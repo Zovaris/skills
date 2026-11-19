@@ -33,8 +33,8 @@ npx skills add Zovaris/smithy -g
 Pick every skill (at least `use-smithy`) and the agents to install to. Then, in your agent:
 
 1. **"run use-smithy setup"** — models, settings, and an optional pointer in your `AGENTS.md`.
-2. **`/smelt <task>`** — one task, planned and built test-first, ending in a PR.
-3. **`/warden <tasks>`** — many tasks at once, one worker and PR each.
+2. **Describe a task** (or start `/smelt <task>`) — planned and built test-first, ending in a PR.
+3. **Hand over several tasks** (or `/warden <tasks>`) — one worker and PR each, after your yes.
 
 ## How it works
 
@@ -45,7 +45,11 @@ Pick every skill (at least `use-smithy`) and the agents to install to. Then, in 
 - **smelt** and **warden** share one task list (`NN-<slug>.md` files with status, blockers and PR),
   in the repo or in `~/.smithy/plans/`. Plan with smelt, build one task at a time or hand the list
   to warden.
+- **Proof, not claims:** every "tests pass" is a recorded receipt (`smithy receipt`) pasted into
+  the PR, and `smithy scan` checks the change for secrets before anything is pushed.
 - **tend** keeps every open PR green: CI fixes, rebases after sibling merges, review threads.
+- **You decide** the plan, scope, and merges: nothing reaches the production branch without your
+  explicit yes. Agents work silently and send their questions up to the session you talk to.
 - Commits are atomic in your repo's style, PRs follow your template, branches are named
   `<type>/<key>-<slug>`, and finished worktrees are removed every time.
 
@@ -54,12 +58,12 @@ Pick every skill (at least `use-smithy`) and the agents to install to. Then, in 
 | Skill | Started by | What it does |
 |---|---|---|
 | [use-smithy](skills/use-smithy/README.md) | the agent | Routes work to the installed skills and holds the shared rules. **Install it.** |
-| [smelt](skills/smelt/README.md) | you · `/smelt` | One task, step by step: brainstorm, spec, TDD, test agents, review, PR. `fast`, `normal` or `full`. |
-| [warden](skills/warden/README.md) | you · `/warden` | Many tasks in parallel: one silent worker and worktree per task, each to its own PR. |
-| [tend](skills/tend/README.md) | you · `/tend`, or warden | Keeps PRs mergeable: CI, rebases, review comments; can watch for new PRs and issues. |
+| [smelt](skills/smelt/README.md) | you or the agent · `/smelt` | One task, step by step: brainstorm, spec, TDD, test agents, review, receipts, secret scan, PR. `fast`, `normal` or `full` (adds a hostile run of the built system). |
+| [warden](skills/warden/README.md) | you or the agent, after your yes · `/warden` | Many tasks in parallel: one silent worker and worktree per task, each to its own PR. |
+| [tend](skills/tend/README.md) | you · `/tend`, or smelt and warden | Keeps PRs mergeable: CI, rebases, review comments; can watch for new PRs and issues. |
 | [ledger](skills/ledger/README.md) | the agent or you | ADRs, glossary, module READMEs, codebase map, doc drift, comment policy. |
 | [scout](skills/scout/README.md) | the agent or you | Read-only answers with sources, on your cheap model. |
-| [hush](skills/hush/README.md) | you · `/hush` | Does the task with no talk; ends with one `done:` line. |
+| [hush](skills/hush/README.md) | you or the agent · `/hush` | Does the task with no talk; ends with one `done:` line. |
 | [simple](skills/simple/README.md) | the agent | Short, plain replies with no filler. Off with "normal mode". |
 
 ## Harnesses

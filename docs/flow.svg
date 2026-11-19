@@ -56,7 +56,7 @@
   <rect class="smelt" x="324" y="44" width="264" height="84" rx="12"/>
   <text class="t" x="456" y="72" text-anchor="middle">smelt</text>
   <text class="s" x="456" y="92" text-anchor="middle">brainstorm → spec → TDD</text>
-  <text class="s" x="456" y="110" text-anchor="middle">test agents → review → PR</text>
+  <text class="s" x="456" y="110" text-anchor="middle">test agents → review → proof → PR</text>
 
   <!-- task list -->
   <rect class="neutral" x="324" y="168" width="264" height="64" rx="12"/>

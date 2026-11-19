@@ -5,6 +5,11 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+- warden workers on smelt now run every phase from build to ship (test agents, review agents,
+  receipts, scan); a real batch showed workers stopping after build and skipping review.
+- README: proof (receipts, scan), your say on merges, and who can start each skill; the flow
+  diagram shows the proof step.
+
 ## v0.9.0 — 2026-11-19
 
 Breaking: `smithy config suggest-models` and `accept-models` are gone (name each model tier

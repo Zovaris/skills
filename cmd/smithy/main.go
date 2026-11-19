@@ -53,11 +53,23 @@ func parseFlags(flags string) map[string]bool {
 	return f
 }
 
+// atMost wraps run so more than n positionals exit 2 instead of being ignored.
+func atMost(name string, n int, run func(args []string) int) func(args []string) int {
+	return func(args []string) int {
+		if len(args) > n {
+			fmt.Fprintf(os.Stderr, "smithy %s: unexpected argument %s\n", name, args[n])
+			fmt.Fprintln(os.Stderr, commands[name].usage)
+			return 2
+		}
+		return run(args)
+	}
+}
+
 func init() {
 	register("version", "print the version", "usage: smithy version\nPrints the version (also smithy --version).", "",
-		func([]string) int { fmt.Println(version); return 0 })
+		atMost("version", 0, func([]string) int { fmt.Println(version); return 0 }))
 	register("engine-probe", "", "usage: smithy engine-probe\nPrints smithy-engine and the version.", "",
-		func([]string) int { fmt.Println("smithy-engine", version); return 0 })
+		atMost("engine-probe", 0, func([]string) int { fmt.Println("smithy-engine", version); return 0 }))
 }
 
 // entry applies the convention every command shares, before anything runs: -h/--help anywhere

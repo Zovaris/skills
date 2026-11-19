@@ -13,7 +13,7 @@ func init() {
 		"--adr --glossary --all --max= --", docs.Search)
 	register("comments", "check the comment policy (smithy comments [paths] | --diff <base>)", docs.CommentsUsage,
 		"--diff", commentsMain)
-	register("drift", "doc-drift report against a base (smithy drift [base])", docs.DriftUsage, "", docs.Drift)
+	register("drift", "doc-drift report against a base (smithy drift [base])", docs.DriftUsage, "", atMost("drift", 1, docs.Drift))
 }
 
 // commentsMain refuses a path that doesn't exist, and --diff without a base, so a typo can't

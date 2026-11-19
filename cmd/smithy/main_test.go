@@ -262,6 +262,8 @@ func TestArgMistakes(t *testing.T) {
 	}{
 		{[]string{"comments", "--diff"}, 2, "--diff needs a base"},
 		{[]string{"changed", "nosuch"}, 2, "smithy changed: no such base nosuch"},
+		{[]string{"drift", "main", "extra"}, 2, "smithy drift: unexpected argument extra"},
+		{[]string{"version", "extra"}, 2, "smithy version: unexpected argument extra"},
 	}
 	for _, c := range cases {
 		out, errOut, code := run(t, repo, env, c.args...)

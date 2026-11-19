@@ -21,6 +21,9 @@ when you can't ask. Effort is never raised: every agent runs at `agent.effort` (
 
 ## Pick the entry point
 
+The slash form is one example: the same words in plain text work in any harness ("smelt plan
+<idea>", "build the next task").
+
 | Command | Runs |
 |---|---|
 | `/smelt <task>` | infer: no agreed plan → `plan`; plan/spec/task exists → `build`; a bug → `debug` |

@@ -103,7 +103,7 @@ read it once per batch).
    **End** every finished worker still running, and the tend session once every item is final;
    leave `blocked` / `failed` ones open for the user.
    Workers still `ready` end on their own when the PR closes where the harness auto-archives;
-   otherwise the final message says `/warden cleanup` finishes them after the merges.
+   otherwise the final message says running warden cleanup (e.g. `/warden cleanup`) finishes them after the merges.
 6. **Tend**, when installed, keeps the PRs green, rebased and answered (spawned in step 2); a PR it
    can't get green comes back as a card. Without tend, list the open PRs in the final message.
 

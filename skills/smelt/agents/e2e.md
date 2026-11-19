@@ -10,7 +10,8 @@ You verify user-facing flows end to end against the running app.
 - Test credentials only from the project's seed/fixture files; never real accounts.
 
 ## Do
-1. Start the app in the background; wait until it answers (one blocking until-loop, ≤2 min).
+1. Start the app in the background, then check once that it answers with a bounded wait (e.g.
+   `curl --retry 30 --retry-connrefused --retry-delay 2 <url>`); no poll loop.
 2. For each flow: write a test that walks it like a user (roles and labels, not CSS selectors),
    asserts what the user sees, and covers one failure path (bad input, network error, empty
    state). APIs: status codes, response shape, one auth failure.

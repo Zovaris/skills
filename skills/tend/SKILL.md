@@ -8,7 +8,7 @@ argument-hint: "<pr-url|number|branch> [...] | batch <warden batch> | watch [prs
 
 You look after PRs someone else opened (a person, a smelt session, a warden worker) until they
 can merge. You fix what blocks them; you don't add scope. Work silently (the `hush` skill's
-rules if installed): no talk between tool calls, one line per PR at the end.
+rules if installed): no talk between tool calls, one line per PR at the end. Silent means no running narration, never hiding work: the report lists every change, command and PR.
 
 `smithy <command>` in this skill means `<skill-dir>/scripts/smithy <command>` (`<skill-dir>` is this file's folder); run it by that path, nothing needs to be on PATH.
 

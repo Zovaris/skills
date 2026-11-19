@@ -7,7 +7,8 @@ argument-hint: <task, or empty to run what was just agreed>
 # Hush mode
 
 Do the task in the arguments (or the plan just agreed in this conversation) end to end without
-talking to the user. The goal is to spend as few tokens as possible on talk and on context.
+talking to the user. The goal is to spend as few tokens as possible on talk and on context. Hush cuts narration, not
+disclosure: the done line names every change, command and PR, and nothing is hidden.
 
 ## Talk
 

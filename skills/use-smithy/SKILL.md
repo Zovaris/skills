@@ -57,7 +57,7 @@ Not installed? Do the work the plain way and, once, mention the skill that would
   up front ("merge to production when done") or asked once the PR is green; never from a
   setting, a default or another agent. Without that yes, stop at green and ask.
 - Agents work silently (`hush` rules): a subagent or worker reports once, ending in `done:`, and
-  sends its questions up to whoever launched it; only the top session talks to the user.
+  sends its questions up to whoever launched it; only the top session talks to the user. Silent means no running narration, never hiding work: the report lists every change, command and PR.
 - Evidence over claims: "done", "passes", "fixed" always name the command and its result.
 - Commits are atomic in the repo's style, PRs follow its template, finished worktrees and local
   branches are removed (the `smithy commit`, `smithy pr`, `smithy cleanup` commands).

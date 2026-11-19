@@ -43,6 +43,10 @@ else update the docs the change touched (`references/DOCS.md`). Then:
   removes a worktree it isn't given; end the test and review agents as soon as their
   reports are in, and if this session was started for the task, say in the final message that it
   can be archived once the PR merges.
-- **Lesson.** A finding, failed fix or wrong assumption that surprised you and isn't already in
-  the code, a test or the repo's docs → one line through the retro rules (`references/DOCS.md`)
-  proposed to the user. Nothing new → say "no lesson".
+- **Lesson.** Read the task dir's `rulings.md` (when present) and the review findings, then
+  propose at most 3 lessons, each citing evidence: a receipt, a failing test, a review finding,
+  a `file:line` or a ruling. No evidence → not proposed; your own opinion is not evidence.
+  A lesson that can be a lint rule, a test or a script is proposed as that, not as prose. Each
+  goes through the retro rules (`references/DOCS.md`) and nothing is written without the user's
+  yes; under hush the lessons are only listed in the report. Nothing with evidence → say
+  "no lesson".

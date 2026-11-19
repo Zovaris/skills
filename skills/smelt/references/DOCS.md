@@ -52,8 +52,22 @@ Superseding: new ADR, then set the old one's status line. Never edit an accepted
 
 From the session just finished, list lessons and route each:
 - Same mechanical mistake twice → an automated check (lint rule, hook, or a repo script wired into the commands `smithy stack` reports).
-- Judgement call the reviewer should enforce → one line in `docs/agents/STANDARDS.md`.
+- Judgement call the reviewer should enforce → one line in `docs/agents/STANDARDS.md`, only
+  with evidence (see below).
 - About the user or how they work → the harness's memory (one fact per entry).
 - About the project → the right doc above.
 - Not worth keeping → drop.
 Show the list with destinations; write what the user accepts.
+
+### Judgement rules in STANDARDS
+
+An accepted judgement rule is one line in `docs/agents/STANDARDS.md`:
+
+```
+- <rule> — covers: `<path>`[, `<path>`] — from: <evidence>
+```
+
+`<evidence>` is a receipt, a failing test, a review finding, a `file:line` or a ruling from
+`rulings.md`. With the ledger skill installed (`smithy skills ledger`), follow its STANDARDS
+rules (budget, retire) instead of restating them here. Write only what the user accepted; under
+hush, list the proposed lines in the report and write nothing.

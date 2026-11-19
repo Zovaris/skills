@@ -5,6 +5,11 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+- smelt lessons now cite evidence: the ship Lesson step reads `rulings.md` and the review
+  findings, proposes at most 3 lessons (each with a receipt, failing test, finding, `file:line`
+  or ruling; a lint rule, test or script instead of prose when it can be one), and accepted
+  judgement rules go to `docs/agents/STANDARDS.md` as `- <rule> — covers: … — from: <evidence>`.
+
 ## v0.9.1 — 2026-11-19
 
 Fixes from a real warden batch and a second smelt validation run. Upgrade: `smithy cleanup` in

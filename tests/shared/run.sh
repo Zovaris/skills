@@ -6,6 +6,8 @@ P="$(cd "$(dirname "$0")/../../skills/use-smithy/scripts" && pwd -P)"
 pass=0; fail=0
 t() { if eval "$2" >/dev/null 2>&1; then pass=$((pass+1)); else fail=$((fail+1)); echo "FAIL: $1"; fi; }
 T="$(mktemp -d)"; trap 'rm -rf "$T"' EXIT
+# The host agent session must not leak into the tests.
+unset CLAUDECODE CLAUDE_CODE_ENTRYPOINT CODEX_THREAD_ID CODEX_CI CODEX_SANDBOX CODEX_SANDBOX_NETWORK_DISABLED OPENCODE OPENCODE_SESSION_ID GEMINI_CLI PI_CODING_AGENT PI_SESSION_ID DSH_SESSION_ID AI_AGENT CURSOR_AGENT CURSOR_TRACE_ID AGENT_CLI AGENT_CMD AGENT_MODEL AGENT_EFFORT AGENT_ARGS CONSULT_CMD CONSULT_MODEL
 export SMITHY_CONFIG="$T/config.json" WARDEN_HARNESS=codex
 
 git init -q --bare "$T/remote.git"; git clone -q "$T/remote.git" "$T/repo" 2>/dev/null; cd "$T/repo"

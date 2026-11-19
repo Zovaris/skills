@@ -5,6 +5,11 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+## v0.9.1 — 2026-11-19
+
+Fixes from a real warden batch and a second smelt validation run. Upgrade: `smithy cleanup` in
+v0.9.0 could remove a worktree it wasn't given.
+
 - `smithy cleanup` removes a worktree only when it is passed and never the folder it runs in; a
   branch checked out in a worktree it wasn't given is kept (a cleanup removed a harness worktree).
 - `smithy names worktree` from inside a worktree names it after the main checkout.

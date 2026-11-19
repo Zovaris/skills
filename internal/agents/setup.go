@@ -192,12 +192,11 @@ func status() int {
 			}
 		}
 	}
-	var sug []string
-	for _, p := range config.Suggest() {
-		sug = append(sug, p[0]+" "+p[1])
-	}
-	if len(sug) > 0 {
-		fmt.Printf("model suggestions for %s: %s (smithy config accept-models after the user says yes)\n", h, strings.Join(sug, ","))
+	for _, t := range []string{"cheap", "mid", "strong"} {
+		if _, err := config.Model(t); err != nil {
+			fmt.Printf("models for %s: ask the user to name each unset tier, then smithy config set-model <tier> <name>\n", h)
+			break
+		}
 	}
 	pathCmd(nil)
 	f := defaultFile()

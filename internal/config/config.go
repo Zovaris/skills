@@ -262,15 +262,6 @@ func Model(t string) (string, error) {
 	return "", ErrUnset
 }
 
-// Suggest returns tier→model suggestions where the harness has stable aliases.
-func Suggest() [][2]string {
-	h, _ := harness.Detect()
-	if strings.HasPrefix(h, "claude-") {
-		return [][2]string{{"cheap", "haiku"}, {"mid", "sonnet"}, {"strong", "opus"}}
-	}
-	return nil
-}
-
 // Migrate moves pre-0.8 state (~/.agents/{config.json,plans,foreman,tend}) to ~/.smithy.
 func Migrate() []string {
 	home, _ := os.UserHomeDir()
@@ -302,8 +293,6 @@ func AutoMigrate() {
 const usage = `usage: smithy config <command>
   model <cheap|mid|strong>              model for this harness; exit 3 when unset
   set-model <cheap|mid|strong> <name> [harness]
-  suggest-models                        "<tier> <model>" suggestions for this harness; exit 3 when none
-  accept-models                         save the suggestions (only after the user said yes)
   get <key>                             effective value (repo, user, default); exit 3 when unset
   set [--repo] <key> <value>            value stored as JSON when it is JSON
   unset [--repo] <key>                  remove a saved value (back to the default)
@@ -343,27 +332,6 @@ func Main(args []string) int {
 			return 1
 		}
 		fmt.Printf("saved %s = %s (%s)\n", key, args[2], UserFile())
-	case "suggest-models":
-		s := Suggest()
-		if s == nil {
-			return 3
-		}
-		for _, p := range s {
-			fmt.Println(p[0], p[1])
-		}
-	case "accept-models":
-		s := Suggest()
-		if s == nil {
-			fmt.Fprintf(os.Stderr, "no suggestions for %s: ask the user for each tier\n", h)
-			return 3
-		}
-		for _, p := range s {
-			if err := Set(UserFile(), "models."+h+"."+p[0], strconv.Quote(p[1])); err != nil {
-				fmt.Fprintln(os.Stderr, err)
-				return 1
-			}
-			fmt.Printf("saved models.%s.%s = %s\n", h, p[0], p[1])
-		}
 	case "get":
 		if len(args) < 2 {
 			return 2

@@ -18,7 +18,7 @@ adversary, regression, property, mutation, e2e and hostile are test; implementer
 the task with --file or --text).
 Prints ` + "`<tier> <model>  # reasons`" + `, or JSON with --json. <model> is the user's model for that
 tier in this harness (smithy config model <tier>); ` + "`-`" + ` when unset (use the session default, and
-propose ` + "`smithy config suggest-models`" + `, or ask the user to name the tier). The caller may move one tier up or down with a stated reason;
+ask the user to name the tier once and save it with ` + "`smithy config set-model`" + `). The caller may move one tier up or down with a stated reason;
 a user's explicit model always wins.
 Tiers: cheap (mechanical, read-only, small), mid (most feature work), strong (risky, ambiguous,
 cross-cutting, or the last fix round).`

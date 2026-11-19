@@ -210,30 +210,12 @@ func TestSet(t *testing.T) {
 	}
 }
 
-func TestModelAndSuggest(t *testing.T) {
+func TestModel(t *testing.T) {
 	e := setup(t)
-	tests := []struct {
-		harness string
-		suggest [][2]string
-	}{
-		{"claude-cli", [][2]string{{"cheap", "haiku"}, {"mid", "sonnet"}, {"strong", "opus"}}},
-		{"claude-desktop", [][2]string{{"cheap", "haiku"}, {"mid", "sonnet"}, {"strong", "opus"}}},
-		{"codex", nil},
-		{"unknown", nil},
-	}
-	for _, tc := range tests {
-		t.Setenv("WARDEN_HARNESS", tc.harness)
-		got := Suggest()
-		if len(got) != len(tc.suggest) {
-			t.Fatalf("%s: %v", tc.harness, got)
-		}
-		for i := range got {
-			if got[i] != tc.suggest[i] {
-				t.Fatalf("%s: %v", tc.harness, got)
-			}
-		}
+	for _, h := range []string{"claude-cli", "codex", "unknown"} {
+		t.Setenv("WARDEN_HARNESS", h)
 		if _, err := Model("cheap"); !errors.Is(err, ErrUnset) {
-			t.Fatalf("%s: err = %v", tc.harness, err)
+			t.Fatalf("%s: err = %v", h, err)
 		}
 	}
 	write(t, e.user, `{"models":{"codex":{"cheap":"mini"},"claude-cli":{"cheap":"haiku-x"}}}`)
@@ -342,10 +324,6 @@ func TestMain_(t *testing.T) {
 		{name: "model unset", args: []string{"model", "cheap"}, code: 3},
 		{name: "set-model bad", args: []string{"set-model", "cheap"}, code: 2, errHas: "usage"},
 		{name: "set-model", args: []string{"set-model", "cheap", "mini"}, code: 0, outHas: "saved models.codex.cheap = mini", wantUser: "mini"},
-		{name: "suggest none", args: []string{"suggest-models"}, code: 3},
-		{name: "suggest claude", args: []string{"suggest-models"}, harness: "claude-cli", code: 0, outHas: "cheap haiku\nmid sonnet\nstrong opus\n"},
-		{name: "accept none", args: []string{"accept-models"}, code: 3, errHas: "no suggestions for codex"},
-		{name: "accept claude", args: []string{"accept-models"}, harness: "claude-cli", code: 0, outHas: "saved models.claude-cli.strong = opus"},
 		{name: "get no arg", args: []string{"get"}, code: 2},
 		{name: "get unset", args: []string{"get", "tasks.commit"}, code: 3},
 		{name: "get default", args: []string{"get", "warden.merge"}, code: 0, outHas: "auto\n"},
@@ -465,11 +443,6 @@ func TestMainSetModelWriteError(t *testing.T) {
 		t.Fatalf("%d %q", code, se)
 	}
 	_, _, code = capture(t, func() int { return Main([]string{"set", "k", "v"}) })
-	if code != 1 {
-		t.Fatal(code)
-	}
-	t.Setenv("WARDEN_HARNESS", "claude-cli")
-	_, _, code = capture(t, func() int { return Main([]string{"accept-models"}) })
 	if code != 1 {
 		t.Fatal(code)
 	}

@@ -75,6 +75,10 @@ func ChangedMain(args []string) int {
 		fmt.Fprintln(os.Stderr, changedUsage)
 		return 0
 	}
+	if exec.Command("git", "rev-parse", "--git-dir").Run() != nil {
+		fmt.Fprintln(os.Stderr, "smithy changed: not a git repo")
+		return 2
+	}
 	sep := "\n"
 	if len(args) > 0 && args[len(args)-1] == "--csv" {
 		sep, args = ",", args[:len(args)-1]

@@ -48,7 +48,8 @@ line, and pointers to the files above.
   then judge what it flags. Update the docs in the same branch; report what changed.
 - **comments `[paths]`** — `smithy comments <paths>` (or `--diff <base>`). For each finding:
   move the content to the module README or an ADR, turn it into a doc comment if it documents
-  public API, or delete it. Re-run until clean.
+  public API, or delete it. A TODO/FIXME is first opened as an issue, or its text listed for the
+  user, then deleted. Re-run until clean.
 - **search `<query>`** — `smithy search "<query>"`: ADRs first, then glossary, module
   READMEs, other docs. Read the hits you need; quote file:line when you use them.
 

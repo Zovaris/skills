@@ -1,6 +1,7 @@
 # Review
 
-1. Resolve the base: `git merge-base HEAD <base>` (base = PR target, else the default branch).
+1. Resolve the base: `git fetch origin <base>`, then `git merge-base HEAD origin/<base>` (base =
+   PR target, else the default branch). Never the local `<base>`: it goes stale in worktrees.
    Empty diff → say so and stop.
 2. Find the spec: the task/spec path you were given, commit messages, the PR body, or
    `docs/specs/`. None → spec-check reviews against the PR description and says so.
@@ -20,6 +21,10 @@
    same agent file, asked only "is this finding resolved, and did the fix add a new problem?".
    One bounded second look per finding; a finding it keeps open goes back to step 5, and a
    second "still open" goes to the user.
+7. **Another look only when it pays.** After fixing what a second look kept open, decide with
+   judgment, not by habit: a fix that changes behaviour, touches a risky area or is more than a
+   few lines gets one more look from the same agent file; a rename, a comment, a commit message
+   or a test-only addition doesn't. Say which you chose in one line in the PR body.
 
 Reviewing someone else's PR (`/smelt review <pr>`): same steps, report only; post comments only
 when the user asks.

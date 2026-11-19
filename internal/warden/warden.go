@@ -4,6 +4,7 @@ package warden
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -34,7 +35,22 @@ func readPlan(dir string) (plan, error) {
 	if err != nil {
 		return p, err
 	}
-	return p, json.Unmarshal(b, &p)
+	if err := json.Unmarshal(b, &p); err != nil {
+		var te *json.UnmarshalTypeError
+		if errors.As(err, &te) && te.Field == "stack" {
+			return p, errors.New("batch.json unreadable: stack must be true or false")
+		}
+		return p, fmt.Errorf("batch.json unreadable: %v", err)
+	}
+	return p, nil
+}
+
+// planErr is the message for a plan readPlan could not use.
+func planErr(batch string, err error) string {
+	if os.IsNotExist(err) {
+		return "no batch " + batch
+	}
+	return err.Error()
 }
 
 func cardState(dir, id string) string {
@@ -68,7 +84,7 @@ func WaitTurn(args []string) int {
 	dir := filepath.Join(cards.Home(), batch)
 	p, err := readPlan(dir)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "no batch %s\n", batch)
+		fmt.Fprintln(os.Stderr, planErr(batch, err))
 		return 2
 	}
 	var prereqs []string
@@ -92,7 +108,7 @@ func WaitTurn(args []string) int {
 	lock := filepath.Join(dir, ".slot.lock")
 	for {
 		if p, err = readPlan(dir); err != nil {
-			fmt.Fprintf(os.Stderr, "no batch %s\n", batch)
+			fmt.Fprintln(os.Stderr, planErr(batch, err))
 			return 2
 		}
 		max := 3

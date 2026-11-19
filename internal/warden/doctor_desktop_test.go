@@ -1,0 +1,16 @@
+package warden
+
+import (
+	"strings"
+	"testing"
+)
+
+func TestDoctorDesktopSkipsAgentCLI(t *testing.T) {
+	newDoctor(t, "git", "gh", "claude")
+	t.Setenv("AGENT_CMD", "")
+	t.Setenv("WARDEN_HARNESS", "claude-desktop")
+	o, _ := doctor(t)
+	if strings.Contains(o, "agent CLI") {
+		t.Errorf("desktop adapter prints an agent CLI line:\n%s", o)
+	}
+}

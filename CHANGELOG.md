@@ -40,6 +40,7 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 - The launcher stops `gh release download` and `gh attestation verify` after 120s (`SMITHY_DOWNLOAD_TIMEOUT` overrides) with exit 3, and removes its temp dir before running the installed binary.
 - `smithy stack` gives Go `go test -count=1 ./...` (cached results made receipts look fresh) and prints `base:` from origin/main or origin/master when origin/HEAD is unset.
 - `smithy wait-turn` says `batch.json unreadable: stack must be true or false` (not "no batch") for a non-bool `stack`, and `smithy cards board` holds an item only for `"hold": true` or a reason, not `"hold": false`.
+- `smithy doctor` prints the agent CLI line only for the cli and any adapters, not under desktop.
 
 ### skills consistency
 - `warden.merge` has no built-in default: warden asks once per batch in its plan line (auto or

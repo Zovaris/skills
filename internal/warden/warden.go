@@ -228,6 +228,7 @@ func Doctor(args []string) int {
 		}
 	}
 	switch {
+	case adapter == "desktop":
 	case cli != "":
 		r.ok("agent CLI: " + cli)
 	case adapter == "any":

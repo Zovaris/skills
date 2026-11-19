@@ -5,6 +5,11 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+- ledger owns `docs/agents/STANDARDS.md` and `scripts/SCRIPTS.md`: new
+  `references/STANDARDS-FORMAT.md` (line format, ~30-rule budget, retire rules), a `standard` mode,
+  `init` creates SCRIPTS.md, DRIFT.md proposes retiring lines whose path is gone; a test pins
+  that `smithy drift` reports missing paths in STANDARDS.md.
+
 ## v0.9.1 — 2026-11-19
 
 Fixes from a real warden batch and a second smelt validation run. Upgrade: `smithy cleanup` in

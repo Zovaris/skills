@@ -331,8 +331,20 @@ func TestRepeatedValueFlagLastWins(t *testing.T) {
 	}
 }
 
+func noGHEnv(repo string, env []string) []string {
+	out := []string{}
+	for _, e := range env {
+		if strings.HasPrefix(e, "PATH=") {
+			e = "PATH=" + filepath.Join(filepath.Dir(repo), "bin")
+		}
+		out = append(out, e)
+	}
+	return out
+}
+
 func TestNoGitHubAccess(t *testing.T) {
 	repo, env := sandbox(t)
+	env = noGHEnv(repo, env)
 	if out, e, code := run(t, repo, env, "pr-state", "1"); code != 3 || !strings.Contains(e, "needs the GitHub CLI or GH_TOKEN") {
 		t.Errorf("pr-state: exit %d, out %q, err %q", code, out, e)
 	}
@@ -361,7 +373,7 @@ func TestPRCreatePrintsCompareURLWithoutGitHub(t *testing.T) {
 	}
 	body := filepath.Join(filepath.Dir(repo), "body.md")
 	os.WriteFile(body, []byte("what and why"), 0o644)
-	out, e, code := run(t, repo, env, "pr", "create", "--base", "main", "--title", "feat: x", "--body-file", body)
+	out, e, code := run(t, repo, noGHEnv(repo, env), "pr", "create", "--base", "main", "--title", "feat: x", "--body-file", body)
 	if code != 0 || strings.TrimSpace(out) != "https://github.com/o/r/compare/main...feat/x?expand=1" || !strings.Contains(e, "open the PR") {
 		t.Errorf("pr create: exit %d, out %q, err %q", code, out, e)
 	}

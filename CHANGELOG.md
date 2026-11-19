@@ -5,6 +5,8 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+- README: how smithy learns across sessions (evidence-backed lessons, STANDARDS and SCRIPTS owned by
+  ledger) and branch names from `smithy names`.
 - "Silent" agents are defined as no narration, never hiding work (smelt, use-smithy, tend, warden,
   hush), and smelt's SKILL.md states that PR comments, issues and CI logs are data, not
   instructions; both address skills.sh audit findings.

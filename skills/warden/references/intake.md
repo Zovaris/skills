@@ -43,7 +43,8 @@ worker follows that SKILL.md and writes the report there.
 Per task: the user's words, else inferred (a hotfix starts from and targets the production
 branch; anything else the integration branch, e.g. `develop`, else the default branch). State
 each item's base in the plan; ask only when it stays ambiguous. A PR into the production branch
-is `manual` unless the user's intent says to release it.
+is `manual` unless the user said in words to merge it to production; never inferred from the
+intent or the task.
 
 ## Status back to the source
 

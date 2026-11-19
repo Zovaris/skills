@@ -5,6 +5,8 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+- README: how smithy learns across sessions (evidence-backed lessons, STANDARDS and SCRIPTS owned by
+  ledger) and branch names from `smithy names`.
 - Skill contradictions fixed: worker effort follows the medium cap, trivial warden items still
   run smelt fast, tend caps bot review rounds (not people), smelt treats security, money and personal
   data as high impact, warden runs risky items at least at normal, smelt's README defers branch

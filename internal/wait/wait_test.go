@@ -691,3 +691,68 @@ func TestFirstPollRetriesTransientErrors(t *testing.T) {
 		t.Fatalf("want error after 3 tries, calls=%d", g.calls)
 	}
 }
+
+func TestPRWatcherIgnoresPreviousHeadChecks(t *testing.T) {
+	e := sandbox(t)
+	oldRed := `[{"name":"unit","status":"COMPLETED","conclusion":"FAILURE","completedAt":"t1"}]`
+	newRed := `[{"name":"unit","status":"COMPLETED","conclusion":"FAILURE","completedAt":"t2"}]`
+	e.put(t, "pr.json", prFixture{rollup: pending}.json())
+	w := newPR("5", allOpts())
+	if got, err := w.poll(); err != nil || len(got) != 0 {
+		t.Fatalf("first poll: %v %v", got, err)
+	}
+	e.put(t, "pr.json", prFixture{rollup: oldRed}.json())
+	if got, _ := w.poll(); len(got) != 1 || !strings.Contains(got[0], "checks=red") {
+		t.Fatalf("old head red: %v", got)
+	}
+	e.put(t, "pr.json", prFixture{head: "fff9999000", rollup: oldRed}.json())
+	if got, _ := w.poll(); !reflect.DeepEqual(got, []string{"pr 5 push head=fff9999 u5"}) {
+		t.Errorf("stale rollup after push: %v", got)
+	}
+	if got, _ := w.poll(); len(got) != 0 {
+		t.Errorf("stale rollup still ignored: %v", got)
+	}
+	e.put(t, "pr.json", prFixture{head: "fff9999000", rollup: pending}.json())
+	if got, _ := w.poll(); len(got) != 0 {
+		t.Errorf("pending: %v", got)
+	}
+	e.put(t, "pr.json", prFixture{head: "fff9999000", rollup: newRed}.json())
+	if got, _ := w.poll(); !reflect.DeepEqual(got, []string{"pr 5 checks=red failed=unit u5"}) {
+		t.Errorf("current head red: %v", got)
+	}
+}
+
+func TestPRWatcherStaleHoldsThroughEmptyRollup(t *testing.T) {
+	e := sandbox(t)
+	old := `[{"name":"unit","status":"COMPLETED","conclusion":"SUCCESS","completedAt":"t1"}]`
+	e.put(t, "pr.json", prFixture{rollup: pending}.json())
+	w := newPR("5", allOpts())
+	w.poll()
+	for _, step := range []prFixture{{rollup: old}, {head: "fff9999000", rollup: old}, {head: "fff9999000", rollup: "[]"}, {head: "fff9999000", rollup: old}} {
+		e.put(t, "pr.json", step.json())
+		got, err := w.poll()
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, l := range got {
+			if strings.Contains(l, "checks=") && step.head != "" {
+				t.Errorf("stale rollup reported for the new head: %v", got)
+			}
+		}
+	}
+}
+
+func TestPRWatcherLegacyStatusesAreNotHeldBack(t *testing.T) {
+	e := sandbox(t)
+	legacy := `[{"context":"ci/legacy","state":"SUCCESS"}]`
+	e.put(t, "pr.json", prFixture{rollup: pending}.json())
+	w := newPR("5", allOpts())
+	w.poll()
+	e.put(t, "pr.json", prFixture{rollup: legacy}.json())
+	w.poll()
+	e.put(t, "pr.json", prFixture{head: "fff9999000", rollup: legacy}.json())
+	got, _ := w.poll()
+	if !reflect.DeepEqual(got, []string{"pr 5 push head=fff9999 u5", "pr 5 checks=green u5"}) {
+		t.Errorf("got %v", got)
+	}
+}

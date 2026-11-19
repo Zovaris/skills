@@ -5,6 +5,11 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+- `smithy wait pr:` ignores check results left over from the previous head after a push and
+  reports only the current head's; `smithy commit style` prints the 72-char subject limit it
+  enforces; smelt's spec-check and standards agents diff against
+  `git merge-base origin/<base> HEAD`, never a local base branch.
+
 - `scripts/eval.sh`: a small outcome-graded eval run by hand. Each `tests/eval/<task>/` is a tiny
   Go package with a bug (three starters from smithy's own fixes); the agent fixes it with or
   without smelt (`none`, `fast`, `normal`), a hidden regression test grades it, and the script

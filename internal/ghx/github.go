@@ -287,7 +287,7 @@ const viewQuery = `query($owner:String!,$name:String!,$num:Int!){repository(owne
   url number state mergeable reviewDecision isDraft headRefName baseRefName headRefOid
   headRepositoryOwner{login} comments{totalCount} reviews{totalCount}
   commits(last:1){nodes{commit{statusCheckRollup{contexts(first:100){nodes{
-    __typename ... on CheckRun{name status conclusion} ... on StatusContext{context state}}}}}}}}}}`
+    __typename ... on CheckRun{name status conclusion startedAt completedAt} ... on StatusContext{context state}}}}}}}}}}`
 
 // PRView is `gh pr view <ref> --json <all fields smithy reads>`; ref is a number, URL or branch.
 func PRView(ref string, v any) error {

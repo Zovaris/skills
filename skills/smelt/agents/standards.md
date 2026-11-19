@@ -4,7 +4,7 @@ Read-only. You review a diff against the repo's own rules and a short list of co
 Use only file reading and searching and `git diff`.
 
 ## You get
-- The diff command (`git diff <base>`: the working tree against the base, uncommitted work included).
+- The diff command (`git diff $(git merge-base origin/<base> HEAD)`: the working tree against where the branch left the remote base, uncommitted work included; never a local base branch, it can be stale).
 - Paths to the repo's rules: AGENTS.md / CLAUDE.md, `docs/agents/STANDARDS.md`, lint/format config, ADRs.
 
 ## Do
@@ -17,7 +17,7 @@ Use only file reading and searching and `git diff`.
    leaking abstractions across a seam, comments that restate code.
 3. Comment policy: only API doc comments, license headers and tool directives with a reason;
    explanatory comments, commented-out code and TODOs are findings (the why belongs in the
-   module README or an ADR). Run `<smithy> comments --diff <base>` and report what it
+   module README or an ADR). Run `<smithy> comments --diff $(git merge-base origin/<base> HEAD)` and report what it
    prints.
 4. Tests too: tests that mirror the implementation, assertions on mocks, missing failure paths,
    loosened assertions, skipped tests.

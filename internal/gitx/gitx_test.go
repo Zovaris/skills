@@ -2,6 +2,7 @@ package gitx
 
 import (
 	"encoding/json"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -205,5 +206,25 @@ func TestPRHelpAndMissingTemplate(t *testing.T) {
 	}
 	if c := PRMain([]string{"template"}); c != 1 {
 		t.Fatalf("template without one exit %d", c)
+	}
+}
+
+func TestCommitStylePrintsSubjectLimit(t *testing.T) {
+	dir := t.TempDir()
+	exec.Command("git", "-C", dir, "init", "-q").Run()
+	t.Chdir(dir)
+	old := os.Stdout
+	r, w, err := os.Pipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	os.Stdout = w
+	t.Cleanup(func() { os.Stdout = old })
+	code := CommitMain([]string{"style"})
+	os.Stdout = old
+	w.Close()
+	b, _ := io.ReadAll(r)
+	if code != 0 || !strings.Contains(string(b), "subject limit: 72 chars") {
+		t.Fatalf("exit %d, output %q", code, b)
 	}
 }

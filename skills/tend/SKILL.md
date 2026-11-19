@@ -1,7 +1,6 @@
 ---
 name: tend
-description: "Keeps someone else's PRs mergeable: fixes red CI, rebases or merges the base, answers review comments, and stops at merged, closed or needs-you. Use for /tend with PR numbers, a warden batch, or watch mode."
-disable-model-invocation: true
+description: "Keeps someone else's PRs mergeable: fixes red CI, rebases or merges the base, answers review comments, and stops at merged, closed or needs-you. Use for open PRs (URLs or branches), a warden batch, or watch mode; smelt and warden start it after opening PRs."
 argument-hint: "<pr-url|number|branch> [...] | batch <warden batch> | watch [prs|issues|all] [--label <l>] [--model <m>] [--fix-model <m>] [--card <batch> <id>] [--max-hours <h>]"
 ---
 
@@ -47,7 +46,7 @@ rules if installed): no talk between tool calls, one line per PR at the end.
 - Routine work (reading state, reruns, rebases, merging the base, replying to comments) runs on
   `--model`, else `smithy config model cheap`. Exit 3 means unset: propose `smithy config
   suggest-models` and save on a yes (`smithy config accept-models`), or ask for the cheap model when
-  there are no suggestions (under `/hush` or when warden launched you, use the session
+  there are no suggestions (under hush or when warden launched you, use the session
   default instead of asking).
 - Code fixes (a real CI failure, a review comment that asks for a change) go to a fresh
   subagent on `--fix-model`, else `smithy config model strong`, else the session default, with only
@@ -75,13 +74,16 @@ inside the repo). Then repeat:
      user asked you to tend by name; on anyone else's branch, merge the base instead or stop
      with "needs you". Conflicts you can't resolve from both sides' intent → "needs you".
    - **unresolved review threads** (human or bot) → `references/RECEIVING.md`. At most 3 rounds
-     per PR; the count lives in the card's `review_rounds` or `.tend/<pr>.rounds`.
+     per PR; the count lives in the card's `review_rounds` (`smithy cards set <batch> <id>
+     review_rounds=<n>`); without a card, in `~/.smithy/tend/<owner>-<repo>-<n>.rounds`.
    - **checks pending** → `smithy wait pr:<pr-url>` in the background (foreground where the
      harness can't wake on exit); it returns one line when checks finish, the PR merges or closes,
-     or a review lands. Never sleep-then-check turns.
+     or a review lands. Exit 0: read the state again. Exit 4 (heartbeat): wait again. Exit 2 or 3
+     (bad target, gh missing or signed out): "needs you". Never sleep-then-check turns.
    - **green, mergeable, approved or no review required** → `green` (`smithy verify` says `draft`
-     for a draft PR: report `green (draft)` and leave it a draft). Merge only if the user or
-     warden said this PR is `merge auto`, and never into the production branch or a draft.
+     for a draft PR: report `green (draft)` and leave it a draft). Merge only if whoever launched
+     you said `merge auto`, never a draft, and into the production branch only when the launch
+     says the user approved it (use-smithy: merges); otherwise stop at green.
 3. Commit fixes with `smithy commit` (style once, one concern per commit); push without force
    unless the rebase rule above allows it.
 

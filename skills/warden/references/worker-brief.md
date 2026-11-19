@@ -59,7 +59,8 @@ requirements from the intent and the code"; out of scope if the user named it>
   (AGENTS.md / CLAUDE.md) say: tests for what you change, typecheck and lint green.">
 <committed repo task file (docs/specs): "- In your branch, set the task file's `Status: done` and `PR: <url>`
   (`<warden-dir>/scripts/smithy tasks set <file> status=done pr=<url>`) so it lands with the PR.">
-- First step: check `pwd -P` and `git rev-parse --show-toplevel` equal <worktree> and the branch
+- First step: `cd <worktree>`. Your session may start in another folder and the shell may reset
+  its folder between calls, so start every command with `cd <worktree> &&`. Then check `pwd -P` and `git rev-parse --show-toplevel` equal <worktree> and the branch
   is <branch>. If not: state=blocked note=wrong-worktree, stop.
 <has prereqs or the batch is full: "- Then wait for your turn: run `<warden-dir>/scripts/smithy wait-turn
   <batch> <id>` (one blocking call; exit 4 means run it again, exit 0 means go). When it says go,
@@ -101,7 +102,8 @@ current step, so the warden sees where you are without asking.
 - Green and reviewed (`<warden-dir>/scripts/smithy verify <repo> <branch> <pr-url>` says `green`):
   tests_run=<commands actually run>, risks=<or none>. merge auto → merge into
   <base>, state=merged, then from <repo> run `<warden-dir>/scripts/smithy cleanup <repo> <branch>
-  <worktree>` (never forced); manual → state=ready. A PR into the production branch is manual unless
+  <worktree>` (never forced). Use the repo's usual merge method; if a rebase merge is refused because
+  syncing the base left merge commits, use a merge commit, never a force-push. Manual → state=ready. A PR into the production branch is manual unless
   the batch says the user approved a production merge. If the merge itself
   is refused (permission rule, branch protection, a classifier): don't retry around it;
   state=ready note=merge-blocked, and the warden merges.

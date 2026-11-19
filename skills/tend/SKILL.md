@@ -32,7 +32,8 @@ named in your reply.
 
 - PR urls, numbers or branch names: one loop per PR, then stop.
 - `batch <name>`: the items of that warden batch, each as it reaches `pr_open` or `ready`
-  (`smithy cards board <name> --json`). Warden starts you with the workers,
+  (`smithy cards board <name> --json`). The PR to tend is the card's `pr` URL; the batch's GitHub
+  repo is its repo's `origin` remote, whatever the folder is called. Warden starts you with the workers,
   so between PRs wait with `smithy wait batch:<name>`; stop when every item is
   final (merged, dropped, reported).
 - `watch [scope]`: keep going. Tend the PRs that match, then wait with `smithy wait watch[:scope]` and

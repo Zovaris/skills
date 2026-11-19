@@ -94,8 +94,8 @@ read it once per batch).
    or the prereq's branch when `stack` is true). Write each brief from `references/worker-brief.md` to
    `<batch-dir>/<id>.brief.md` and **spawn** all at once on each item's model
    (`references/models.md`) with the brief's full text as the prompt, never a pointer to the
-   file. Record each session id or pid and bump `launches`. With tend installed and ship items in
-   the batch, spawn one tend session now too, on the cheap model: "Read <tend-skill> and follow it
+   file. Record each session id or pid and bump `launches`. With tend installed and ship items whose
+   merge is manual (their PRs stay open waiting for a person), spawn one tend session now too, on the cheap model: "Read <tend-skill> and follow it
    for `batch <batch>`; report through the cards (`--card <batch> <id>`)".
 3. **Watch.** End every turn that leaves workers running with **wake**: `smithy wait batch:<batch>` in the
    background. It wakes you only for cards that need you, not progress. Never sleep or poll in a
@@ -108,8 +108,9 @@ read it once per batch).
    leave `blocked` / `failed` ones open for the user.
    Workers still `ready` end on their own when the PR closes where the harness auto-archives;
    otherwise the final message says running warden cleanup (e.g. `/warden cleanup`) finishes them after the merges.
-6. **Tend**, when installed, keeps the PRs green, rebased and answered (spawned in step 2); a PR it
-   can't get green comes back as a card. Without tend, list the open PRs in the final message.
+6. **Tend**, when installed, keeps manual-merge PRs green, rebased and answered (spawned in step 2); a
+   PR it can't get green comes back as a card. With merge auto, workers merge themselves and a
+   `merge-blocked` card comes to you, so no tend session is needed. Without tend, list the open PRs in the final message.
 
 ## Talking to the user
 

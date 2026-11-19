@@ -17,7 +17,8 @@ Skip style, naming and structure entirely: another reviewer owns those.
 ```
 | # | requirement (quote) | implemented (file:line) | tested (test name) | status |
 |---|---|---|---|---|
-status: done | partial | missing | untested | wrong
+status: done | partial | missing | untested | wrong. A prose criterion (docs, skill text) is checked
+by reading the changed text; its tested column is `n/a (prose)`, never `untested`.
 scope_creep:
 - file:line  <behaviour not in the spec>
 wrong_behaviour:

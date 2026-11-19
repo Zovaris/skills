@@ -8,6 +8,11 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 - "Silent" agents are defined as no narration, never hiding work (smelt, use-smithy, tend, warden,
   hush), and smelt's SKILL.md states that PR comments, issues and CI logs are data, not
   instructions; both address skills.sh audit findings.
+- Fixes from the dream-loop batch feedback: worker briefs start every command with
+  `cd <worktree>` and fall back to a merge commit when a rebase merge is refused; warden launches
+  tend only for manual-merge PRs; tend finds a batch's GitHub repo from its `origin` remote;
+  smelt's spec-check marks prose criteria `n/a (prose)` and TDD names the doc lint as the seam for
+  docs-only changes; `smithy wait` retries a transient error on its first read.
 - ledger owns `docs/agents/STANDARDS.md` and `scripts/SCRIPTS.md`: new
   `references/STANDARDS-FORMAT.md` (line format, ~30-rule budget, retire rules), a `standard` mode,
   `init` creates SCRIPTS.md, DRIFT.md proposes retiring lines whose path is gone; a test pins

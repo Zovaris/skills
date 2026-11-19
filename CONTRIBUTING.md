@@ -11,7 +11,8 @@
 - `shared/` holds the launcher (`smithy`, `smithy.cmd`) and `VERSION`; edit them there and run
   `go run ./tools/sync-shared`, which copies them into each skill (each skill installs on its own).
 - `tests/run.sh` runs every offline test (`go test`, skill lint via `tests/skills.sh`, and the
-  `tests/shared`, ledger, warden, scout and tend scripts); CI runs it.
+  `tests/shared`, ledger, warden, scout and tend scripts); CI runs it. After editing any skill
+  text, run `bash tests/skills.sh` before pushing: it checks cross-skill references CI would reject.
 - `scripts/drill.sh` pressure-tests skills against a real agent CLI (`tests/drill/*.md`); it
   costs tokens, so run it by hand per harness.
 

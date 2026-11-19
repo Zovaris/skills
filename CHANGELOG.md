@@ -5,6 +5,10 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+- ledger owns `docs/agents/STANDARDS.md` and `scripts/SCRIPTS.md`: new
+  `references/STANDARDS-FORMAT.md` (line format, ~30-rule budget, retire rules), a `standard` mode,
+  `init` creates SCRIPTS.md, DRIFT.md proposes retiring lines whose path is gone; a test pins
+  that `smithy drift` reports missing paths in STANDARDS.md.
 - smelt lessons now cite evidence: the ship Lesson step reads `rulings.md` and the review
   findings, proposes at most 3 lessons (each with a receipt, failing test, finding, `file:line`
   or ruling; a lint rule, test or script instead of prose when it can be one), and accepted

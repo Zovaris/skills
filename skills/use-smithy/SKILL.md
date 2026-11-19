@@ -87,7 +87,8 @@ line ("Save as scripts: `wait-deploy.sh` (polls the deploy URL), ok?"). On a yes
 - save in the repo's `scripts/` (or where the user says), same language, executable, with a
   usage line, arguments instead of this session's values, secrets from env vars, errors to
   stderr and a non-zero exit;
-- add one line to `scripts/SCRIPTS.md`: name, what it does, usage.
+- add one line to `scripts/SCRIPTS.md` (owned by ledger: its `standard` mode
+  and format): name — what it does — when to use it.
 
 Never propose one the user declined, and not under hush. Ideas from
 [scriptify](https://github.com/pfcoperez/scriptify).

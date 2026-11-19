@@ -20,6 +20,8 @@ For each flagged doc, read the doc and the diff and decide:
 - Still true → leave it.
 - Wrong or stale → fix it in this branch (module README, map, glossary, how-to).
 - A decision changed → new ADR superseding the old one; never edit the old decision.
+- A line of `docs/agents/STANDARDS.md` or `scripts/SCRIPTS.md` whose covered path is reported
+  missing → propose retiring the line or updating its path (`STANDARDS-FORMAT.md`).
 - Can't tell from the code → list it for the user; don't guess.
 
 ## 3 · Report

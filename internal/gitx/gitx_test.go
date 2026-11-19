@@ -155,3 +155,9 @@ func TestSummarize(t *testing.T) {
 		t.Errorf("defaults: %s", b)
 	}
 }
+
+func TestVerifyUsageNamesALocalPath(t *testing.T) {
+	if !strings.Contains(verifyUsage, "local checkout path") {
+		t.Fatalf("usage: %q", verifyUsage)
+	}
+}

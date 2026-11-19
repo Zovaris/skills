@@ -546,6 +546,9 @@ func TestMainErrors(t *testing.T) {
 	if _, er, c := mainOut(t); c != 2 || !strings.Contains(er, "usage") {
 		t.Errorf("no targets: %d %q", c, er)
 	}
+	if out, _, c := mainOut(t, "--help"); c != 0 || !strings.Contains(out, "usage") {
+		t.Errorf("help: %d %q", c, out)
+	}
 	if _, er, c := mainOut(t, "pr:1", "--bogus"); c != 2 || !strings.Contains(er, "unknown option") {
 		t.Errorf("bogus: %d %q", c, er)
 	}

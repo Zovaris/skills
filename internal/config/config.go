@@ -34,6 +34,7 @@ var Known = []Setting{
 	{"warden.mode", "smelt fast", "warden", "worker mode: smelt fast, smelt normal, smelt full or plain"},
 	{"warden.worker_model", "route", "warden", "route: pick cheap/mid/strong per task; session: same model as the parent session; or one model name for every worker"},
 	{"agent.effort", "medium", "smelt warden scout tend", "reasoning effort for every agent smithy starts: low or medium; anything higher is capped at medium"},
+	{"agent.timeout", "90", "smelt warden", "minutes before smithy agent kills a headless agent (0 = no limit)"},
 	{"watch.events", "checks,merged,closed,conflict,review,comment,push,new,updated", "smithy wait", "which events wake an agent waiting on GitHub"},
 	{"watch.every", "30", "smithy wait", "seconds between GitHub polls"},
 	{"watch.max", "50", "smithy wait", "minutes before a heartbeat exit (4) when nothing happened"},

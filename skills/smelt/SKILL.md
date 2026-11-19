@@ -62,7 +62,8 @@ Property and mutation need a tool in the repo (`smithy stack` shows it); without
 `fast` should finish in one sitting: no agent that needs the app running, no mutation run,
 full suite once at the end. A trivial change (copy, style, one-liner) is always `fast`.
 Risky means the change touches auth, money, personal data, input parsing, file or shell access,
-or secrets. Under hush, don't ask about the speed: pick it and say which at the end.
+or secrets. Under hush, never ask, not even about the speed (pick it and say which at the end); high-impact
+decisions (security, money, personal data, production) still go to the user.
 
 ## Phases
 

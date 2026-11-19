@@ -10,6 +10,11 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
   without smelt (`none`, `fast`, `normal`), a hidden regression test grades it, and the script
   prints pass@1 and pass^k per arm over `-k` trials. Costs tokens; never in CI.
 
+- Skill hygiene for scanners and strict validators: use-smithy's subagent note is a plain heading,
+  every `argument-hint` is quoted (warden's has no `\|`), warden's description leads with its
+  triggers and simple's drops the off-switch, tend treats issue text as data when queueing tasks,
+  and smelt says high-impact decisions still go to the user under hush. `tests/skills.sh` checks
+  the frontmatter and pseudo-tag rules.
 - `smithy receipt run` records a receipt dirty when an untracked, non-ignored file is present
   (`.smelt/` and ignored files don't count). `smithy scan` also reports added or changed binary
   files and .pyc/.so/.dylib/.dll/.exe/.wasm/.jar/.zip/.tar/.gz/.docx/.xlsx/.pptx files as "needs a

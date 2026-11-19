@@ -1,7 +1,7 @@
 ---
 name: warden
-description: Runs a batch of tasks in parallel, one silent agent per task in its own worktree, each ending in a PR or report, supervised through status cards. Use when several tasks should run at once (tasks, a task dir, board ids or an idea), or for status, cleanup and doctor of a batch. Costs one session per task: start it only on the user's yes.
-argument-hint: <tasks, one per line | task dir or .md | board ids | an idea> | status [batch\|all] | cleanup [batch] | doctor
+description: Use when several tasks should run at once (tasks, a task dir, board ids or an idea), or for status, cleanup and doctor of a batch. Runs one silent agent per task in its own worktree, each ending in a PR or report. Costs one session per task, so start only on the user's yes.
+argument-hint: "<tasks, one per line | task dir or .md | board ids | an idea> | status [batch|all] | cleanup [batch] | doctor"
 ---
 
 # warden

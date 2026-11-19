@@ -5,12 +5,15 @@ feature slug). No secrets or client data in it.
 
 ## batch.json (yours)
 
-`{"batch","repo","max","stack","mode","merge","cleanup","tasks_dir","items":[{"id","title","kind",
+`{"batch","repo","max","stack","production","mode","merge","cleanup","tasks_dir","items":[{"id","title","kind",
 "intent","source","speed","model","base","prereqs","merge","branch","worktree","session","hold",
 "launches"}]}`
 
 - `intent`: the user's own words for the task, verbatim, never rewritten or enriched (for a task
   file or board item: its path or key, which the worker reads). Later asks are appended verbatim.
+- `stack`: boolean, default false (wait for the prereq to merge); see SKILL.md Defaults.
+- `production`: the production branch name, from the user's answer to the plan-line question or
+  an obvious repo convention; `""` when no base in the batch is production.
 - `hold`: set when the user says wait/stop for an item, cleared only by the user. A held item is
   never launched, relaunched or nudged.
 

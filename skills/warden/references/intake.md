@@ -45,7 +45,9 @@ worker follows that SKILL.md and writes the report there.
 
 Per task: the user's words, else inferred (a hotfix starts from and targets the production
 branch; anything else the integration branch, e.g. `develop`, else the default branch). State
-each item's base in the plan; ask only when it stays ambiguous. A PR into the production branch
+each item's base in the plan; ask only when it stays ambiguous. When it isn't obvious whether a
+base is the production branch, ask "is <base> the production branch?" in the plan line and store
+the answer as `production` in `batch.json`. A PR into the production branch
 is `manual` unless the user said in words to merge it to production; never inferred from the
 intent or the task.
 

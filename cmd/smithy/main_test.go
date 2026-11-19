@@ -253,6 +253,23 @@ func TestTasksFlagsPerSubcommand(t *testing.T) {
 	}
 }
 
+func TestArgMistakes(t *testing.T) {
+	repo, env := sandbox(t)
+	cases := []struct {
+		args   []string
+		code   int
+		errHas string
+	}{
+		{[]string{"comments", "--diff"}, 2, "--diff needs a base"},
+	}
+	for _, c := range cases {
+		out, errOut, code := run(t, repo, env, c.args...)
+		if code != c.code || !strings.Contains(errOut, c.errHas) {
+			t.Errorf("%v: exit %d (want %d), stdout %q, stderr %q (want %q)", c.args, code, c.code, out, errOut, c.errHas)
+		}
+	}
+}
+
 func TestRepeatedValueFlagLastWins(t *testing.T) {
 	repo, env := sandbox(t)
 	if out, e, code := run(t, repo, env, "route", "--speed", "bogus", "--speed=fast", "--text", "x"); code != 0 {

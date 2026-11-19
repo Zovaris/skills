@@ -50,8 +50,11 @@ requirements from the intent and the code"; out of scope if the user named it>
 ## How
 - Silent: the rules above; <hush-skill> has the rest (token-saving habits, when to stop). Read
   it once if the path is set.
-- Workflow: <mode smelt: "read <smelt-skill> and follow its build phases yourself at speed <speed>
-  on this task, in order; its references/, agents/ and scripts/ paths are relative to its folder.
+- Workflow: <mode smelt: "read <smelt-skill> and follow it yourself from the build phase to ship
+  at speed <speed>, every phase in order (build test-first, the speed's test agents, review with
+  its fresh agents, verify with `smithy receipt run`, `smithy scan`, PR body with `smithy receipt
+  list --md`); skipping a phase the speed lists is a failed task, not a shortcut; its references/,
+  agents/ and scripts/ paths are relative to its folder.
   Don't try to invoke it as a slash command." | mode plain: "work the way the repo's agent instructions
   (AGENTS.md / CLAUDE.md) say: tests for what you change, typecheck and lint green.">
 <committed repo task file (docs/specs): "- In your branch, set the task file's `Status: done` and `PR: <url>`

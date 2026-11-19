@@ -142,6 +142,20 @@ func TestRoute(t *testing.T) {
 	}
 }
 
+func TestRouteMainRejectsBadFlags(t *testing.T) {
+	for _, args := range [][]string{
+		{"--text", "x", "--kind", "bogus"},
+		{"--text", "x", "--speed", "turbo"},
+		{"--text", "x", "--kind"},
+		{"--text"},
+		{"--text", "x", "--speed", "--json"},
+	} {
+		if got := RouteMain(args); got != 2 {
+			t.Errorf("RouteMain(%q) = %d, want 2", args, got)
+		}
+	}
+}
+
 func TestConsultCLI(t *testing.T) {
 	have := func(b string) bool { return b == "codex" || b == "agent" }
 	for h, want := range map[string]string{"claude-cli": "codex", "cursor": "cursor", "pi": "codex", "unknown": "codex"} {

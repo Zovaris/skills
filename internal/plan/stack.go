@@ -147,6 +147,9 @@ func Stack(dir string) []Line {
 		out("pkg-manager", pm)
 		if r.script("test") {
 			test = pm + " test"
+			if pm == "bun" {
+				test = "bun run test"
+			}
 		}
 		if r.dep("vitest") {
 			single, cov = "npx vitest run <file>", "npx vitest run --coverage --changed"

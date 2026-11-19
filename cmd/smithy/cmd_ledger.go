@@ -10,7 +10,7 @@ import (
 func init() {
 	register("adr", `next numbered ADR (smithy adr "<title>" [adr-dir])`, docs.ADRUsage, "", docs.ADR)
 	register("search", "search ADRs, glossary and docs, best sources first", docs.SearchUsage,
-		"--adr --glossary --all --max=", docs.Search)
+		"--adr --glossary --all --max= --", docs.Search)
 	register("comments", "check the comment policy (smithy comments [paths] | --diff <base>)", docs.CommentsUsage,
 		"--diff", commentsMain)
 	register("drift", "doc-drift report against a base (smithy drift [base])", docs.DriftUsage, "", docs.Drift)

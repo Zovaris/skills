@@ -168,6 +168,11 @@ func Search(args []string) int {
 	q, scope, max := "", "all", 40
 	for i := 0; i < len(args); i++ {
 		switch args[i] {
+		case "--":
+			if i+1 < len(args) {
+				q = strings.Join(args[i+1:], " ")
+			}
+			i = len(args)
 		case "--adr":
 			scope = "adr"
 		case "--glossary":

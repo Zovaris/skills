@@ -27,11 +27,12 @@ var commands = map[string]command{}
 
 // register adds a top-level command. help is one line for `smithy --help`; usage is what
 // `smithy <name> --help` prints; flags lists the options the command accepts, a trailing
-// "=" marking one that takes a value.
+// "=" marking one that takes a value. A bare "--" in flags means the command reads `--` itself;
+// for every other command entry drops the first `--` so only clean positionals reach it.
 func register(name, help, usage, flags string, run func(args []string) int) {
 	f := map[string]bool{}
 	for _, x := range strings.Fields(flags) {
-		f[strings.TrimSuffix(x, "=")] = strings.HasSuffix(x, "=")
+		f[strings.TrimSuffix(x, "=")] = strings.HasSuffix(x, "=") || x == "--"
 	}
 	commands[name] = command{help, usage, f, run}
 }
@@ -44,22 +45,28 @@ func init() {
 }
 
 // entry applies the convention every command shares, before anything runs: -h/--help anywhere
-// (up to a bare --) prints the usage on stdout, exit 0; an unknown option exits 2.
-func entry(name string, c command, args []string) (int, bool) {
+// (up to a bare --) prints the usage on stdout, exit 0; an unknown option exits 2. It returns
+// the args the command runs with.
+func entry(name string, c command, args []string) ([]string, int, bool) {
 	for _, a := range args {
 		if a == "--" {
 			break
 		}
 		if a == "-h" || a == "--help" {
 			fmt.Println(c.usage)
-			return 0, true
+			return nil, 0, true
 		}
 	}
+	var out []string
 	for i := 0; i < len(args); i++ {
 		a := args[i]
 		if a == "--" {
-			break
+			if c.flags["--"] {
+				out = append(out, a)
+			}
+			return append(out, args[i+1:]...), 0, false
 		}
+		out = append(out, a)
 		if len(a) < 2 || a[0] != '-' || isNumber(a) {
 			continue
 		}
@@ -67,13 +74,14 @@ func entry(name string, c command, args []string) (int, bool) {
 		if !ok {
 			fmt.Fprintf(os.Stderr, "smithy %s: unknown option %s\n", name, a)
 			fmt.Fprintln(os.Stderr, c.usage)
-			return 2, true
+			return nil, 2, true
 		}
-		if takesValue {
+		if takesValue && i+1 < len(args) {
 			i++
+			out = append(out, args[i])
 		}
 	}
-	return 0, false
+	return out, 0, false
 }
 
 func isNumber(s string) bool {
@@ -116,9 +124,10 @@ func main() {
 		usage(os.Stderr)
 		os.Exit(2)
 	}
-	if code, done := entry(name, c, os.Args[2:]); done {
+	args, code, done := entry(name, c, os.Args[2:])
+	if done {
 		os.Exit(code)
 	}
 	config.AutoMigrate()
-	os.Exit(c.run(os.Args[2:]))
+	os.Exit(c.run(args))
 }

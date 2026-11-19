@@ -172,3 +172,34 @@ func TestTasksAfterTaskDir(t *testing.T) {
 		t.Fatalf("tasks list: exit %d, out %q, err %q", code, out, e)
 	}
 }
+
+func TestDoubleDashReachesNoCommand(t *testing.T) {
+	repo, env := sandbox(t)
+	os.MkdirAll(filepath.Join(repo, ".smelt"), 0o755)
+	os.WriteFile(filepath.Join(repo, ".smelt", "green"), nil, 0o644)
+	if _, e, code := run(t, repo, env, "guard-tests", "--", "hello_test.go"); code != 2 {
+		t.Errorf("guard-tests -- hello_test.go: exit %d, stderr %q", code, e)
+	}
+	os.RemoveAll(filepath.Join(repo, ".smelt"))
+	os.WriteFile(filepath.Join(repo, "b.txt"), []byte("b\n"), 0o644)
+	if out, e, code := run(t, repo, env, "commit", "feat: add b", "--", "b.txt"); code != 0 || !strings.Contains(out, "add b") {
+		t.Errorf("commit -- b.txt: exit %d, out %q, err %q", code, out, e)
+	}
+	os.WriteFile(filepath.Join(repo, "f.go"), []byte("package f\n"), 0o644)
+	if _, e, code := run(t, repo, env, "comments", "--", "f.go"); code != 0 {
+		t.Errorf("comments -- f.go: exit %d, err %q", code, e)
+	}
+	if out, e, code := run(t, repo, env, "drift", "--", "main"); code == 2 || strings.Contains(out+e, "--") {
+		t.Errorf("drift -- main: exit %d, out %q, err %q", code, out, e)
+	}
+	if out, e, code := run(t, repo, env, "names", "branch", "--", "x", "T"); code != 0 || strings.Contains(out, "--") {
+		t.Errorf("names branch -- x T: exit %d, out %q, err %q", code, out, e)
+	}
+	if _, e, code := run(t, repo, env, "search", "--", "--all"); code != 1 || !strings.Contains(e, "no match") {
+		t.Errorf("search -- --all: exit %d, err %q", code, e)
+	}
+	out, e, code := run(t, repo, env, "receipt", "run", "--claim", "c", "--", "git", "--version")
+	if code != 0 || !strings.Contains(out, "git version") {
+		t.Errorf("receipt run -- git --version: exit %d, out %q, err %q", code, out, e)
+	}
+}

@@ -1,7 +1,6 @@
 ---
 name: hush
-description: Runs the given task end to end with no narration and ends with a short done line. Invoked as /hush <task>; composes with other skills, e.g. /hush /smelt build.
-disable-model-invocation: true
+description: Runs the given task end to end with no narration or questions and ends with a short done line. Use when the user asks for no talk or no questions, and for every agent another skill launches; composes with other skills (hush + smelt build).
 argument-hint: <task, or empty to run what was just agreed>
 ---
 
@@ -26,7 +25,8 @@ talking to the user. The goal is to spend as few tokens as possible on talk and 
 
 ## Context (save tokens)
 
-- Delegate wide reading or searching to a subagent and keep only its conclusion.
+- Delegate wide reading or searching to a subagent and keep only its conclusion, when the
+  harness has one; otherwise search with `grep -n` and read line ranges.
 - Read the part of a file you need (line ranges, `grep -n`), never whole large files twice.
 - Trim command output: `--quiet`, `| tail -30`, quiet test reporters, `git --no-pager … --stat`.
 - Single test files while working; the full suite and builds once at the end.
@@ -43,10 +43,11 @@ One short message, always in English, nothing else: `done`, then where the work 
 
 ```
 done: <where it landed>
-- <decision or caveat, at most 3 lines; omit if none>
+- <decision or caveat, one per line; omit if none>
 ```
 
-`<where it landed>` is whatever is true, for example: `PR <url>` · `2 commits on <branch>` ·
+With a PR, decisions go in its body and at most 3 lines here; without one, list every decision
+here. `<where it landed>` is whatever is true, for example: `PR <url>` · `2 commits on <branch>` ·
 `changes in <n> files, not committed` · `answer: <one line>` · `nothing to change: <why>`.
 
 Hush mode ends with this task.

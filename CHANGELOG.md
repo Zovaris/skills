@@ -6,6 +6,7 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 ## Unreleased
 
 ### CLI
+- Value flags accept `--flag=value` as well as `--flag value` (`smithy search --max=1`, `smithy tasks add --key=X`).
 - A bare `--` no longer reaches commands (`smithy guard-tests -- x_test.go` now blocks); `receipt run` and `search` still read it.
 - Windows launcher: falls back to `curl.exe` with timeouts when `gh` is missing, and a failed
   download prints `smithy: can't download v<version> (<asset>): <reason>` with exit 3; a CI job

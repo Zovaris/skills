@@ -66,10 +66,15 @@ func entry(name string, c command, args []string) ([]string, int, bool) {
 			}
 			return append(out, args[i+1:]...), 0, false
 		}
-		out = append(out, a)
 		if len(a) < 2 || a[0] != '-' || isNumber(a) {
+			out = append(out, a)
 			continue
 		}
+		if k, v, eq := strings.Cut(a, "="); eq && k != "--" && c.flags[k] {
+			out = append(out, k, v)
+			continue
+		}
+		out = append(out, a)
 		takesValue, ok := c.flags[a]
 		if !ok {
 			fmt.Fprintf(os.Stderr, "smithy %s: unknown option %s\n", name, a)

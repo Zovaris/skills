@@ -203,3 +203,22 @@ func TestDoubleDashReachesNoCommand(t *testing.T) {
 		t.Errorf("receipt run -- git --version: exit %d, out %q, err %q", code, out, e)
 	}
 }
+
+func TestFlagEqualsValue(t *testing.T) {
+	repo, env := sandbox(t)
+	for _, args := range [][]string{
+		{"search", "--max=1", "x"},
+		{"route", "--text=fix a typo"},
+		{"scan", "--base=main"},
+		{"pr", "create", "--base=main"},
+		{"receipt", "run", "--claim=a", "--", "git", "--version"},
+		{"tasks", "add", "t", "--key=X"},
+	} {
+		if out, e, code := run(t, repo, env, args...); strings.Contains(e, "unknown option") {
+			t.Errorf("%v: exit %d, out %q, err %q", args, code, out, e)
+		}
+	}
+	if out, e, code := run(t, repo, env, "route", "--json=x"); code != 2 {
+		t.Errorf("route --json=x: exit %d, out %q, err %q", code, out, e)
+	}
+}

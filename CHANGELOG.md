@@ -10,6 +10,16 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
   enforces; smelt's spec-check and standards agents diff against
   `git merge-base origin/<base> HEAD`, never a local base branch.
 
+- `scripts/eval.sh`: a small outcome-graded eval run by hand. Each `tests/eval/<task>/` is a tiny
+  Go package with a bug (three starters from smithy's own fixes); the agent fixes it with or
+  without smelt (`none`, `fast`, `normal`), a hidden regression test grades it, and the script
+  prints pass@1 and pass^k per arm over `-k` trials. Costs tokens; never in CI.
+
+- ledger keeps always-loaded context small and where the harness reads it: `init` puts its block
+  (at most ~15 lines) in CLAUDE.md when that exists, or keeps it in AGENTS.md and adds `@AGENTS.md`
+  to CLAUDE.md; `smithy drift` reports the lines and bytes of AGENTS.md, CLAUDE.md, STANDARDS.md
+  and SCRIPTS.md and flags STANDARDS.md past 30 rules; MAP.md holds only non-obvious facts (~1k
+  tokens); STANDARDS-FORMAT names retire candidates at each sync.
 - Skill hygiene for scanners and strict validators: use-smithy's subagent note is a plain heading,
   every `argument-hint` is quoted (warden's has no `\|`), warden's description leads with its
   triggers and simple's drops the off-switch, tend treats issue text as data when queueing tasks,

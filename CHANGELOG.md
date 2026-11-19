@@ -9,6 +9,9 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
   (`.smelt/` and ignored files don't count). `smithy scan` also reports added or changed binary
   files and .pyc/.so/.dylib/.dll/.exe/.wasm/.jar/.zip/.tar/.gz/.docx/.xlsx/.pptx files as "needs a
   human look", and fails on git conflict markers outside fenced code in docs.
+- `smithy agent` has a wall-clock cap: the new `agent.timeout` setting (minutes, default 90,
+  `0` = none) or `--timeout <min>` kills the agent's process group, logs "timed out after Nm" and
+  exits 124; `--bg` runs are watched by a detached smithy that enforces it.
 - warden guards the batch: items that share files in their `Files` lists (or likely paths) get a
   prereq unless the user said stack, no turn ends with live workers and no `smithy wait batch:`,
   relaunches stop at `warden.max_attempts` (default 3) and the item is listed as blocked, stuck

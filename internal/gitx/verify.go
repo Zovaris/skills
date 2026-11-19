@@ -6,16 +6,45 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/Zovaris/smithy/internal/ghx"
 )
 
-const verifyUsage = "usage: smithy verify <repo-dir> <branch> [pr]\n  <repo-dir> is the local checkout path (\".\" for here), not owner/name\nverdicts: green or merged (exit 0); draft, everything green but still a draft (exit 3);\npending, red, unpushed, closed, no-pr (exit 1). checks= is green, red, pending or none."
+const verifyUsage = "usage: smithy verify <repo-dir> <branch> [pr-url|number]\n  a PR URL is checked against <repo-dir>'s origin (exit 2 on a mismatch); prefer it over a number\n  <repo-dir> is the local checkout path (\".\" for here), not owner/name\nverdicts: green or merged (exit 0); draft, everything green but still a draft (exit 3);\npending, red, unpushed, closed, no-pr (exit 1). checks= is green, red, pending or none."
 
 var (
 	failRe    = regexp.MustCompile(`(?i)FAIL|ERROR|CANCEL|TIMED_OUT|ACTION_REQUIRED`)
 	pendingRe = regexp.MustCompile(`(?i)PENDING|QUEUED|IN_PROGRESS|EXPECTED|WAITING`)
 )
+
+var (
+	prURLRe  = regexp.MustCompile(`github\.com/([^/\s]+/[^/\s]+)/pull/\d+`)
+	originRe = regexp.MustCompile(`github\.com[:/]([^/\s]+/[^/\s]+?)(?:\.git)?/?$`)
+)
+
+// PRRepo is the owner/name of a PR URL, or "" for a bare number.
+func PRRepo(pr string) string {
+	if m := prURLRe.FindStringSubmatch(pr); m != nil {
+		return m[1]
+	}
+	return ""
+}
+
+// OriginRepo is the owner/name of a GitHub remote URL (https or ssh), or "".
+func OriginRepo(url string) string {
+	if m := originRe.FindStringSubmatch(strings.TrimSpace(url)); m != nil {
+		return m[1]
+	}
+	return ""
+}
+
+func or(s, def string) string {
+	if s == "" {
+		return def
+	}
+	return s
+}
 
 // Rollup is one entry of a PR's statusCheckRollup.
 type Rollup struct {
@@ -113,6 +142,12 @@ func VerifyMain(args []string) int {
 	if err := os.Chdir(args[0]); err != nil {
 		fmt.Fprintln(os.Stderr, "smithy verify:", err)
 		return 1
+	}
+	if want := PRRepo(pr); want != "" {
+		if got := OriginRepo(git("remote", "get-url", "origin")); !strings.EqualFold(got, want) {
+			fmt.Fprintf(os.Stderr, "smithy verify: %s is a PR of %s, but %s is a checkout of %s\n", pr, want, args[0], or(got, "no origin"))
+			return 2
+		}
 	}
 	if pr == "" {
 		var list []struct {

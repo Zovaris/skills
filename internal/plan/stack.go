@@ -223,7 +223,7 @@ func Stack(dir string) []Line {
 		}
 	}
 	if gomod {
-		test, single = or(test, "go test ./..."), or(single, "go test ./<pkg> -run <Name>")
+		test, single = or(test, "go test -count=1 ./..."), or(single, "go test ./<pkg> -run <Name>")
 		typecheck, pbt = or(typecheck, "go vet ./..."), or(pbt, "go fuzz (go test -fuzz)")
 	}
 
@@ -237,7 +237,16 @@ func Stack(dir string) []Line {
 	out("coverage", cov)
 	out("dev", dev)
 	b, _ := exec.Command("git", "-C", dir, "symbolic-ref", "-q", "--short", "refs/remotes/origin/HEAD").Output()
-	out("base", strings.TrimPrefix(strings.TrimSpace(string(b)), "origin/"))
+	base := strings.TrimPrefix(strings.TrimSpace(string(b)), "origin/")
+	for _, c := range []string{"main", "master"} {
+		if base != "" {
+			break
+		}
+		if exec.Command("git", "-C", dir, "rev-parse", "-q", "--verify", "refs/remotes/origin/"+c).Run() == nil {
+			base = c
+		}
+	}
+	out("base", base)
 	for _, f := range []string{"AGENTS.md", "CLAUDE.md", "docs/GLOSSARY.md", "docs/agents/STANDARDS.md"} {
 		if r.file(f) {
 			out("doc", f)

@@ -240,3 +240,20 @@ func TestValueFlagWithoutValue(t *testing.T) {
 		t.Errorf("side effect: %d files in %s", len(entries), dir)
 	}
 }
+
+func TestRepeatedValueFlagLastWins(t *testing.T) {
+	repo, env := sandbox(t)
+	if out, e, code := run(t, repo, env, "route", "--speed", "bogus", "--speed=fast", "--text", "x"); code != 0 {
+		t.Errorf("route --speed bogus --speed=fast: exit %d, out %q, err %q", code, out, e)
+	}
+	dir := filepath.Join(repo, "plan")
+	os.MkdirAll(dir, 0o755)
+	out, e, code := run(t, repo, env, "tasks", "add", dir, "x", "--key", "A-1", "--key", "B-2")
+	if code != 0 {
+		t.Fatalf("tasks add: exit %d, err %q", code, e)
+	}
+	b, _ := os.ReadFile(strings.TrimSpace(out))
+	if !strings.Contains(string(b), "B-2") || strings.Contains(string(b), "A-1") {
+		t.Errorf("tasks add --key A-1 --key B-2 wrote:\n%s", b)
+	}
+}

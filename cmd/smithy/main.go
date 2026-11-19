@@ -58,23 +58,32 @@ func entry(name string, c command, args []string) ([]string, int, bool) {
 		}
 	}
 	var out []string
+	at, drop := map[string]int{}, map[int]bool{}
+	pair := func(k, v string) {
+		if p, ok := at[k]; ok {
+			drop[p], drop[p+1] = true, true
+		}
+		at[k] = len(out)
+		out = append(out, k, v)
+	}
+	rest := []string{}
 	for i := 0; i < len(args); i++ {
 		a := args[i]
 		if a == "--" {
 			if c.flags["--"] {
-				out = append(out, a)
+				rest = append(rest, a)
 			}
-			return append(out, args[i+1:]...), 0, false
+			rest = append(rest, args[i+1:]...)
+			break
 		}
 		if len(a) < 2 || a[0] != '-' || isNumber(a) {
 			out = append(out, a)
 			continue
 		}
 		if k, v, eq := strings.Cut(a, "="); eq && k != "--" && c.flags[k] {
-			out = append(out, k, v)
+			pair(k, v)
 			continue
 		}
-		out = append(out, a)
 		takesValue, ok := c.flags[a]
 		if !ok {
 			fmt.Fprintf(os.Stderr, "smithy %s: unknown option %s\n", name, a)
@@ -87,10 +96,19 @@ func entry(name string, c command, args []string) ([]string, int, bool) {
 				return nil, 2, true
 			}
 			i++
-			out = append(out, args[i])
+			pair(a, args[i])
+			continue
+		}
+		out = append(out, a)
+	}
+	// A repeated value flag: the last one wins, the earlier pairs are dropped.
+	var kept []string
+	for i, a := range out {
+		if !drop[i] {
+			kept = append(kept, a)
 		}
 	}
-	return out, 0, false
+	return append(kept, rest...), 0, false
 }
 
 // next is the arg after i, or "" at the end.

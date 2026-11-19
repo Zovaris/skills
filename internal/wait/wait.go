@@ -534,6 +534,9 @@ func Main(args []string) int {
 			return ""
 		}
 		switch a {
+		case "-h", "--help":
+			fmt.Println(usage)
+			return 0
 		case "--all":
 			all = true
 		case "--events":

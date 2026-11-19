@@ -10,7 +10,7 @@ import (
 	"github.com/Zovaris/smithy/internal/ghx"
 )
 
-const verifyUsage = "usage: smithy verify <repo> <branch> [pr]"
+const verifyUsage = "usage: smithy verify <repo-dir> <branch> [pr]\n  <repo-dir> is the local checkout path (\".\" for here), not owner/name"
 
 var (
 	failRe    = regexp.MustCompile(`(?i)FAIL|ERROR|CANCEL|TIMED_OUT|ACTION_REQUIRED`)

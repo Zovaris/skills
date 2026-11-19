@@ -48,10 +48,9 @@ named in your reply.
 ## Models
 
 - Routine work (reading state, reruns, rebases, merging the base, replying to comments) runs on
-  `--model`, else `smithy config model cheap`. Exit 3 means unset: propose `smithy config
-  suggest-models` and save on a yes (`smithy config accept-models`), or ask for the cheap model when
-  there are no suggestions (under hush or when warden launched you, use the session
-  default instead of asking).
+  `--model`, else `smithy config model cheap`. Exit 3 means unset: ask the user once for the
+  cheap model and save it with `smithy config set-model cheap <name>` (under hush or when
+  another session launched you, use the session default instead of asking).
 - Code fixes (a real CI failure, a review comment that asks for a change) go to a fresh
   subagent on `--fix-model`, else `smithy config model strong`, else the session default, with only
   the failing output, the PR diff and the comment. You review its diff before committing.

@@ -14,9 +14,9 @@ prompt to a file and run `smithy agent [--readonly] <prompt-file>` (any agent CL
 **agent** is such a subagent given one of the prompts in `agents/` (implementer, test agents,
 reviewers); it sees only what that prompt lists.
 Subagent models: `smithy route` picks cheap, mid or strong per job from the task itself
-(read-only agents and reviews cheap, risky or hard work strong); unset tiers → propose
-`smithy config suggest-models` (or ask for each tier when there are none) and save the
-user's yes. Effort is never raised: every agent runs at `agent.effort` (default and cap
+(read-only agents and reviews cheap, risky or hard work strong); an unset tier → ask the user
+once to name it and save it (`smithy config set-model <tier> <name>`), or use the session's model
+when you can't ask. Effort is never raised: every agent runs at `agent.effort` (default and cap
 `medium`); a harder job gets a stronger tier or more agents, not more effort.
 
 ## Pick the entry point

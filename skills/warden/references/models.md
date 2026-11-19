@@ -13,9 +13,8 @@ warden.worker_model` decides:
 A `model` the user named, for the batch or one item, always wins. The plan line shows each item's
 tier and model; `batch.json` stores it as `model`.
 
-Unset tiers print `-`: in the plan line propose `smithy config suggest-models` ("cheap haiku, mid
-sonnet, strong opus, ok?") and on a yes run `smithy config accept-models`; with no suggestions ask for
-each tier (`smithy config set-model <tier> <name>`). Until then that item uses the session default.
+Unset tiers print `-`: in the plan line ask the user to name each unset tier and save them with
+`smithy config set-model <tier> <name>`. Until then that item uses the session default.
 
 Other roles: `smithy consult` uses `strong`; tend runs on `cheap` and hands code fixes to `strong`.
 

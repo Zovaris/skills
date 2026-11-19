@@ -43,6 +43,11 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
   that isn't JSON instead of overwriting it.
 - `smithy stack` gives `bun run test` (the package's script), not `bun test` (Bun's runner).
 - `smithy wait --help` prints its usage; `smithy verify` usage says `<repo-dir>` is a local path.
+- `smithy verify` says `draft` (exit 3) for a draft PR that is otherwise green, instead of
+  `pending`; `checks` reads `green`/`red`/`pending`/`none` in `verify`, `pr-state` and `wait`
+  alike (was `pass`/`fail` in the first two).
+- tend reads the PR state before any worktree, and only uses the main checkout when the PR
+  branch is already there and clean.
 - smelt: agents work silently and send questions up; ship hands the PR to a tend subagent when
   tend is installed; review and scan use `origin/<base>`; test-agent worktrees start from your
   commit and their files are folded into the repo's tests, never committed as is; another review

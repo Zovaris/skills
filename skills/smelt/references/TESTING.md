@@ -2,7 +2,8 @@
 
 Launch each as a fresh **subagent**: prompt = the agent file's text, a `## You get` block with
 exactly what the file lists, and the report contract below. Agents that write tests work in
-their own git worktree, cut from your current commit, never from the base branch: commit your work first, then
+their own git worktree, cut from your current commit, never from the base branch: make a WIP commit first
+(`git commit -m "wip: test agents"`; at ship, `git reset --soft <base>` and make the atomic commits), then
 `git worktree add <absolute path outside the repo> HEAD` (`smithy names worktree <branch>-<agent>`
 gives one) (or the harness's isolation option when it starts from HEAD) and
 pass the path. Their tests are input, not files to ship: move the cases worth keeping into the

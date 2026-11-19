@@ -6,6 +6,9 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 ## Unreleased
 
 ### smithy binary
+- `smithy drift [base]` resolves its base like `smithy scan` (one shared resolver): a branch
+  name diffs against its merge-base with `origin/<branch>`, no base means origin's default
+  branch, and the report's `base:` line names the ref instead of a bare SHA.
 - New `agent.effort` setting (default `medium`, also the cap): `smithy agent --effort`,
   `$AGENT_EFFORT` or the setting; `high`, `xhigh` and `max` are lowered to `medium`. Claude Code
   gets `--effort`, Codex `-c model_reasoning_effort`; every CLI gets `$AGENT_EFFORT`, and one

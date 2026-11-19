@@ -2,7 +2,7 @@
 
 ## 1 · Deterministic checks first
 
-`smithy drift [base]` (default: the merge-base with the default branch) reports:
+`smithy drift [base]` (default: origin's default branch; a branch name means `origin/<branch>`, as in `smithy scan`) reports:
 - **Changed files and the docs that mention them** (by path or by exported symbol name): each
   pairing is a doc to re-read.
 - **Missing references:** paths and backticked symbols named in docs that no longer exist in the

@@ -5,6 +5,17 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+### smelt
+- `smithy receipt run --claim "<c>" -- <cmd>` records each verify run (exit code, output
+  digest, commit, dirty tree, platform) in `.smelt/receipts.jsonl`; `smithy receipt list --md`
+  prints the table for the PR body and marks receipts from another commit or a dirty tree stale.
+- `smithy scan` checks the lines and files a change adds for private keys, tokens and
+  secret-bearing files before ship; `smithy:allow` on a line marks a false positive.
+- Review: the reviewer closes a blocking finding, not the author. A fixed blocking or high
+  security finding (every finding at `full`) gets one bounded second look by a fresh subagent.
+- Ship: scan before anything leaves the machine, receipts in the PR body, and one proposed
+  lesson when something surprised you (or "no lesson").
+
 ### tests
 - Go unit tests for cards, config, harness, ghx, tasks, wait and warden (each 96–100%); total
   Go coverage 66%.

@@ -558,6 +558,20 @@ func Main(args []string) int {
 		return 2
 	}
 	targets, watchMode := expandWatch(targets)
+	for _, t := range targets {
+		kind, arg, _ := strings.Cut(t, ":")
+		switch kind {
+		case "pr", "run", "branch", "batch":
+			if arg != "" {
+				continue
+			}
+		case "prs", "issues":
+			continue
+		}
+		fmt.Fprintf(os.Stderr, "smithy wait: unknown target %s\n", t)
+		fmt.Fprintln(os.Stderr, usage)
+		return 2
+	}
 	if watchMode && evs == "" {
 		evs = "new,updated"
 	}

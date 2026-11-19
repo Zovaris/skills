@@ -29,7 +29,7 @@ prints and follow it: you can't run it as a slash command.
 | several tasks done at once, or a task list run in parallel | **warden** | Spawns sessions and costs tokens: propose it with the task list and wait for a yes, or tell the user to run `/warden`. |
 | a fact, a comparison, "why does X", "can we Y" | **scout** | Model-invoked; read-only; answers with sources. |
 | a decision recorded, docs, module READMEs, comment policy, a codebase map, to search past decisions | **ledger** | Model-invoked. Search past decisions with its `search` mode before re-deciding anything. |
-| open PRs kept green, rebased, review comments handled; new PRs or labeled issues watched | **tend** | Suggest `/tend <pr>` or `/tend watch [prs\|issues\|all]`; warden launches it for its own PRs. Issues it accepts become task files in `~/.smithy/plans/<repo>/inbox/` for warden. |
+| open PRs kept green, rebased, review comments handled; new PRs or labeled issues watched | **tend** | Suggest `/tend <pr>` or `/tend watch [prs\|issues\|all]`; smelt and warden launch it for their own PRs. Issues it accepts become task files in `~/.smithy/plans/<repo>/inbox/` for warden. |
 | the work done without conversation | **hush** | Only when the user runs `/hush` or asks for no talk. |
 | — every reply | **simple** | If installed, write every reply its way unless the user says "normal mode". |
 
@@ -42,6 +42,8 @@ Not installed? Do the work the plain way and, once, mention the skill that would
 - Waiting on anything external (CI, a PR, a workflow run, new issues) is one `smithy wait`
   call in the background (smelt, warden and tend ship it), never sleep-then-check turns: it
   costs no tokens and returns one line when something happens.
+- Agents work silently (`hush` rules): a subagent or worker reports once, ending in `done:`, and
+  sends its questions up to whoever launched it; only the top session talks to the user.
 - Evidence over claims: "done", "passes", "fixed" always name the command and its result.
 - Commits are atomic in the repo's style, PRs follow its template, finished worktrees and local
   branches are removed (the `smithy commit`, `smithy pr`, `smithy cleanup` commands).

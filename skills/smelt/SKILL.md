@@ -51,6 +51,8 @@ Say the speed and the phases you'll run in one line before starting.
 | Verify gate | always | always | always |
 | Docs | ADR only if forced | glossary/ADR when they apply | glossary/ADR when they apply + retro |
 
+Property and mutation need a tool in the repo (`smithy stack` shows it); without one they are
+"not applicable", never a new dependency the user didn't ask for.
 `fast` should finish in one sitting: no agent that needs the app running, no mutation run,
 full suite once at the end. A trivial change (copy, style, one-liner) is always `fast`.
 Risky means the change touches auth, money, personal data, input parsing, file or shell access,
@@ -112,17 +114,20 @@ else update the docs the change touched (`references/DOCS.md`). Then:
 - **Atomic commits** with `smithy commit`: `smithy commit style` once, then one commit per
   concern (`smithy commit "<msg>" <paths>`), each building and passing on its own. Never
   `git add -A`, never `--no-verify`.
-- **Scan** with `smithy scan --base <base>` before anything leaves the machine: a finding is
-  removed (and the secret rotated if it was ever pushed) or marked `smithy:allow` with the user's
-  yes. Never push past a finding.
-- **Close, one of three.** (1) **PR**, the default, with `smithy pr`: if `smithy pr template`
-  finds one, fill every heading (N/A when one doesn't apply); otherwise what and why, tests
-  added, commands run with results (paste `smithy receipt list --md`), agents run and what they found, "Decided without you" (from
-  `rulings.md` if any), ADRs added. Title in the commit style:
-  `smithy pr create --base <b> --title "<t>" --body-file <f>`; then wait for its checks with
-  `smithy wait pr:<n>` (background where the harness wakes on exit), never sleep loops. (2) **Merge locally** into the base
-  only when the user asks. (3) **Keep** the branch for later. Discard work only when the user
-  explicitly says to.
+- **Scan** with `smithy scan --base <base>` (a branch name resolves to `origin/<base>`) before
+  anything leaves the machine: a finding is removed (and the secret rotated if it was ever pushed)
+  or marked `smithy:allow` with the user's yes. Never push past a finding.
+- **Close, one of three.** (1) **PR**, the default, with `smithy pr`: if `smithy pr template` finds
+  one, fill every heading (N/A when one doesn't apply); otherwise what and why, tests added,
+  commands run with results (paste `smithy receipt list --md`), agents run and what they found,
+  agents not run and why, "Decided without you" (from `rulings.md` if any), ADRs added. Title in the
+  commit style: `smithy pr create --base <b> --title "<t>" --body-file <f>`. Then hand the PR to
+  **tend** when it is installed (`smithy skills tend` prints its path): one silent **subagent** on
+  the cheap tier, prompt "Read <tend-skill> and follow it for `/tend <pr-url>`; never merge", that
+  keeps CI green, rebases and answers review until the PR is mergeable or needs the user. Without
+  tend, wait for the checks with `smithy wait pr:<n>` (background where the harness wakes on exit),
+  never sleep loops. (2) **Merge locally** into the base only when the user asks. (3) **Keep** the
+  branch for later. Discard work only when the user explicitly says to.
 - **Clean up** once merged or discarded: `smithy cleanup <repo> <branch> [<worktree>]`,
   only for worktrees and branches smelt created. It refuses to drop unpushed work; never force it.
 - **Lesson.** A finding, failed fix or wrong assumption that surprised you and isn't already in
@@ -138,6 +143,11 @@ listed; the rest are named as dropped.
 
 ## Always
 
+- Every agent works silently, the `hush` way: no narration between tool calls, the report is its
+  only output, ending in `done:` with its findings. A question it can't settle goes in the
+  report under `Question:`; you answer it by the rule below and ask the user only when the
+  decision is theirs. The same goes up a level: a warden worker running smelt asks warden, not
+  the user.
 - Ask only for decisions that are the user's. When you'd otherwise stop to ask (under
   `/hush`, in `build all`, or the user is away): low impact → decide; medium → one
   `smithy consult` call to the user's strong model; high → the user. Record each in the PR's

@@ -55,6 +55,15 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
   commit and their files are folded into the repo's tests, never committed as is; another review
   look only when the fix pays for it; agents that didn't apply are listed in the PR body.
 
+### skills, from a best-practice review
+- Every skill can be run by an agent (no more `disable-model-invocation`); warden still asks for a
+  yes because it costs sessions. Docs no longer assume slash commands.
+- Merges: only the session that talks to the user decides; tend and workers merge on `merge
+  auto`; a production merge needs the user's explicit yes, up front or asked at green.
+- Agents launched by smelt get a report contract (silent, `done:`, questions under `Question:`).
+- warden acts on the verdicts `smithy verify` really prints; tend keeps one review-round counter
+  and handles `smithy wait` exit codes; smelt's ship phase moved to `references/SHIP.md`.
+
 ### tests
 - Go unit tests for cards, config, harness, ghx, tasks, wait and warden (each 96–100%); total
   Go coverage 66%.

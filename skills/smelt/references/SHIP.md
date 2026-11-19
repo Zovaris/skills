@@ -45,7 +45,8 @@ else update the docs the change touched (`references/DOCS.md`). Then:
   can be archived once the PR merges.
 - **Lesson.** Read the task dir's `rulings.md` (when present) and the review findings, then
   propose at most 3 lessons, each citing evidence: a receipt, a failing test, a review finding,
-  a `file:line` or a ruling. No evidence → not proposed; your own opinion is not evidence.
+  a `file:line` or a ruling. No evidence → not proposed; your own opinion is not evidence. Skip what is already in the
+  code, a test or the repo's docs.
   A lesson that can be a lint rule, a test or a script is proposed as that, not as prose. Each
   goes through the retro rules (`references/DOCS.md`) and nothing is written without the user's
   yes; under hush the lessons are only listed in the report. Nothing with evidence → say

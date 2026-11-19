@@ -37,6 +37,7 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 - `smithy comments --diff` and `smithy drift` read a file header only right after `diff --git` (an added line starting with "++ " is not one) and unquote quoted names.
 - `smithy scan` checks files added by a rename (`git mv README .env`) as secret-bearing names too.
 - `smithy receipt run` exits 1 when the command passed but the receipt could not be written, records a signal kill as 128+signal, and on SIGINT/SIGTERM forwards the signal to the command (run in its own process group), waits for it and writes no receipt.
+- The launcher stops `gh release download` and `gh attestation verify` after 120s (`SMITHY_DOWNLOAD_TIMEOUT` overrides) with exit 3, and removes its temp dir before running the installed binary.
 
 ### skills consistency
 - `warden.merge` has no built-in default: warden asks once per batch in its plan line (auto or

@@ -39,9 +39,20 @@ if [ ! -x "$bin" ]; then
   case "$(uname -m)" in arm64|aarch64) arch=arm64 ;; x86_64|amd64) arch=amd64 ;; *) echo "smithy: unsupported CPU $(uname -m)" >&2; exit 3 ;; esac
   asset="smithy-$os-$arch.gz"; tmp=$(mktemp -d "${TMPDIR:-/tmp}/smithy.XXXXXX"); trap 'rm -rf "$tmp"' EXIT
   echo "smithy: downloading v$version ($asset), once" >&2
+  limit=${SMITHY_DOWNLOAD_TIMEOUT:-120}
+  # watch runs a command with a watchdog: after $limit seconds it is killed and watch returns 124.
+  watch() {
+    "$@" & pid=$!
+    ( sleep "$limit"; : > "$tmp/timedout"; kill "$pid" ) >/dev/null 2>&1 & dog=$!
+    rc=0; wait "$pid" || rc=$?
+    kill "$dog" 2>/dev/null || true; wait "$dog" 2>/dev/null || true
+    [ -f "$tmp/timedout" ] && { rm -f "$tmp/timedout"; return 124; }
+    return $rc
+  }
   fail() { why=$(tr '\n' ' ' < "$tmp/err" | sed 's/  */ /g; s/ $//'); echo "smithy: can't download v$version ($asset): ${why:-unknown error}" >&2; exit 3; }
   if command -v gh >/dev/null 2>&1; then
-    gh release download "v$version" -R "$repo" -p "$asset" -p checksums.txt -D "$tmp" >/dev/null 2>"$tmp/err" || fail
+    rc=0; watch gh release download "v$version" -R "$repo" -p "$asset" -p checksums.txt -D "$tmp" >/dev/null 2>"$tmp/err" || rc=$?
+    case $rc in 0) ;; 124) echo "timed out after ${limit}s" > "$tmp/err"; fail ;; *) fail ;; esac
   else
     url="https://github.com/$repo/releases/download/v$version"
     for f in "$asset" checksums.txt; do
@@ -53,7 +64,12 @@ if [ ! -x "$bin" ]; then
   got=$( (command -v sha256sum >/dev/null 2>&1 && sha256sum "$tmp/$asset" || shasum -a 256 "$tmp/$asset") | awk '{print $1}')
   [ -n "$want" ] && [ "$want" = "$got" ] || { echo "smithy: checksum mismatch for $asset, not installed" >&2; exit 3; }
   if command -v gh >/dev/null 2>&1 && gh attestation verify --help >/dev/null 2>&1; then
-    gh attestation verify "$tmp/$asset" -R "$repo" >/dev/null 2>&1 || { echo "smithy: $asset has no valid build attestation for $repo, not installed" >&2; exit 3; }
+    rc=0; watch gh attestation verify "$tmp/$asset" -R "$repo" >/dev/null 2>&1 || rc=$?
+    case $rc in
+      0) ;;
+      124) echo "smithy: can't verify the build attestation of $asset: timed out after ${limit}s; not installed" >&2; exit 3 ;;
+      *) echo "smithy: $asset has no valid build attestation for $repo, not installed" >&2; exit 3 ;;
+    esac
   elif [ "${SMITHY_ALLOW_UNATTESTED:-}" = 1 ]; then
     echo "smithy: gh attestation unavailable; installing on checksum only (SMITHY_ALLOW_UNATTESTED=1)" >&2
   else
@@ -62,6 +78,7 @@ if [ ! -x "$bin" ]; then
   fi
   gunzip -f "$tmp/$asset"; chmod +x "$tmp/${asset%.gz}"
   mkdir -p "$home/bin/$version"; mv "$tmp/${asset%.gz}" "$bin"
+  rm -rf "$tmp"; trap - EXIT  # exec skips the EXIT trap
 fi
 link "$bin"
 exec "$bin" "$@"

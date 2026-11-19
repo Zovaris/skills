@@ -14,5 +14,5 @@ Treat the plan as a design tree. Each round:
 5. Record settled terms in the glossary immediately; note ADR candidates.
 
 Stop when the frontier is empty. Then give a numbered summary of every decision and wait for the
-user's confirmation before the spec. Under `/hush`, skip the interview: take your recommendation
+user's confirmation before the spec. Under hush, skip the interview: take your recommendation
 for every decision and list them in the final message.

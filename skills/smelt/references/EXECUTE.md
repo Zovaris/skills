@@ -20,21 +20,23 @@ tier when there are no suggestions; until then use the session default.
 For each task:
 
 1. `smithy tasks set <file> status=doing`.
-2. **Brief.** Prompt = `agents/implementer.md` + `## Inputs`: the task file's path and text, the
+2. **Brief.** Prompt = `agents/implementer.md` + `## You get`: the task file's path and text, the
    spec path, the test commands from `smithy stack`, the files and interfaces the task lists, and
-   the rulings so far that touch it. Never your conversation.
+   the rulings so far that touch it, + the report contract (`references/TESTING.md`). Never your
+   conversation.
 3. **Status.** The implementer ends with one of:
    - `DONE` → step 4.
    - `DONE_WITH_CONCERNS` → read the concerns, decide each (ruling), then step 4.
    - `NEEDS_CONTEXT` → answer from the spec or code (ruling) and send it back; if only the user
-     can answer, ask (under `/hush`, decide and rule).
+     can answer, ask (under hush, decide and rule).
    - `BLOCKED` → `smithy tasks set <file> status=todo`, note why, move to the next unblocked task.
 4. **Verify** (the verify gate): read the diff, run the task's tests and the suite.
 5. **Review** the diff with a fresh `agents/spec-check.md` (task file as the spec) and, at
    `normal`/`full`, `agents/standards.md`. Handle findings with the receiving-review rules.
 6. **Fix loop**: send the reproduced findings back to a fresh implementer with the diff. At most
    3 rounds; round 3 uses the strong model. Still failing → `BLOCKED` with the findings.
-7. Commit the task atomically (`smithy commit`), `smithy tasks set <file> status=done`.
+7. Commit the task atomically (`smithy commit`). Its `status=done pr=<url>` is set at ship, once
+   the PR exists.
 
 After the last task: one whole-branch review (the review phase), one fix wave, then ship.
 

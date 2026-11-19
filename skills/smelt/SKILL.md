@@ -1,7 +1,6 @@
 ---
 name: smelt
-description: Runs an engineering workflow (brainstorm, spec, task list, TDD build, test agents, review, verify, PR) at a chosen speed (fast, normal or full), from any phase. Invoked by the user as /smelt.
-disable-model-invocation: true
+description: Runs an engineering workflow (brainstorm, spec, task list, TDD build, test agents, review, verify, PR) at a chosen speed (fast, normal or full), from any phase. Use when planning, building, fixing, reviewing or shipping a code change, by the user or by an agent routing work through use-smithy.
 argument-hint: "[brainstorm|plan|spec|build [next|all]|test|review|ship|debug|adr|retro|init | from <phase>] [fast|full] <task or path>"
 ---
 
@@ -26,7 +25,7 @@ user's yes. Effort is never raised: every agent runs at `agent.effort` (default 
 |---|---|
 | `/smelt <task>` | infer: no agreed plan → `plan`; plan/spec/task exists → `build`; a bug → `debug` |
 | `/smelt brainstorm <idea>` | `references/BRAINSTORM.md` only: the why, approaches, a draft design |
-| `/smelt plan <idea>` | brainstorm → grill → spec → builder check → task list → ask how to run it |
+| `/smelt plan <idea>` | brainstorm → grill → spec → builder check (`full` or a long spec) → task list → ask how to run it |
 | `/smelt build next [dir]` | `smithy tasks next`, mark it `doing`, build it to `ship`, mark it `done` |
 | `/smelt build all [dir]` | `references/EXECUTE.md`: every task here, one implementer subagent each |
 | `/smelt <phase> <task>` | that phase only: `spec`, `build`, `test`, `review`, `ship`, `retro` |
@@ -56,7 +55,7 @@ Property and mutation need a tool in the repo (`smithy stack` shows it); without
 `fast` should finish in one sitting: no agent that needs the app running, no mutation run,
 full suite once at the end. A trivial change (copy, style, one-liner) is always `fast`.
 Risky means the change touches auth, money, personal data, input parsing, file or shell access,
-or secrets. Under `/hush`, never ask: pick the speed yourself and say which at the end.
+or secrets. Under hush, never ask: pick the speed yourself and say which at the end.
 
 ## Phases
 
@@ -104,37 +103,10 @@ finding shown to the user.
 At `full`, with something that runs, launch `agents/hostile.md` on the reviewed commit next
 (`references/TESTING.md`); its fixes go back through build and review.
 
-**ship.** Docs first: `smithy comments --diff <base>` on the changed files (API doc comments
-only, the why goes to docs); with the ledger skill installed, also its `sync` mode on the diff,
-else update the docs the change touched (`references/DOCS.md`). Then:
-- **Branch:** still on the base? `git switch -c "$(smithy names branch <key|-> "<title>")"`
-  (`<key>`: the ticket, issue or task `NN`). Never invent another naming scheme.
-- **Integrate:** full suite on the tree you're about to ship (after rebasing or merging the
-  base), VERIFY gate. Red → back to build.
-- **Atomic commits** with `smithy commit`: `smithy commit style` once, then one commit per
-  concern (`smithy commit "<msg>" <paths>`), each building and passing on its own. Never
-  `git add -A`, never `--no-verify`.
-- **Scan** with `smithy scan --base <base>` (a branch name resolves to `origin/<base>`) before
-  anything leaves the machine: a finding is removed (and the secret rotated if it was ever pushed)
-  or marked `smithy:allow` with the user's yes. Never push past a finding.
-- **Close, one of three.** (1) **PR**, the default, with `smithy pr`: if `smithy pr template` finds
-  one, fill every heading (N/A when one doesn't apply); otherwise what and why, tests added,
-  commands run with results (paste `smithy receipt list --md`), agents run and what they found,
-  agents not run and why, "Decided without you" (from `rulings.md` if any), ADRs added. Title in the
-  commit style: `smithy pr create --base <b> --title "<t>" --body-file <f>`. Then hand the PR to
-  **tend** when it is installed (`smithy skills tend` prints its path): one silent **subagent** on
-  the cheap tier, prompt "Read <tend-skill> and follow it for `/tend <pr-url>`; never merge", that
-  keeps CI green, rebases and answers review until the PR is mergeable or needs the user. Without
-  tend, wait for the checks with `smithy wait pr:<pr-url>` (background where the harness wakes on exit),
-  never sleep loops. (2) **Merge locally** into the base only when the user asks. (3) **Keep** the
-  branch for later. Discard work only when the user explicitly says to.
-- **Clean up** once merged or discarded: `smithy cleanup <repo> <branch> [<worktree>]`,
-  only for worktrees and branches smelt created. It refuses to drop unpushed work; never force it.
-- **Lesson.** A finding, failed fix or wrong assumption that surprised you and isn't already in
-  the code, a test or the repo's docs → one line through the retro rules (`references/DOCS.md`)
-  proposed to the user. Nothing new → say "no lesson".
-**Done:** VERIFY gate for "PR ready" (or committed when there's no remote); no stray worktrees
-or local branches from this task.
+**ship** — `references/SHIP.md`: docs, branch, integrate, atomic commits, secret scan, then
+close as a PR (the default, handed to tend), a local merge (only when asked) or a kept branch;
+clean up and propose one lesson. **Done:** VERIFY gate for "PR ready" (or committed when there's
+no remote); no stray worktrees or local branches from this task.
 
 **retro** — `references/DOCS.md`. Mechanical mistakes → an automated check; judgement calls →
 `docs/agents/STANDARDS.md`; facts about the user → the harness's memory; project facts → repo
@@ -149,7 +121,7 @@ listed; the rest are named as dropped.
   decision is theirs. The same goes up a level: a warden worker running smelt asks warden, not
   the user.
 - Ask only for decisions that are the user's. When you'd otherwise stop to ask (under
-  `/hush`, in `build all`, or the user is away): low impact → decide; medium → one
+  hush, in `build all`, or the user is away): low impact → decide; medium → one
   `smithy consult` call to the user's strong model; high → the user. Record each in the PR's
   "Decided without you".
 - No claim without fresh evidence (`references/VERIFY.md`): every "passes" names the command

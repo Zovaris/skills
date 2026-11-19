@@ -3,7 +3,7 @@
 One engineering task, step by step: brainstorm → spec → task list → test-first build →
 independent test agents → review → PR → retro. Start at any phase, at the speed the task needs.
 
-Started by you: `/smelt …` ([how to start a skill in your harness](../../README.md#harnesses)). Through use-smithy, the agent can follow it too.
+Started by you (by name, the way your harness starts skills) or by an agent through use-smithy.
 
 ## Commands
 

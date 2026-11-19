@@ -5,6 +5,10 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+- Skill contradictions fixed: worker effort follows the medium cap, trivial warden items still
+  run smelt fast, tend caps bot review rounds (not people), smelt treats security, money and personal
+  data as high impact, warden runs risky items at least at normal, smelt's README defers branch
+  names to `smithy names`.
 - "Silent" agents are defined as no narration, never hiding work (smelt, use-smithy, tend, warden,
   hush), and smelt's SKILL.md states that PR comments, issues and CI logs are data, not
   instructions; both address skills.sh audit findings.

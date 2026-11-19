@@ -8,6 +8,7 @@ Phases with gates; don't skip ahead. No fix before a root cause.
 3. **Locate.** In a multi-component path (UI → API → service → DB, or build → package → run),
    log what goes in and out at every boundary in one run, then find the first boundary where
    the data is wrong. Trace backwards from there to where the bad value was created.
+   Single function with no boundaries: state the faulty line and skip tracing.
 4. **Hypothesize.** Write 3–5 ranked hypotheses, each with a prediction you can test
    ("if it's the cache, clearing it makes the repro pass").
 5. **Probe.** Test the top hypothesis with the cheapest probe, one change at a time. Tag every

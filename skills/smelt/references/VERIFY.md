@@ -13,8 +13,9 @@ Before saying something is done, fixed, passing or ready:
    session, or from another agent, doesn't count. Run test, typecheck and lint commands through
    `smithy receipt run --claim "<claim>" -- <command>` on a committed tree: it records the exit
    code, an output digest and the commit, so the PR can show the receipt instead of your word.
-   Red-step evidence (a test failing before the code exists) may be taken on a dirty tree: the
-   receipt is recorded as `dirty` and is valid for the red step only.
+   Red-step evidence (a test failing before the code exists) may be taken on a dirty tree (an
+   untracked file counts as dirty): the receipt is recorded as `dirty` and is valid for the red
+   step only.
 4. **Read the result**: exit code, failures, skipped tests, warnings you'd otherwise ignore.
 5. **State the claim with its evidence** (command → result), or state what is still failing.
 
@@ -28,7 +29,7 @@ Before saying something is done, fixed, passing or ready:
 | Criterion met | a test that exercises it, named, passing |
 | An agent or worker completed a task | the VCS diff it produced (`git diff`, `git log -p`), read, plus its tests passing when you run them |
 | Refactor safe | suite green before and after, no snapshot or assertion changed |
-| Ready to open a PR | `smithy scan` clean, `smithy receipt list` fresh for HEAD, the diff matches the task |
+| Ready to open a PR | `smithy scan` clean (secrets, conflict markers, binaries), `smithy receipt list` fresh for HEAD, the diff matches the task |
 | PR ready to merge | the above, and `smithy verify <repo-dir> <branch> <pr-url>` says `green` |
 | Docs updated | the docs diff, and every symbol it names still exists |
 

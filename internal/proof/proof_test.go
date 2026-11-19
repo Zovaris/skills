@@ -331,3 +331,12 @@ func TestHostileFindings(t *testing.T) {
 		t.Fatalf("receipt failure replaced the exit code: %d", c)
 	}
 }
+
+func TestRedactMasksSecretFlagsAndBearer(t *testing.T) {
+	got := Redact(Quote([]string{"tool", "--token", "sup3rs3cretvalue123", "--api-key=abcdefghij12", "Authorization: Bearer abcdef1234567890xyz"}))
+	for _, leak := range []string{"sup3rs3cretvalue123", "abcdefghij12", "abcdef1234567890xyz"} {
+		if strings.Contains(got, leak) {
+			t.Fatalf("leaked %q in %q", leak, got)
+		}
+	}
+}

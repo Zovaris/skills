@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strings"
 	"time"
@@ -174,8 +175,13 @@ func Redact(s string) string {
 	for _, r := range rules {
 		s = r.re.ReplaceAllStringFunc(s, mask)
 	}
-	return s
+	return secretArg.ReplaceAllStringFunc(s, func(m string) string {
+		g := secretArg.FindStringSubmatch(m)
+		return g[1] + mask(g[2])
+	})
 }
+
+var secretArg = regexp.MustCompile(`(?i)((?:--?(?:token|password|passwd|secret|api[-_]?key|auth)[= ]+|bearer\s+))([^\s'"]+)`)
 
 func short(s string) string {
 	if len(s) > 7 {

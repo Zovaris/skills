@@ -212,3 +212,20 @@ func TestBlock(t *testing.T) {
 		t.Errorf("cursor file = %s", f)
 	}
 }
+
+func TestAgentKind(t *testing.T) {
+	for in, want := range map[string]string{
+		"spec-check": "review", "skills/smelt/agents/security.md": "review",
+		"hostile.md": "test", "adversary": "test", "implementer": "ship",
+	} {
+		if k, ok := AgentKind(in); !ok || k != want {
+			t.Errorf("AgentKind(%q) = %q, %v; want %q", in, k, ok, want)
+		}
+	}
+	if _, ok := AgentKind("nope"); ok {
+		t.Error("unknown agent accepted")
+	}
+	if tier, _ := Route("", "test", "normal"); tier != "mid" {
+		t.Errorf("test agent tier %s, want mid", tier)
+	}
+}

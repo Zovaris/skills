@@ -34,7 +34,8 @@ user's yes. Effort is never raised: every agent runs at `agent.effort` (default 
 | `/smelt adr <title>` · `/smelt init` | with the ledger skill installed (`smithy skills ledger`), follow its `adr` / `init` mode; else `references/DOCS.md`. **Done:** the files are written and listed |
 
 Already have a plan in your head or in the chat? That *is* the spec: start at `build` and treat
-the agreed points as the acceptance criteria; don't re-plan.
+the agreed points as the acceptance criteria; don't re-plan. Write them to `.smelt/spec.md`
+(git ignores `.smelt/`) so the agents can read them by path.
 
 ## Pick the speed
 
@@ -105,8 +106,8 @@ At `full`, with something that runs, launch `agents/hostile.md` on the reviewed 
 
 **ship** — `references/SHIP.md`: docs, branch, integrate, atomic commits, secret scan, then
 close as a PR (the default, handed to tend), a local merge (only when asked) or a kept branch;
-clean up and propose one lesson. **Done:** VERIFY gate for "PR ready" (or committed when there's
-no remote); no stray worktrees or local branches from this task.
+clean up and propose one lesson. **Done:** VERIFY gate for "ready to open a PR", then the PR opened and handed to tend
+(or committed when there's no remote); no stray worktrees or local branches from this task.
 
 **retro** — `references/DOCS.md`. Mechanical mistakes → an automated check; judgement calls →
 `docs/agents/STANDARDS.md`; facts about the user → the harness's memory; project facts → repo

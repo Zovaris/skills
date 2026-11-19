@@ -9,7 +9,8 @@
    (`references/TESTING.md`), at the speed set in SKILL.md:
    - `agents/spec-check.md` always, with the diff command and the spec path.
    - `agents/standards.md` at `normal` and `full`, with the diff command and the paths of the
-     repo's rules (AGENTS.md / CLAUDE.md, `docs/agents/STANDARDS.md`, lint config).
+     repo's rules (AGENTS.md / CLAUDE.md, `docs/agents/STANDARDS.md`, lint config); with none of
+     those, the ground rules in use-smithy section 3 and the language's formatter and linter.
    - `agents/security.md` at `full` speed, and at any speed when the diff touches auth, money,
      personal data, input parsing, file or shell access, or secrets. Its high findings are the
      user's to see before merge.
@@ -25,7 +26,8 @@
 7. **Another look only when it pays.** After fixing what a second look kept open, decide with
    judgment, not by habit: a fix that changes behaviour, touches a risky area or is more than a
    few lines gets one more look from the same agent file; a rename, a comment, a commit message
-   or a test-only addition doesn't. Say which you chose in one line in the PR body.
+   or a test-only addition doesn't. Say which you chose in one line in the PR body; when no
+   second look ran, there is nothing to log.
 
 Reviewing someone else's PR (`/smelt review <pr>`): same steps, report only; post comments only
 when the user asks.

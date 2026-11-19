@@ -4,7 +4,8 @@ Docs first: `smithy comments --diff <base>` on the changed files (API doc commen
 only, the why goes to docs); with the ledger skill installed, also its `sync` mode on the diff,
 else update the docs the change touched (`references/DOCS.md`). Then:
 - **Branch:** still on the base? `git switch -c "$(smithy names branch <key|-> "<title>")"`
-  (`<key>`: the ticket, issue or task `NN`). Never invent another naming scheme.
+  (`<key>`: the ticket, issue or task `NN`). Already on a branch the harness or the user made
+  for this work? Keep it. Never invent another naming scheme.
 - **Integrate:** full suite on the tree you're about to ship (after rebasing or merging the
   base), VERIFY gate. Red → back to build.
 - **Atomic commits** with `smithy commit`: `smithy commit style` once, then one commit per

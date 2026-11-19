@@ -157,7 +157,8 @@ func CommitMain(args []string) int {
 		return 0
 	case "check":
 		if len(args) != 2 {
-			return die(p, `usage: smithy commit check "<message>"`)
+			die(p, `usage: smithy commit check "<message>"`)
+			return 2
 		}
 		if err := Check(args[1], detect()); err != nil {
 			return die(p, "%s", err)
@@ -170,7 +171,8 @@ func CommitMain(args []string) int {
 	}
 	msg, paths := args[0], args[1:]
 	if len(paths) == 0 {
-		return die(p, "name the paths for this commit (atomic: one concern per commit)")
+		die(p, "name the paths for this commit (atomic: one concern per commit)")
+		return 2
 	}
 	if err := Check(msg, detect()); err != nil {
 		return die(p, "%s", err)

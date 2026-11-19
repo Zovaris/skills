@@ -1,6 +1,6 @@
 # Worker brief
 
-Fill the `<…>` slots and drop the lines that don't apply. `<intent>` is copied verbatim from
+Fill the `<…>` slots and drop the lines that don't apply (table below). `<intent>` is copied verbatim from
 `batch.json`: never summarize it or add requirements, plans or acceptance criteria to it.
 `<warden-dir>` is this skill's folder (workers run `<warden-dir>/scripts/smithy`, never a bare
 `smithy`), `<batch-dir>` is `~/.smithy/warden/<batch>/` and `<repo>` the repo's absolute path.
@@ -16,6 +16,14 @@ What workers are:
   button, a style tweak) goes straight to a PR in either mode.
 - Effort: low for explicit, well-understood work; high for ambiguous investigation.
 - The prompt you spawn with is this brief's full text, never a pointer to the file.
+
+| Slot | Value | Drop the line when |
+|---|---|---|
+| `<stack: …>` | the sentence, with the prereq's id | `stack` is false or the item has no prereqs |
+| `<committed repo task file …>` | the line, with the file path | no task file, or it isn't committed (`docs/specs`) |
+| `<has prereqs or the batch is full: …>` | the wait-turn line | no prereqs and a free running slot |
+| `<relaunch: …>` | the relaunch line | first launch |
+| `<warden channel: …>` | desktop and any harness: "Put it in the card's note."; CLI: "Send it to the warden with SendMessage, to: <name>." (`references/harness.md`) | never |
 
 ```
 You are worker <id> in warden batch <batch>: <title>. Kind: <ship|scout>.

@@ -44,6 +44,7 @@ func CleanupMain(args []string) int {
 	if wt == "" {
 		wt = WorktreeOf(git("worktree", "list", "--porcelain"), branch)
 	}
+	removed := false
 	if fi, err := os.Stat(wt); wt != "" && err == nil && fi.IsDir() {
 		if !force && git("-C", wt, "status", "--porcelain") != "" {
 			fmt.Printf("kept %s: uncommitted changes in %s\n", branch, wt)
@@ -57,9 +58,14 @@ func CleanupMain(args []string) int {
 			fmt.Printf("kept %s: could not remove %s\n", branch, wt)
 			return 1
 		}
+		removed = true
 	}
 	attached("git", "worktree", "prune")
 	if quiet("git", "show-ref", "-q", "--verify", "refs/heads/"+branch) != nil {
+		if !removed {
+			fmt.Fprintln(os.Stderr, "smithy cleanup: no branch", branch)
+			return 1
+		}
 		fmt.Println("cleaned", branch)
 		return 0
 	}

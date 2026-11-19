@@ -28,7 +28,7 @@ when the user has something to decide or the batch is done.
 | `smithy agent` | Runs any headless agent CLI (claude, codex, opencode, gemini, cursor, pi, dsh, `$AGENT_CMD`) |
 | `smithy task-dir <slug>` · `smithy tasks list\|ready\|set\|add\|board\|where` | Where a new task list goes; the shared task list (same format as smelt) |
 | `smithy commit` · `smithy pr` · `smithy cleanup` | Atomic commits, PRs from the template, removing a finished worktree and local branch |
-| `smithy names` | Branch and worktree names (`branch <key> "<title>"`, `worktree <branch>`), from `git.branch` / `git.worktree` |
+| `smithy names` | Branch and worktree names (`branch <key> "<title>"`, `worktree <branch> [repo-dir]`), from `git.branch` / `git.worktree` |
 | `smithy skills <name>` | Absolute path of an installed skill's SKILL.md (smelt, hush, scout, tend) |
 
 ## Usage
@@ -59,6 +59,7 @@ CLAUDE.md), `<repo>/.smithy/config.json`, `~/.smithy/config.json`, then the buil
 | `warden.cleanup` | auto | auto: end finished workers and remove worktrees and local branches without asking |
 | `warden.mode` | smelt fast | How workers build: `smelt fast\|normal\|full` or `plain` |
 | `warden.worker_model` | route | Models per item: `references/models.md` |
+| `stack` (batch only) | false | Asked in the plan line when an item has prereqs: false (wait for merge): the dependent starts from `<base>` after its prereqs merge; true (stacked): it starts from the prereq's branch at once and merges only after the prereq has merged |
 
 A PR into the production branch is `manual` unless the user said, for this batch, to merge it to production (use-smithy: merges). The
 plan line states every value used; `batch.json` stores them as the user's standing permission for
@@ -73,12 +74,15 @@ source), `references/state.md` (batch dir, cards, states and stages), `reference
 `references/harness.md` (how to **spawn**, **tell**, **wake**, **end** and run a **subagent** here;
 read it once per batch).
 
-1. **Preflight and plan.** `smithy doctor --quiet`; on `not ready` show the FAIL lines and stop. Work
+1. **Preflight and plan.** `smithy doctor --quiet`; on `not ready` show the FAIL lines with the
+   plan line and keep planning: only launch (step 2) and merges wait until doctor says ready. Work
    out the input and items (`references/intake.md`), check duplicates (a card with that id in
    another batch, an open PR covering it via `gh pr list --search "<id>"`, a task file already
    `done`; someone else's PR → `dropped` with a pointer), write `batch.json`
    (`references/state.md`) and tell the user in one line: input type, worker mode, what starts
-   now and what waits on what, each item's base, kind, model, merge and cleanup mode.
+   now and what waits on what, each item's base, kind, model, merge and cleanup mode. Questions
+   the plan line may carry, each once per batch: merge auto or manual, stacked or wait for merge
+   (when items have prereqs), and "is <base> the production branch?" (when it isn't obvious).
 2. **Launch everything now**, in this turn: every item without a `hold`, including those whose
    prereqs haven't merged and those past `max`; they wait in their own session on `smithy wait-turn`
    (state `waiting`, no tokens). Launching later would happen in event turns, where some
@@ -87,7 +91,7 @@ read it once per batch).
    (`<branch>` = `smithy names branch <key> "<title>"`, where `<key>` is the item's ticket or
    issue id, or the task file's `NN`; `<worktree>` = `smithy names worktree <branch> <repo>`,
    unless the repo's agent instructions say otherwise, never inside the repo; `<from>` is the base,
-   or the prereq's branch when stacked). Write each brief from `references/worker-brief.md` to
+   or the prereq's branch when `stack` is true). Write each brief from `references/worker-brief.md` to
    `<batch-dir>/<id>.brief.md` and **spawn** all at once on each item's model
    (`references/models.md`) with the brief's full text as the prompt, never a pointer to the
    file. Record each session id or pid and bump `launches`. With tend installed and ship items in

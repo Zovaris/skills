@@ -16,7 +16,7 @@ rules if installed): no talk between tool calls, one line per PR at the end.
 | Command | Does |
 |---|---|
 | `smithy pr-state <pr>` | Compact PR state: checks, mergeable, review, unresolved threads, behind |
-| `smithy verify <repo-dir> <branch> [pr]` | Pushed head, checks, mergeable (`<repo-dir>`: the local checkout, `.` for here) |
+| `smithy verify <repo-dir> <branch> [pr]` | Pushed head, checks, mergeable; `draft` (exit 3) when all green but still a draft (`<repo-dir>`: the local checkout, `.` for here) |
 | `smithy commit` | Commits in the repo's style |
 | `smithy names` | Worktree path for a PR branch |
 | `smithy wait <target>…` | Zero-token wait on GitHub: `pr:<n>`, `run:<id>`, `branch:<name>`, `prs`, `issues:<label>` |
@@ -55,14 +55,17 @@ rules if installed): no talk between tool calls, one line per PR at the end.
 
 ## Loop, per PR
 
-Check out the PR's branch in its existing worktree if there is one (`git worktree list`), else a
-new one at `smithy names worktree <pr-branch>`; never in the user's main checkout or inside
-the repo. Then repeat:
+Read the state first; a worktree is only for changing code. When a step needs one, use the PR
+branch's existing worktree if `git worktree list` shows one. If the branch is checked out in the
+user's main checkout, work there only when it is clean and on that branch; otherwise stop with
+"needs you" rather than switching it. Else add one at `smithy names worktree <pr-branch>` (never
+inside the repo). Then repeat:
 
-1. `smithy pr-state <pr>` → `{state, checks, mergeable, review, unresolved, behind}`.
+1. `smithy pr-state <pr>` → `{state, checks, mergeable, review, unresolved, behind}`; `checks` is
+   `green`, `red`, `pending` or `none`, the same words `smithy wait` and `smithy verify` use.
 2. Act on the first thing that applies:
    - **merged / closed** → stop this PR; remove the worktree you created.
-   - **checks fail** → `gh run view <run> --log-failed`. Same test passes on a plain rerun and
+   - **checks red** → `gh run view <run> --log-failed`. Same test passes on a plain rerun and
      nothing in the diff touches it → flaky: rerun once (`gh run rerun <run> --failed`) and note
      it. Otherwise it is a real failure: hand it to the fix model, failing test first when it is
      a bug, and push the fix. Red again after a second real fix → "needs you".
@@ -76,8 +79,9 @@ the repo. Then repeat:
    - **checks pending** → `smithy wait pr:<pr>` in the background (foreground where the
      harness can't wake on exit); it returns one line when checks finish, the PR merges or closes,
      or a review lands. Never sleep-then-check turns.
-   - **green, mergeable, approved or no review required** → `green`. Merge only if the user or
-     warden said this PR is `merge auto`, and never into the production branch.
+   - **green, mergeable, approved or no review required** → `green` (`smithy verify` says `draft`
+     for a draft PR: report `green (draft)` and leave it a draft). Merge only if the user or
+     warden said this PR is `merge auto`, and never into the production branch or a draft.
 3. Commit fixes with `smithy commit` (style once, one concern per commit); push without force
    unless the rebase rule above allows it.
 

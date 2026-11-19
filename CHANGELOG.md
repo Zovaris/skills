@@ -5,6 +5,11 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+- warden guards the batch: items that share files in their `Files` lists (or likely paths) get a
+  prereq unless the user said stack, no turn ends with live workers and no `smithy wait batch:`,
+  relaunches stop at `warden.max_attempts` (default 3) and the item is listed as blocked, stuck
+  reports and the final message carry takeover data (worktree, branch, session or pid, log),
+  workers' dev servers use port 3000 + NN, and issue text is never copied into Files or test lines.
 - ADRs 0001-0005 in `docs/adr/`: record decisions, gh optional, no decision-model adapter for now,
   release branch for big changes, learning in repo docs.
 

@@ -17,9 +17,11 @@ import (
 const scanUsage = `usage: smithy scan [--base <branch|ref>]
 Checks the lines a change adds since the merge-base with the base (a branch name means
 origin/<branch> when it exists; default origin's default branch), uncommitted edits
-included, and the files it adds, for secrets and private keys, git conflict markers (outside
-fenced code in docs), and binary or archive files, which need a human look.
-Prints file:line, the rule and a masked match; exit 1 on any finding, 0 when clean.
+included, and the files it adds, for secrets and private keys, git conflict markers (fenced
+code in docs exempt; a bare ======= only next to a <<<<<<< or |||||||), and binary or archive
+files, printed as warnings for a human look.
+Prints file:line, the rule and a masked match; exit 1 on any finding (warnings don't count),
+0 when clean.
 A line that is a known false positive can carry "smithy:allow" to be skipped.`
 
 type rule struct {
@@ -93,6 +95,7 @@ func scanDiff(diff string) ([]Finding, []string) {
 	var out []Finding
 	var allowed []string
 	file, line, header, fenced := "", 0, false, false
+	opened := strings.Contains(diff, "\n+<<<<<<< ") || strings.Contains(diff, "\n+||||||| ")
 	for _, l := range strings.Split(diff, "\n") {
 		switch {
 		case strings.HasPrefix(l, "diff --git "):
@@ -113,7 +116,7 @@ func scanDiff(diff string) ([]Finding, []string) {
 			if strings.Contains(text, "smithy:allow") {
 				allowed = append(allowed, fmt.Sprintf("%s:%d", file, line))
 			} else {
-				if !fenced && isConflictMarker(text) {
+				if !fenced && isConflictMarker(text) && (opened || strings.TrimSuffix(text, "\r") != "=======") {
 					out = append(out, Finding{file, line, "conflict marker", strings.TrimSpace(text)})
 				}
 				for _, r := range rules {
@@ -258,9 +261,11 @@ func ScanMain(args []string) int {
 			binary[n] = true
 		}
 	}
-	fs = append(fs, ScanBinaries(append(strings.Split(changed, "\x00"), news...), binary)...)
 	for _, f := range fs {
 		fmt.Println(f)
+	}
+	for _, w := range ScanBinaries(append(strings.Split(changed, "\x00"), news...), binary) {
+		fmt.Println("warning:", w)
 	}
 	if allowed = append(allowed, uallowed...); len(allowed) > 0 {
 		fmt.Fprintln(os.Stderr, AllowNote(allowed))

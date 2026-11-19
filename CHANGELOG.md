@@ -8,6 +8,8 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 - `smithy agent` has a wall-clock cap: the new `agent.timeout` setting (minutes, default 90,
   `0` = none) or `--timeout <min>` kills the agent's process group, logs "timed out after Nm" and
   exits 124; `--bg` runs are watched by a detached smithy that enforces it.
+- ADRs 0001-0005 in `docs/adr/`: record decisions, gh optional, no decision-model adapter for now,
+  release branch for big changes, learning in repo docs.
 
 ## v0.10.0 — 2026-11-19
 

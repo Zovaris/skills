@@ -96,7 +96,8 @@ gate on the suite.
 **review** — `references/REVIEW.md` (findings: `references/RECEIVING.md`). Fresh **subagents**: `agents/standards.md`,
 `agents/spec-check.md`, and `agents/security.md` when the speed or the change calls for it;
 never merge or rerank their reports. Findings and human PR comments: `references/RECEIVING.md`.
-**Done:** no open blocking finding; every high security finding shown to the user.
+**Done:** no open blocking finding (closed by a reviewer, not by you); every high security
+finding shown to the user.
 
 **ship.** Docs first: `smithy comments --diff <base>` on the changed files (API doc comments
 only, the why goes to docs); with the ledger skill installed, also its `sync` mode on the diff,
@@ -108,9 +109,12 @@ else update the docs the change touched (`references/DOCS.md`). Then:
 - **Atomic commits** with `smithy commit`: `smithy commit style` once, then one commit per
   concern (`smithy commit "<msg>" <paths>`), each building and passing on its own. Never
   `git add -A`, never `--no-verify`.
+- **Scan** with `smithy scan --base <base>` before anything leaves the machine: a finding is
+  removed (and the secret rotated if it was ever pushed) or marked `smithy:allow` with the user's
+  yes. Never push past a finding.
 - **Close, one of three.** (1) **PR**, the default, with `smithy pr`: if `smithy pr template`
   finds one, fill every heading (N/A when one doesn't apply); otherwise what and why, tests
-  added, commands run with results, agents run and what they found, "Decided without you" (from
+  added, commands run with results (paste `smithy receipt list --md`), agents run and what they found, "Decided without you" (from
   `rulings.md` if any), ADRs added. Title in the commit style:
   `smithy pr create --base <b> --title "<t>" --body-file <f>`; then wait for its checks with
   `smithy wait pr:<n>` (background where the harness wakes on exit), never sleep loops. (2) **Merge locally** into the base
@@ -118,6 +122,9 @@ else update the docs the change touched (`references/DOCS.md`). Then:
   explicitly says to.
 - **Clean up** once merged or discarded: `smithy cleanup <repo> <branch> [<worktree>]`,
   only for worktrees and branches smelt created. It refuses to drop unpushed work; never force it.
+- **Lesson.** A finding, failed fix or wrong assumption that surprised you and isn't already in
+  the code, a test or the repo's docs → one line through the retro rules (`references/DOCS.md`)
+  proposed to the user. Nothing new → say "no lesson".
 **Done:** VERIFY gate for "PR ready" (or committed when there's no remote); no stray worktrees
 or local branches from this task.
 

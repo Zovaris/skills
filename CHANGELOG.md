@@ -5,6 +5,11 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+- Audit fixes after the gh-optional batch: warden's final message shows the Decisions and
+  Followups lines, workers and tend merge with `smithy pr merge`, smelt proposes up to 3 lessons and
+  only skips asking about speed under hush, warden doesn't launch ship items with no GitHub access,
+  smelt's DOCS defers the STANDARDS format to ledger. The repo gets AGENTS.md (with CLAUDE.md
+  importing it): release-branch flow and a cheap-model audit after big features.
 - Skills treat `gh` as optional: smelt ship, tend and warden doctor describe the three GitHub modes
   (gh, token, neither: pushed branch plus compare URL), `gh pr merge` became `smithy pr merge`,
   remaining `gh` mentions say "when installed". README requirements say gh is optional and add a

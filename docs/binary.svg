@@ -48,7 +48,7 @@
 
   <rect class="neutral" x="734" y="40" width="202" height="92" rx="12"/>
   <text class="k" x="750" y="64">DRIVES</text>
-  <text class="t" x="750" y="88">git · gh</text>
+  <text class="t" x="750" y="88">git · gh (optional)</text>
   <text class="s" x="750" y="112">no node, jq or python</text>
 
   <rect class="neutral" x="254" y="172" width="200" height="56" rx="12"/>

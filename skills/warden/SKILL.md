@@ -74,7 +74,7 @@ source), `references/state.md` (batch dir, cards, states and stages), `reference
 `references/harness.md` (how to **spawn**, **tell**, **wake**, **end** and run a **subagent** here;
 read it once per batch).
 
-1. **Preflight and plan.** `smithy doctor --quiet` (it reports the GitHub mode: `gh` full experience; `GH_TOKEN`/`GITHUB_TOKEN` API mode, works but no `gh` log/rerun helpers; neither: warden and tend can't open or tend PRs, say so up front); on `not ready` show the FAIL lines with the
+1. **Preflight and plan.** `smithy doctor --quiet` (it reports the GitHub mode: `gh` full experience; `GH_TOKEN`/`GITHUB_TOKEN` API mode, works but no `gh` log/rerun helpers; neither: ship items can't open or merge PRs, so doctor fails and warden doesn't launch them; say so up front); on `not ready` show the FAIL lines with the
    plan line and keep planning: only launch (step 2) and merges wait until doctor says ready. Work
    out the input and items (`references/intake.md`), check duplicates (a card with that id in
    another batch, an open PR covering it (`gh pr list --search "<id>"` when `gh` is installed, else the GitHub web search), a task file already
@@ -121,6 +121,6 @@ Only three kinds of message, each as short as it can be:
   ```
   warden <batch>: done
   - <id>: <PR url | report path | dropped: why>
-  decided without you: <n> (decisions.md)
   ```
+  then the **Decisions** and **Followups** lines (`references/acting.md`, batch end).
 A wake with nothing for the user ends with no text at all, just the next `smithy wait batch:<batch>`.

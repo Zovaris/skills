@@ -62,7 +62,7 @@ Property and mutation need a tool in the repo (`smithy stack` shows it); without
 `fast` should finish in one sitting: no agent that needs the app running, no mutation run,
 full suite once at the end. A trivial change (copy, style, one-liner) is always `fast`.
 Risky means the change touches auth, money, personal data, input parsing, file or shell access,
-or secrets. Under hush, never ask: pick the speed yourself and say which at the end.
+or secrets. Under hush, don't ask about the speed: pick it and say which at the end.
 
 ## Phases
 
@@ -112,7 +112,7 @@ At `full`, with something that runs, launch `agents/hostile.md` on the reviewed 
 
 **ship** — `references/SHIP.md`: docs, branch, integrate, atomic commits, secret scan, then
 close as a PR (the default, handed to tend), a local merge (only when asked) or a kept branch;
-clean up and propose one lesson. **Done:** VERIFY gate for "ready to open a PR", then the PR opened and handed to tend
+clean up and propose up to 3 evidence-backed lessons. **Done:** VERIFY gate for "ready to open a PR", then the PR opened and handed to tend
 (or committed when there's no remote); no stray worktrees or local branches from this task.
 
 **retro** — `references/DOCS.md`. Mechanical mistakes → an automated check; judgement calls →

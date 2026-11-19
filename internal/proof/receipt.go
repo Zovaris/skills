@@ -27,9 +27,9 @@ const receiptUsage = `usage:
       Exits with the command's exit code.
   smithy receipt list [--md] [--all]
       receipts for the current commit (--all: every commit); --md prints a table for a PR body.
-      A receipt taken on another commit or on a dirty tree is marked stale.
+      A receipt taken on another commit is marked stale; with uncommitted changes, dirty.
   smithy receipt clear
-Receipts live in <repo>/.smelt/receipts.jsonl (keep .smelt/ in .gitignore).`
+Receipts live in <repo>/.smelt/receipts.jsonl; .smelt/ ignores itself (its own .gitignore).`
 
 // Receipt is one recorded run of a command, the evidence behind a claim.
 type Receipt struct {
@@ -43,9 +43,6 @@ type Receipt struct {
 	Millis   int64    `json:"ms"`
 	Platform string   `json:"platform"`
 }
-
-// Fresh reports whether r proves something about the tree at head: same commit, clean tree.
-func (r Receipt) Fresh(head string) bool { return r.Commit == head && !r.Dirty }
 
 func receiptsPath(root string) string { return filepath.Join(root, ".smelt", "receipts.jsonl") }
 
@@ -90,12 +87,24 @@ func Append(root string, r Receipt) error {
 	if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
 		return err
 	}
-	f, err := os.OpenFile(p, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
+	ign := filepath.Join(filepath.Dir(p), ".gitignore")
+	if _, err := os.Stat(ign); os.IsNotExist(err) {
+		if err := os.WriteFile(ign, []byte("*\n"), 0o644); err != nil {
+			return err
+		}
+	}
+	f, err := os.OpenFile(p, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0o644)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 	b, _ := json.Marshal(r)
+	if st, err := f.Stat(); err == nil && st.Size() > 0 {
+		last := make([]byte, 1)
+		if _, err := f.ReadAt(last, st.Size()-1); err == nil && last[0] != '\n' {
+			b = append([]byte{'\n'}, b...)
+		}
+	}
 	_, err = f.Write(append(b, '\n'))
 	return err
 }
@@ -122,18 +131,50 @@ func Load(root string) ([]Receipt, error) {
 }
 
 // Markdown renders receipts as a PR-body table, newest claim last.
-func Markdown(rs []Receipt, head string) string {
+func Markdown(rs []Receipt, head string, dirtyNow bool) string {
 	var b strings.Builder
 	b.WriteString("| Claim | Command | Exit | Commit | Output sha256 |\n|---|---|---|---|---|\n")
 	for _, r := range rs {
 		c := short(r.Commit)
-		if !r.Fresh(head) {
-			c += " (stale)"
+		if s := r.State(head, dirtyNow); s != "fresh" {
+			c += " (" + s + ")"
 		}
 		fmt.Fprintf(&b, "| %s | `%s` | %d | %s | %s |\n",
-			cell(r.Claim), cell(strings.Join(r.Command, " ")), r.Exit, c, r.Digest)
+			cell(r.Claim), cell(Redact(Quote(r.Command))), r.Exit, c, r.Digest)
 	}
 	return b.String()
+}
+
+// State is "fresh", "dirty" (taken on head with uncommitted changes, or the tree changed since)
+// or "stale" (another commit). dirtyNow is whether the working tree has uncommitted changes.
+func (r Receipt) State(head string, dirtyNow bool) string {
+	switch {
+	case r.Commit != head:
+		return "stale"
+	case r.Dirty || dirtyNow:
+		return "dirty"
+	}
+	return "fresh"
+}
+
+// Quote joins argv the way a shell would read it back.
+func Quote(argv []string) string {
+	out := make([]string, len(argv))
+	for i, a := range argv {
+		if a == "" || strings.ContainsAny(a, " \t\n'\"\\$`*?;&|<>()#~![]{}") {
+			a = "'" + strings.ReplaceAll(a, "'", `'\''`) + "'"
+		}
+		out[i] = a
+	}
+	return strings.Join(out, " ")
+}
+
+// Redact masks anything in s that the scan rules take for a secret.
+func Redact(s string) string {
+	for _, r := range rules {
+		s = r.re.ReplaceAllStringFunc(s, mask)
+	}
+	return s
 }
 
 func short(s string) string {
@@ -178,8 +219,8 @@ func ReceiptMain(args []string) int {
 			return 127
 		}
 		if err := Append(root, r); err != nil {
-			fmt.Fprintln(os.Stderr, "receipt:", err)
-			return 1
+			fmt.Fprintln(os.Stderr, "receipt: not recorded:", err)
+			return r.Exit
 		}
 		state := "fresh"
 		if r.Dirty {
@@ -205,7 +246,7 @@ func ReceiptMain(args []string) int {
 			fmt.Fprintln(os.Stderr, "receipt:", err)
 			return 1
 		}
-		sha, _ := head(root)
+		sha, dirtyNow := head(root)
 		if !all {
 			kept := rs[:0]
 			for _, r := range rs {
@@ -213,18 +254,17 @@ func ReceiptMain(args []string) int {
 					kept = append(kept, r)
 				}
 			}
+			if hidden := len(rs) - len(kept); hidden > 0 {
+				fmt.Fprintf(os.Stderr, "receipt: %d receipt(s) from other commits hidden; --all shows them\n", hidden)
+			}
 			rs = kept
 		}
 		if md {
-			fmt.Print(Markdown(rs, sha))
+			fmt.Print(Markdown(rs, sha, dirtyNow))
 			return 0
 		}
 		for _, r := range rs {
-			state := "fresh"
-			if !r.Fresh(sha) {
-				state = "stale"
-			}
-			fmt.Printf("%s\texit %d\t%s\t%s\t%s\n", short(r.Commit), r.Exit, state, r.Claim, strings.Join(r.Command, " "))
+			fmt.Printf("%s\texit %d\t%s\t%s\t%s\n", short(r.Commit), r.Exit, r.State(sha, dirtyNow), r.Claim, Redact(Quote(r.Command)))
 		}
 		return 0
 	case "clear":

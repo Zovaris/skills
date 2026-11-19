@@ -1,9 +1,11 @@
 package proof
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -11,9 +13,10 @@ import (
 	"github.com/Zovaris/smithy/internal/ghx"
 )
 
-const scanUsage = `usage: smithy scan [--base <ref>]
-Checks the lines a change adds (against <ref>, default the merge-base with origin's default
-branch, including uncommitted edits) and the files it adds for secrets and private keys.
+const scanUsage = `usage: smithy scan [--base <branch|ref>]
+Checks the lines a change adds since the merge-base with the base (a branch name means
+origin/<branch> when it exists; default origin's default branch), uncommitted edits
+included, and the files it adds, for secrets and private keys.
 Prints file:line, the rule and a masked match; exit 1 on any finding, 0 when clean.
 A line that is a known false positive can carry "smithy:allow" to be skipped.`
 
@@ -61,19 +64,21 @@ func mask(s string) string {
 	return s[:4] + strings.Repeat("*", len(s)-8) + s[len(s)-4:]
 }
 
-var shaRe = regexp.MustCompile(`^[0-9a-f]{40}$`)
-
 var hunkRe = regexp.MustCompile(`^@@ -\d+(?:,\d+)? \+(\d+)`)
 
 // ScanDiff finds secrets in the added lines of a unified diff (git diff -U0 output).
 func ScanDiff(diff string) []Finding {
 	var out []Finding
-	file, line := "", 0
+	file, line, header := "", 0, false
 	for _, l := range strings.Split(diff, "\n") {
 		switch {
-		case strings.HasPrefix(l, "+++ "):
+		case strings.HasPrefix(l, "diff --git "):
+			header = true
+		case header && strings.HasPrefix(l, "+++ "):
 			file = strings.TrimPrefix(strings.TrimPrefix(l, "+++ "), "b/")
+		case header && !strings.HasPrefix(l, "@@"):
 		case strings.HasPrefix(l, "@@"):
+			header = false
 			if m := hunkRe.FindStringSubmatch(l); m != nil {
 				line, _ = strconv.Atoi(m[1])
 			}
@@ -92,6 +97,27 @@ func ScanDiff(diff string) []Finding {
 	return out
 }
 
+// scanUntracked checks the content of new files git doesn't track yet.
+func scanUntracked(root string, names []string) []Finding {
+	var out []Finding
+	for _, n := range names {
+		if n == "" {
+			continue
+		}
+		b, err := os.ReadFile(filepath.Join(root, n))
+		if err != nil || bytes.IndexByte(b, 0) >= 0 {
+			continue
+		}
+		var d strings.Builder
+		fmt.Fprintf(&d, "diff --git a/%s b/%s\n+++ b/%s\n@@ -0,0 +1 @@\n", n, n, n)
+		for _, l := range strings.Split(string(b), "\n") {
+			d.WriteString("+" + l + "\n")
+		}
+		out = append(out, ScanDiff(d.String())...)
+	}
+	return out
+}
+
 // ScanFiles flags added files whose name alone means a secret or key.
 func ScanFiles(names []string) []Finding {
 	var out []Finding
@@ -103,13 +129,41 @@ func ScanFiles(names []string) []Finding {
 	return out
 }
 
-func defaultBase(root string) string {
-	if ref, err := ghx.Run("git", "-C", root, "symbolic-ref", "--quiet", "refs/remotes/origin/HEAD"); err == nil && ref != "" {
-		if mb, err := ghx.Run("git", "-C", root, "merge-base", "HEAD", ref); err == nil {
-			return mb
+const emptyTree = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
+
+func branchName(s string) bool { return s != "HEAD" && !strings.ContainsAny(s, "~^:@{ ") }
+
+// resolveBase returns the commit to diff against and a label for it.
+func resolveBase(root, base string) (sha, label string) {
+	ref := ""
+	switch {
+	case base == "":
+		if r, err := ghx.Run("git", "-C", root, "symbolic-ref", "--quiet", "--short", "refs/remotes/origin/HEAD"); err == nil && r != "" {
+			ref = r
+		}
+	case branchName(base) && !strings.HasPrefix(base, "origin/"):
+		if _, err := ghx.Run("git", "-C", root, "rev-parse", "--verify", "--quiet", "refs/remotes/origin/"+base); err == nil {
+			ref = "origin/" + base
 		}
 	}
-	return "HEAD"
+	if ref == "" && base == "" {
+		if up, err := ghx.Run("git", "-C", root, "rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{upstream}"); err == nil && up != "" {
+			ref = up
+		} else {
+			return emptyTree, "the whole history (no origin default branch or upstream found)"
+		}
+	}
+	if ref == "" && !branchName(base) {
+		return base, base
+	}
+	if ref == "" {
+		ref = base
+	}
+	mb, err := ghx.Run("git", "-C", root, "merge-base", "HEAD", ref)
+	if err != nil || mb == "" {
+		return ref, ref + " (no merge-base with HEAD)"
+	}
+	return mb, fmt.Sprintf("%s (merge-base %s)", ref, short(mb))
 }
 
 // ScanMain runs `smithy scan`.
@@ -134,17 +188,21 @@ func ScanMain(args []string) int {
 		fmt.Fprintln(os.Stderr, "scan: not inside a git checkout")
 		return 2
 	}
-	if base == "" {
-		base = defaultBase(root)
+	if strings.HasPrefix(base, "-") {
+		fmt.Fprintln(os.Stderr, "scan: --base must be a branch or ref, not an option")
+		return 2
 	}
-	diff, err := ghx.Run("git", "-C", root, "diff", "--no-color", "--no-ext-diff", "-U0", base)
+	base, label := resolveBase(root, base)
+	diff, err := ghx.Run("git", "-C", root, "-c", "core.quotepath=false", "diff", "--no-color", "--no-ext-diff", "-U0", base, "--")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "scan:", err)
 		return 2
 	}
-	added, _ := ghx.Run("git", "-C", root, "diff", "--name-only", "--diff-filter=A", base)
-	untracked, _ := ghx.Run("git", "-C", root, "ls-files", "--others", "--exclude-standard")
-	fs := append(ScanFiles(strings.Split(added+"\n"+untracked, "\n")), ScanDiff(diff)...)
+	added, _ := ghx.Run("git", "-C", root, "diff", "-z", "--name-only", "--diff-filter=A", base, "--")
+	untracked, _ := ghx.Run("git", "-C", root, "ls-files", "-z", "--others", "--exclude-standard")
+	news := strings.Split(strings.Trim(untracked, "\x00"), "\x00")
+	fs := append(ScanFiles(append(strings.Split(added, "\x00"), news...)), ScanDiff(diff)...)
+	fs = append(fs, scanUntracked(root, news)...)
 	for _, f := range fs {
 		fmt.Println(f)
 	}
@@ -152,9 +210,6 @@ func ScanMain(args []string) int {
 		fmt.Fprintf(os.Stderr, "scan: %d possible secret(s); remove them, or mark a false positive with smithy:allow\n", len(fs))
 		return 1
 	}
-	if shaRe.MatchString(base) {
-		base = short(base)
-	}
-	fmt.Fprintf(os.Stderr, "scan: clean against %s\n", base)
+	fmt.Fprintf(os.Stderr, "scan: clean against %s\n", label)
 	return 0
 }

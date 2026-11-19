@@ -2,6 +2,7 @@ package proof
 
 import (
 	"bytes"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -54,7 +55,7 @@ func TestRunMarksDirtyTreeAndStale(t *testing.T) {
 		t.Fatal(err)
 	}
 	r, _ := Run(dir, "x", []string{"true"}, &bytes.Buffer{})
-	if !r.Dirty || r.Fresh(r.Commit) {
+	if !r.Dirty || r.State(r.Commit, false) != "dirty" {
 		t.Fatalf("dirty tree should give a stale receipt: %+v", r)
 	}
 }
@@ -72,7 +73,7 @@ func TestAppendLoadMarkdown(t *testing.T) {
 	if err != nil || len(rs) != 2 {
 		t.Fatalf("load: %v %v", rs, err)
 	}
-	md := Markdown(rs, "1111111111")
+	md := Markdown(rs, "1111111111", false)
 	if !strings.Contains(md, `| a\|b | `+"`go test`"+` | 0 | 1111111 |`) || !strings.Contains(md, "2222222 (stale)") {
 		t.Fatalf("markdown:\n%s", md)
 	}
@@ -87,6 +88,7 @@ func TestLoadMissingIsEmpty(t *testing.T) {
 
 func TestScanDiffFindsSecretsOnAddedLinesOnly(t *testing.T) {
 	diff := strings.Join([]string{
+		"diff --git a/app/config.go b/app/config.go",
 		"+++ b/app/config.go",
 		"@@ -1,0 +10,4 @@",
 		`+key := "AKIAABCDEFGHIJKLMNOP"`, // smithy:allow (fixture)
@@ -94,6 +96,7 @@ func TestScanDiffFindsSecretsOnAddedLinesOnly(t *testing.T) {
 		`+password = os.Getenv("PASSWORD")`,
 		`+token := "ghp_` + strings.Repeat("a", 36) + `" // smithy:allow`,
 		"-old := \"AKIAABCDEFGHIJKLMNOP\"", // smithy:allow (fixture)
+		"diff --git a/README.md b/README.md",
 		"+++ b/README.md",
 		"@@ -5 +7 @@",
 		"+postgres://admin:supersecret@db:5432/x", // smithy:allow (fixture)
@@ -170,5 +173,161 @@ func TestMainsEndToEnd(t *testing.T) {
 	}
 	if c := ScanMain([]string{"--nope"}); c != 2 {
 		t.Fatalf("bad flag exit %d", c)
+	}
+}
+
+func TestReceiptStateAndQuote(t *testing.T) {
+	r := Receipt{Commit: "abc", Command: []string{"sh", "-c", "bun run test"}}
+	if r.State("abc", false) != "fresh" || r.State("def", false) != "stale" {
+		t.Fatal("fresh/stale")
+	}
+	r.Dirty = true
+	if r.State("abc", false) != "dirty" || r.State("def", false) != "stale" {
+		t.Fatal("dirty")
+	}
+	if got := Quote(r.Command); got != "sh -c 'bun run test'" {
+		t.Fatalf("quote: %q", got)
+	}
+	if got := Quote([]string{"echo", "it's", ""}); got != `echo 'it'\''s' ''` {
+		t.Fatalf("quote: %q", got)
+	}
+	if md := Markdown([]Receipt{r}, "abc", false); !strings.Contains(md, "abc (dirty)") || !strings.Contains(md, "`sh -c 'bun run test'`") {
+		t.Fatalf("markdown: %s", md)
+	}
+}
+
+func TestAppendIgnoresItsOwnFolder(t *testing.T) {
+	dir := newRepo(t)
+	if err := Append(dir, Receipt{Claim: "x"}); err != nil {
+		t.Fatal(err)
+	}
+	out, err := exec.Command("git", "-C", dir, "status", "--porcelain").Output()
+	if err != nil || strings.TrimSpace(string(out)) != "" {
+		t.Fatalf("receipts show up in git status: %q %v", out, err)
+	}
+}
+
+func TestResolveBasePrefersOrigin(t *testing.T) {
+	up := newRepo(t)
+	dir := t.TempDir()
+	git(t, dir, "clone", "-q", up, "c")
+	dir = filepath.Join(dir, "c")
+	if err := os.WriteFile(filepath.Join(up, "b.txt"), []byte("b\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	git(t, up, "add", "b.txt")
+	git(t, up, "commit", "-q", "-m", "upstream")
+	git(t, dir, "fetch", "-q")
+	git(t, dir, "switch", "-q", "-c", "feat", "origin/main")
+	git(t, dir, "branch", "-q", "-f", "main", "main")
+	sha, label := resolveBase(dir, "main")
+	want, _ := exec.Command("git", "-C", dir, "rev-parse", "origin/main").Output()
+	if sha != strings.TrimSpace(string(want)) || !strings.HasPrefix(label, "origin/main (merge-base ") {
+		t.Fatalf("main: %s %q", sha, label)
+	}
+	if _, label := resolveBase(dir, ""); !strings.HasPrefix(label, "origin/main (merge-base ") {
+		t.Fatalf("default: %q", label)
+	}
+	if sha, label := resolveBase(dir, "HEAD~1"); sha != "HEAD~1" || label != "HEAD~1" {
+		t.Fatalf("revision not used as given: %s %q", sha, label)
+	}
+}
+
+func TestRedactKeepsTokensOutOfPRBodies(t *testing.T) {
+	tok := "ghp_" + strings.Repeat("a", 36)
+	md := Markdown([]Receipt{{Commit: "c", Command: []string{"curl", "-H", "Authorization: token " + tok}}}, "c", false)
+	if strings.Contains(md, tok) {
+		t.Fatalf("token printed: %s", md)
+	}
+}
+
+func TestScanRejectsOptionBaseAndCoversHistoryWithoutOrigin(t *testing.T) {
+	dir := newRepo(t)
+	t.Chdir(dir)
+	if c := ScanMain([]string{"--base", "--output=x"}); c != 2 {
+		t.Fatalf("option base exit %d", c)
+	}
+	if _, err := os.Stat(filepath.Join(dir, "x")); err == nil {
+		t.Fatal("git wrote the --output file")
+	}
+	if err := os.WriteFile(filepath.Join(dir, "k.txt"), []byte("-----BEGIN RSA PRIVATE KEY-----\n"), 0o644); err != nil { // smithy:allow
+		t.Fatal(err)
+	}
+	git(t, dir, "add", "k.txt")
+	git(t, dir, "commit", "-q", "-m", "key")
+	if c := ScanMain(nil); c != 1 {
+		t.Fatalf("committed key without origin passed: exit %d", c)
+	}
+}
+
+func TestListSaysHowManyItHid(t *testing.T) {
+	dir := newRepo(t)
+	t.Chdir(dir)
+	if err := Append(dir, Receipt{Claim: "old", Commit: "0000000"}); err != nil {
+		t.Fatal(err)
+	}
+	r, w, _ := os.Pipe()
+	old := os.Stderr
+	os.Stderr = w
+	c := ReceiptMain([]string{"list"})
+	os.Stderr = old
+	w.Close()
+	b, _ := io.ReadAll(r)
+	if c != 0 || !strings.Contains(string(b), "1 receipt(s) from other commits hidden") {
+		t.Fatalf("exit %d stderr %q", c, b)
+	}
+}
+
+func TestHostileFindings(t *testing.T) {
+	key := "AKIA" + "Z7QW3RTY5UIO2PLK"
+	diff := "diff --git a/d.txt b/d.txt\nnew file mode 100644\n--- /dev/null\n+++ b/d.txt\n@@ -0,0 +1,3 @@\n+a\n+++ b/x\n+k=" + key + "\n"
+	fs := ScanDiff(diff)
+	if len(fs) != 1 || fs[0].File != "d.txt" || fs[0].Line != 3 {
+		t.Fatalf("a '++' line hid or moved the finding: %v", fs)
+	}
+
+	dir := newRepo(t)
+	t.Chdir(dir)
+	if err := os.WriteFile(filepath.Join(dir, "s.txt"), []byte("k = \""+key+"\"\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if c := ScanMain(nil); c != 1 {
+		t.Fatalf("untracked file content not scanned: exit %d", c)
+	}
+	os.Remove(filepath.Join(dir, "s.txt"))
+	if err := os.WriteFile(filepath.Join(dir, "we ird é.pem"), []byte("x\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if fs := ScanFiles([]string{"we ird é.pem"}); len(fs) != 1 {
+		t.Fatalf("non-ascii .pem not flagged: %v", fs)
+	}
+	if c := ScanMain(nil); c != 1 {
+		t.Fatalf("non-ascii .pem passed: exit %d", c)
+	}
+	os.Remove(filepath.Join(dir, "we ird é.pem"))
+
+	if err := Append(dir, Receipt{Claim: "a"}); err != nil {
+		t.Fatal(err)
+	}
+	f, _ := os.OpenFile(receiptsPath(dir), os.O_APPEND|os.O_WRONLY, 0o644)
+	f.WriteString(`{"claim":"cut`)
+	f.Close()
+	if err := Append(dir, Receipt{Claim: "after"}); err != nil {
+		t.Fatal(err)
+	}
+	rs, _ := Load(dir)
+	if len(rs) != 2 || rs[1].Claim != "after" {
+		t.Fatalf("receipt after a cut line lost: %+v", rs)
+	}
+
+	r := Receipt{Commit: "abc"}
+	if r.State("abc", true) != "dirty" {
+		t.Fatal("tree edited after the run should read dirty")
+	}
+
+	os.RemoveAll(filepath.Join(dir, ".smelt"))
+	os.WriteFile(filepath.Join(dir, ".smelt"), nil, 0o644)
+	if c := ReceiptMain([]string{"run", "--", "true"}); c != 0 {
+		t.Fatalf("receipt failure replaced the exit code: %d", c)
 	}
 }

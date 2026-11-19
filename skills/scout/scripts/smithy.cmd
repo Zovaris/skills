@@ -24,7 +24,7 @@ if not exist "%bin%" (
   if not exist "!tmp!\!asset!" goto :nodownload
   if not exist "!tmp!\checksums.txt" goto :nodownload
   for /f "tokens=1,2" %%a in (!tmp!\checksums.txt) do if "%%b"=="!asset!" set "want=%%a"
-  for /f "skip=1 tokens=*" %%h in ('certutil -hashfile "!tmp!\!asset!" SHA256 ^| findstr /v ":"') do if not defined got set "got=%%h"
+  for /f "tokens=*" %%h in ('certutil -hashfile "!tmp!\!asset!" SHA256 ^| findstr /v ":"') do if not defined got set "got=%%h"
   set "got=!got: =!"
   if /i not "!want!"=="!got!" ( echo smithy: checksum mismatch for !asset!, not installed 1>&2 & exit /b 3 )
   gh attestation verify --help >nul 2>&1

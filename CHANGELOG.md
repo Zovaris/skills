@@ -9,6 +9,8 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 - Windows launcher: falls back to `curl.exe` with timeouts when `gh` is missing, and a failed
   download prints `smithy: can't download v<version> (<asset>): <reason>` with exit 3; a CI job
   runs it on Windows.
+- Windows launcher: the SHA-256 read from `certutil` skipped the hash line, so every install
+  failed with "checksum mismatch"; it now reads the hash.
 - `smithy cleanup` removes a branch whose commits already landed under new hashes (a rebase
   merge), instead of keeping it as unpushed.
 - Every command: `-h`/`--help` anywhere prints its usage on stdout and exits 0 before any repo

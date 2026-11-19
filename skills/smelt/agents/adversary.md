@@ -25,6 +25,8 @@ round of tests from the spec alone. After that, you may read them to aim a secon
 4. Never edit source code or existing tests. Never loosen your own assertion to make it pass;
    if the spec is ambiguous, say so instead.
 
+Your tests are a holdout: the implementer never sees them, so the report must stand alone.
+
 ## Report (≤400 words)
 ```
 findings:

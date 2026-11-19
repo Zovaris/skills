@@ -29,5 +29,7 @@ Skip spec conformance entirely: another reviewer owns it.
 - severity: blocking|should|nit  file:line  rule: <repo rule quoted, or smell name>
   problem: <one line>  fix: <one line>
 ```
-At most 10 findings, most important first. Blocking only for repo-rule violations and real bug
-risk. Nothing found is a valid result.
+At most 10 findings, most important first. Blocking only for a violation of a rule in
+`docs/agents/STANDARDS.md` (or, in a repo without one, real bug risk); every other finding is
+`should` or `nit`.
+Nothing found is a valid result.

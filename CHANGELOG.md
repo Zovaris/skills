@@ -5,6 +5,12 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+- smelt: the adversary's tests are a holdout: hidden from the implementer, re-run on the final
+  commit as the `holdout` receipt; passing visible but failing holdout is blocking.
+- smelt: spec-check flags test files the spec doesn't name and diffs over ~400 non-test lines.
+- smelt: review blocks only on spec gaps, bugs and STANDARDS violations; each finding gets a
+  disposition in the PR body.
+
 ## v0.10.0 — 2026-11-19
 
 - Audit fixes after the gh-optional batch: warden's final message shows the Decisions and

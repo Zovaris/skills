@@ -19,8 +19,13 @@ Which ones run depends on the speed (table in SKILL.md); within it, use this to 
 | `agents/property.md` | parsers, serializers, math, money, sorting, state machines, invariants | medium | yes |
 | `agents/mutation.md` | before merge on core logic, when `smithy stack` shows a mutation tool | high CPU | proposes |
 | `agents/e2e.md` | UI flows or HTTP endpoints changed and the app can run locally | high | yes |
+| `agents/hostile.md` | after review, on a runnable CLI, API, worker or job that takes outside input, retries, writes state or calls dependencies | high | no (reports) |
 | `agents/spec-check.md` | always in review | low | no |
 | `agents/standards.md` | always in review | low | no |
+
+Hostile runs last: after the diff is reviewed, against a build of the reviewed commit. Any fix
+it triggers goes through build (failing test first) and review again; its findings close on the
+re-run of its repro, not on your word.
 
 Characterization: before a refactor of untested code, snapshot current behaviour first
 (vitest/jest `toMatchSnapshot`, Python syrupy/approvaltests), refactor, require zero diffs.

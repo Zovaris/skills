@@ -6,6 +6,11 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 ## Unreleased
 
 ### smelt
+- New `agents/hostile.md`: runs the built CLI, API or worker as a hostile user across eight
+  classes (malformed input, interruption, cancel-and-resume, repeats, injected instructions,
+  dirty surroundings, hung dependencies, lying output), in at most 5 cycles, with failure
+  fingerprints, flakiness recorded as a finding and harness debris kept apart. Runs after review
+  at `full`.
 - `smithy receipt run --claim "<c>" -- <cmd>` records each verify run (exit code, output
   digest, commit, dirty tree, platform) in `.smelt/receipts.jsonl`; `smithy receipt list --md`
   prints the table for the PR body and marks receipts from another commit or a dirty tree stale.

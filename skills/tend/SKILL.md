@@ -77,7 +77,7 @@ inside the repo). Then repeat:
    - **merged / closed** → stop this PR. Remove the worktree you created, and the branch and
      worktree the launcher names as its own (`smithy cleanup <repo> <branch> [<worktree>]`,
      never forced); report `merged <url>, cleaned <what>` so the launcher can end its sessions.
-   - **checks red** → `gh run view <run> --log-failed` when `gh` is installed (else read the failing names from `smithy pr-state`). Same test passes on a plain rerun and
+   - **checks red** → `gh run view <run> --log-failed` when `gh` is installed (else open the failing check's page from the PR). Same test passes on a plain rerun and
      nothing in the diff touches it → flaky: rerun once (`gh run rerun <run> --failed` when `gh` is installed) and note
      it. Otherwise it is a real failure: hand it to the fix model, failing test first when it is
      a bug, and push the fix. Red again after a second real fix → "needs you".

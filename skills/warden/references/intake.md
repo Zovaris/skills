@@ -14,7 +14,9 @@ Work out what you were given, in this order, and say in the plan line which it w
    blockers. Id = `<slug>-NN`. Source = the file.
 2. **Board ids** (GitHub issues, Linear, Jira keys): read each with `gh` or the harness's tracker
    tools. Id = the key. Source = the board.
-3. **Tasks inline**, one per line: id `task-<slug>`. Source = none (only `batch.json`).
+3. **Tasks inline**, one per line: id `task-<slug>`. Source = none (only `batch.json`). When
+   tasks depend on each other, write a task dir instead (`smithy task-dir <slug>`, then
+   `smithy tasks add <dir> "<title>" [--blocked-by 01,02]` per task) and continue at 1.
 4. **Just an idea** (one goal, no split): ask once, recommendation first, offering only what is
    installed:
    - "Do you have a plan or task file? Give me the path or the board."

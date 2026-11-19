@@ -1,0 +1,14 @@
+package cards
+
+import "testing"
+
+func TestHoldOnlyWhenTrue(t *testing.T) {
+	for _, tc := range []struct {
+		hold any
+		want string
+	}{{false, "queued"}, {nil, "queued"}, {"", "queued"}, {true, "held"}, {"wait for infra", "held"}} {
+		if got := Stage(nil, map[string]any{"hold": tc.hold}); got != tc.want {
+			t.Errorf("hold %v: got %q want %q", tc.hold, got, tc.want)
+		}
+	}
+}

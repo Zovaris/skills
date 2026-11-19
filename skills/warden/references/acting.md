@@ -66,7 +66,13 @@ line each, grouped as **Decisions** and **Followups**, each with the PR it came 
 Recovery ladder, one rung per wake:
 1. Answer from the intent if the note asks something it settles.
 2. One corrective line to the worker (**tell**).
-3. Relaunch in the **same worktree** with the brief's relaunch line.
-4. After a second relaunch fails, tell the user with the `note`.
+3. Relaunch in the **same worktree** with the brief's relaunch line, only while the item's
+   `launches` is below `warden.max_attempts` (default 3, first launch included).
+4. At the cap, set the card `state=blocked` and tell the user
+   with the `note`; the item stays listed as blocked until they act.
 
 Never a fresh worktree for the same task.
+
+Takeover data: every stuck report, and the final message for any item not merged, gives per item
+the worktree path, branch, session id or pid, and log path (`<batch-dir>/<id>.log`), so the user
+can take over by hand.

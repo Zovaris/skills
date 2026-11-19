@@ -97,6 +97,9 @@ func Worktree(branch, dir string) (string, error) {
 	if top == "" {
 		return "", fmt.Errorf("%s is not in a git repo", dir)
 	}
+	if c, err := ghx.Run("git", "-C", dir, "rev-parse", "--path-format=absolute", "--git-common-dir"); err == nil && filepath.Base(c) == ".git" {
+		top = filepath.Dir(c)
+	}
 	w := config.Get("git.worktree", "{parent}/worktrees/{repo}-{branch}")
 	return strings.NewReplacer("{parent}", filepath.Dir(top), "{repo}", filepath.Base(top), "{branch}", strings.ReplaceAll(branch, "/", "-")).Replace(w), nil
 }

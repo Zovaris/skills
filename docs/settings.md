@@ -6,7 +6,8 @@ Two JSON files, the repo's first: `<repo>/.smithy/config.json` (this repo only) 
 - **use-smithy setup** asks everything up front, or each skill asks a setting the first time it
   needs it and saves your answer;
 - `smithy config list` (in any skill's `scripts/`) shows each setting, its value and where it came
-  from; `smithy config set [--repo] <key> <value>` changes one.
+  from; `smithy config set [--repo] <key> <value>` changes one and `smithy config unset [--repo] <key>`
+  puts it back to the default.
 
 | Setting | Default | What it does |
 |---|---|---|

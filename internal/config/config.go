@@ -3,6 +3,7 @@
 package config
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -68,6 +69,26 @@ func RepoFile() string {
 }
 
 func exists(p string) bool { _, err := os.Stat(p); return err == nil }
+
+// loadForWrite reads file for a change; it refuses one that exists but isn't a JSON object, so
+// a write never drops the user's content.
+func loadForWrite(file string) (map[string]any, error) {
+	m := map[string]any{}
+	b, err := os.ReadFile(file)
+	if os.IsNotExist(err) {
+		return m, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	if len(bytes.TrimSpace(b)) == 0 {
+		return m, nil
+	}
+	if err := json.Unmarshal(b, &m); err != nil {
+		return nil, fmt.Errorf("%s is not a JSON object; fix or move it first: %v", file, err)
+	}
+	return m, nil
+}
 
 func load(file string) map[string]any {
 	m := map[string]any{}
@@ -151,7 +172,10 @@ func Get(key, fallback string) string {
 
 // Set writes key = value into file; value is stored as JSON when it parses as JSON.
 func Set(file, key, value string) error {
-	m := load(file)
+	m, err := loadForWrite(file)
+	if err != nil {
+		return err
+	}
 	var v any
 	if err := json.Unmarshal([]byte(value), &v); err != nil {
 		v = value
@@ -170,12 +194,61 @@ func Set(file, key, value string) error {
 	if err := os.MkdirAll(filepath.Dir(file), 0o755); err != nil {
 		return err
 	}
+	return writeJSON(file, m)
+}
+
+func writeJSON(file string, m map[string]any) error {
 	b, _ := json.MarshalIndent(m, "", "  ")
-	tmp := file + ".tmp"
-	if err := os.WriteFile(tmp, append(b, '\n'), 0o644); err != nil {
+	f, err := os.CreateTemp(filepath.Dir(file), filepath.Base(file)+".*.tmp")
+	if err != nil {
 		return err
 	}
-	return os.Rename(tmp, file)
+	if _, err := f.Write(append(b, '\n')); err != nil {
+		f.Close()
+		os.Remove(f.Name())
+		return err
+	}
+	if err := f.Close(); err != nil {
+		os.Remove(f.Name())
+		return err
+	}
+	return os.Rename(f.Name(), file)
+}
+
+// Unset removes key from file; it reports whether the key was there.
+func Unset(file, key string) (bool, error) {
+	m, err := loadForWrite(file)
+	if err != nil {
+		return false, err
+	}
+	cur := m
+	parts := strings.Split(key, ".")
+	for _, p := range parts[:len(parts)-1] {
+		next, ok := cur[p].(map[string]any)
+		if !ok {
+			return false, nil
+		}
+		cur = next
+	}
+	if _, ok := cur[parts[len(parts)-1]]; !ok {
+		return false, nil
+	}
+	delete(cur, parts[len(parts)-1])
+	return true, writeJSON(file, m)
+}
+
+// Normalize returns the value to save for key and a note for the user.
+func Normalize(key, value string) (string, string, error) {
+	if key != "agent.effort" {
+		return value, "", nil
+	}
+	switch v := strings.ToLower(strings.TrimSpace(value)); v {
+	case "low", "medium":
+		return v, "", nil
+	case "high", "xhigh", "max":
+		return "medium", fmt.Sprintf("agent.effort is capped at medium: saved medium, not %s", v), nil
+	}
+	return "", "", fmt.Errorf("agent.effort must be low or medium, got %q", value)
 }
 
 func tier(t string) bool { return t == "cheap" || t == "mid" || t == "strong" }
@@ -233,6 +306,7 @@ const usage = `usage: smithy config <command>
   accept-models                         save the suggestions (only after the user said yes)
   get <key>                             effective value (repo, user, default); exit 3 when unset
   set [--repo] <key> <value>            value stored as JSON when it is JSON
+  unset [--repo] <key>                  remove a saved value (back to the default)
   list                                  every setting: value, source, what it does
   migrate                               move pre-0.8 state from ~/.agents to ~/.smithy
 Unset with no default: ask the user once, then save with set (--repo when it only applies here).`
@@ -299,7 +373,7 @@ func Main(args []string) int {
 			return 3
 		}
 		fmt.Println(v)
-	case "set":
+	case "set", "unset":
 		rest, file := args[1:], UserFile()
 		if len(rest) > 0 && rest[0] == "--repo" {
 			if file = RepoFile(); file == "" {
@@ -311,10 +385,36 @@ func Main(args []string) int {
 			}
 			rest = rest[1:]
 		}
+		if args[0] == "unset" {
+			if len(rest) != 1 {
+				fmt.Fprintln(os.Stderr, "usage: smithy config unset [--repo] <key>")
+				return 2
+			}
+			ok, err := Unset(file, rest[0])
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err)
+				return 1
+			}
+			if !ok {
+				fmt.Printf("%s was not set (%s)\n", rest[0], file)
+				return 0
+			}
+			fmt.Printf("removed %s (%s)\n", rest[0], file)
+			return 0
+		}
 		if len(rest) != 2 {
 			fmt.Fprintln(os.Stderr, "usage: smithy config set [--repo] <key> <value>")
 			return 2
 		}
+		val, note, err := Normalize(rest[0], rest[1])
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			return 2
+		}
+		if note != "" {
+			fmt.Fprintln(os.Stderr, note)
+		}
+		rest[1] = val
 		if err := Set(file, rest[0], rest[1]); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			return 1

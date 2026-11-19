@@ -5,8 +5,9 @@
 #   2. a source checkout of the skills repo with Go installed: builds it once into
 #      ~/.smithy/bin/dev and rebuilds when a .go file changes (development);
 #   3. ~/.smithy/bin/<VERSION>/smithy, downloaded once (gzipped, ~1.5 MB) from the GitHub
-#      release v<VERSION>, checked against the release's checksums.txt and, where gh supports it, its build
-#      attestation. ~/.smithy/bin/smithy always points at the last one used: put ~/.smithy/bin
+#      release v<VERSION>, checked against the release's checksums.txt and its build attestation
+#      (needs gh with `gh attestation`; without it nothing is installed unless
+#      SMITHY_ALLOW_UNATTESTED=1 says you accept a checksum-only install). ~/.smithy/bin/smithy always points at the last one used: put ~/.smithy/bin
 #      on PATH to run `smithy status` yourself.
 set -eu
 here=$(cd "$(dirname "$0")" && pwd -P)
@@ -47,6 +48,11 @@ if [ ! -x "$bin" ]; then
   [ -n "$want" ] && [ "$want" = "$got" ] || { echo "smithy: checksum mismatch for $asset, not installed" >&2; exit 3; }
   if command -v gh >/dev/null 2>&1 && gh attestation verify --help >/dev/null 2>&1; then
     gh attestation verify "$tmp/$asset" -R "$repo" >/dev/null 2>&1 || { echo "smithy: $asset has no valid build attestation for $repo, not installed" >&2; exit 3; }
+  elif [ "${SMITHY_ALLOW_UNATTESTED:-}" = 1 ]; then
+    echo "smithy: gh attestation unavailable; installing on checksum only (SMITHY_ALLOW_UNATTESTED=1)" >&2
+  else
+    echo "smithy: can't verify the build attestation of $asset: install gh (https://cli.github.com) and sign in, or set SMITHY_ALLOW_UNATTESTED=1 to accept a checksum-only install; not installed" >&2
+    exit 3
   fi
   gunzip -f "$tmp/$asset"; chmod +x "$tmp/${asset%.gz}"
   mkdir -p "$home/bin/$version"; mv "$tmp/${asset%.gz}" "$bin"

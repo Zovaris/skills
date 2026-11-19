@@ -5,6 +5,19 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+### CLI
+- Every command: `-h`/`--help` anywhere prints its usage on stdout and exits 0 before any repo
+  check, gh call or side effect; an unknown option prints `smithy <cmd>: unknown option <x>`
+  and the usage on stderr, exit 2 (so `smithy adr --bogus` no longer writes an ADR).
+- Usage mistakes exit 2 (`smithy commit "<msg>"` without paths, `smithy pr create` misuse).
+- `smithy changed` outside a repo says "not a git repo" (exit 2); `smithy comments <path>`
+  with a missing path exits 2; `smithy wait` rejects an unknown target (exit 2) before gh.
+- Failures say why on stderr: `smithy skills <name>` not installed, `smithy config model|get`
+  unset, `smithy tasks where` with none, `smithy cards get` for a missing card (now exit 1, not
+  `null`), `smithy agent` with a missing prompt file.
+- `smithy tasks add|list` without a dir use the newest task dir, even an empty one made by
+  `smithy task-dir`.
+
 ### hardening
 - `smithy comments --diff` reads file names with `-z` (spaces and non-ASCII names count) and exits 2 for a base git can't resolve or one starting with `-`.
 - `smithy drift` exits 2 for a base git can't resolve and reads changed and tracked names with `-z`.

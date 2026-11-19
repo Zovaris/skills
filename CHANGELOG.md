@@ -32,6 +32,8 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 - `smithy config` reports a config file that isn't a JSON object (including `null`) on reads too, rejects empty or malformed keys, harness names and model names, and locks the file around writes so concurrent `set` calls keep every value.
 - The launcher times out downloads (`--connect-timeout 10 --max-time 120`) and a failed download prints one `smithy: can't download` line and exits 3.
 - `smithy scan` prints to stderr how many lines `smithy:allow` skipped and where.
+- `smithy config` writes its pid in the lock and reclaims a lock whose pid is gone or that is older than 30s, so a killed writer no longer blocks every later write.
+- `smithy config` writes through a symlinked config (the link stays), keeps the file mode, and refuses a read-only config with exit 1.
 
 ### skills consistency
 - `warden.merge` has no built-in default: warden asks once per batch in its plan line (auto or

@@ -119,11 +119,16 @@ func withLock(file string, f func() error) error {
 	for {
 		l, err := os.OpenFile(lock, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0o644)
 		if err == nil {
+			fmt.Fprintf(l, "%d\n", os.Getpid())
 			l.Close()
 			break
 		}
 		if !os.IsExist(err) {
 			return err
+		}
+		if staleLock(lock) {
+			os.Remove(lock)
+			continue
 		}
 		if time.Now().After(deadline) {
 			return fmt.Errorf("%s is locked by another smithy config write; remove it if no write is running", lock)
@@ -132,6 +137,41 @@ func withLock(file string, f func() error) error {
 	}
 	defer os.Remove(lock)
 	return f()
+}
+
+const lockStale = 30 * time.Second
+
+// staleLock reports whether lock was left by a writer that is gone (its pid is dead) or
+// is older than lockStale.
+func staleLock(lock string) bool {
+	fi, err := os.Stat(lock)
+	if err != nil {
+		return false
+	}
+	if time.Since(fi.ModTime()) > lockStale {
+		return true
+	}
+	b, err := os.ReadFile(lock)
+	if err != nil {
+		return false
+	}
+	pid, err := strconv.Atoi(strings.TrimSpace(string(b)))
+	if err != nil || pid <= 0 {
+		return false
+	}
+	return !pidAlive(pid)
+}
+
+// target resolves a symlinked config to the file it points at (so a write keeps the link)
+// and refuses a read-only file.
+func target(file string) (string, error) {
+	if r, err := filepath.EvalSymlinks(file); err == nil {
+		file = r
+	}
+	if fi, err := os.Stat(file); err == nil && fi.Mode().Perm()&0o200 == 0 {
+		return "", fmt.Errorf("%s is read-only; make it writable to change it", file)
+	}
+	return file, nil
 }
 
 func lookup(m map[string]any, key string) (any, bool) {
@@ -219,6 +259,10 @@ func Set(file, key, value string) error {
 	if err := ValidKey(key); err != nil {
 		return err
 	}
+	file, err := target(file)
+	if err != nil {
+		return err
+	}
 	return withLock(file, func() error { return set(file, key, value) })
 }
 
@@ -251,6 +295,9 @@ func writeJSON(file string, m map[string]any) error {
 	if err != nil {
 		return err
 	}
+	if fi, err := os.Stat(file); err == nil {
+		f.Chmod(fi.Mode().Perm())
+	}
 	if _, err := f.Write(append(b, '\n')); err != nil {
 		f.Close()
 		os.Remove(f.Name())
@@ -268,8 +315,12 @@ func Unset(file, key string) (bool, error) {
 	if err := ValidKey(key); err != nil {
 		return false, err
 	}
+	file, err := target(file)
+	if err != nil {
+		return false, err
+	}
 	var found bool
-	err := withLock(file, func() error {
+	err = withLock(file, func() error {
 		var err error
 		found, err = unset(file, key)
 		return err

@@ -7,8 +7,8 @@
 #      file changes (development);
 #   3. ~/.smithy/bin/<VERSION>/smithy, downloaded once (gzipped, ~1.5 MB) from the GitHub
 #      release v<VERSION>, checked against the release's checksums.txt and its build attestation
-#      (needs gh with `gh attestation`; without it nothing is installed unless
-#      SMITHY_ALLOW_UNATTESTED=1 says you accept a checksum-only install). ~/.smithy/bin/smithy always points at the last one used: put ~/.smithy/bin
+#      (with gh; an old gh without `gh attestation` installs nothing unless SMITHY_ALLOW_UNATTESTED=1;
+#      with no gh at all it downloads with curl, checks the checksum, warns once and installs). ~/.smithy/bin/smithy always points at the last one used: put ~/.smithy/bin
 #      on PATH to run `smithy status` yourself.
 set -eu
 here=$(cd "$(dirname "$0")" && pwd -P)
@@ -56,7 +56,7 @@ if [ ! -x "$bin" ]; then
   else
     url="https://github.com/$repo/releases/download/v$version"
     for f in "$asset" checksums.txt; do
-      curl -fsSL --connect-timeout 10 --max-time 120 -o "$tmp/$f" "$url/$f" 2>"$tmp/err" || fail
+      curl -fsSL --proto "=https" --proto-redir "=https" --connect-timeout 10 --max-time 120 -o "$tmp/$f" "$url/$f" 2>"$tmp/err" || fail
     done
   fi
   [ -s "$tmp/$asset" ] && [ -s "$tmp/checksums.txt" ] || { echo "release is missing $asset or checksums.txt" > "$tmp/err"; fail; }
@@ -70,6 +70,8 @@ if [ ! -x "$bin" ]; then
       124) echo "smithy: can't verify the build attestation of $asset: timed out after ${limit}s; not installed" >&2; exit 3 ;;
       *) echo "smithy: $asset has no valid build attestation for $repo, not installed" >&2; exit 3 ;;
     esac
+  elif ! command -v gh >/dev/null 2>&1; then
+    echo "smithy: installed with checksum only: install the GitHub CLI to verify the build's origin" >&2
   elif [ "${SMITHY_ALLOW_UNATTESTED:-}" = 1 ]; then
     echo "smithy: gh attestation unavailable; installing on checksum only (SMITHY_ALLOW_UNATTESTED=1)" >&2
   else

@@ -4,7 +4,7 @@ Read-only. You answer one question: does this diff do what the spec says, all of
 else? Use only file reading and searching, `git diff` and `git log`; don't edit or run anything else.
 
 ## You get
-- The diff command (`git diff <base>`: the working tree against the base, uncommitted work included).
+- The diff command (`git diff $(git merge-base origin/<base> HEAD)`: the working tree against where the branch left the remote base, uncommitted work included; never a local base branch, it can be stale).
 - The spec or task path (or the PR description when there is none: say so in the report).
 
 ## Do

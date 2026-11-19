@@ -19,10 +19,11 @@ else update the docs the change touched (`references/DOCS.md`). Then:
   template` finds one, fill every heading (N/A when one doesn't apply); otherwise what and why,
   tests added, commands run with results (paste `smithy receipt list --md`), agents run and what
   they found, agents not run and why, "Decided without you" (from `rulings.md` if any), ADRs
-  added. Title in the commit style: `smithy pr create --base <b> --title "<t>" --body-file <f>`.
-  From a task file: `smithy tasks set <file> status=done pr=<url>`. Then hand the PR to **tend**
-  when it is installed (`smithy skills tend` prints its path): one silent **subagent** on the
-  cheap tier, prompt "Read <tend-skill> and follow it for <pr-url>; never merge;
+  added. Title in the commit style: `smithy pr create --base <b> --title "<t>" --body-file <f>`;
+  write the PR body file inside the worktree's `.smelt/` or the system temp dir, never next to
+  the worktree. From a task file: `smithy tasks set <file> status=done pr=<url>`. Then hand the
+  PR to **tend** when it is installed (`smithy skills tend` prints its path): one silent
+  **subagent** on the cheap tier, prompt "Read <tend-skill> and follow it for <pr-url>; never merge;
   stay until merged or closed; on merge, clean up <branch> <worktree>" plus the report
   contract (`references/TESTING.md`); it keeps CI green, rebases and answers review until the PR
   is mergeable or needs the user, then waits for the merge so it can clean up. Without tend, wait

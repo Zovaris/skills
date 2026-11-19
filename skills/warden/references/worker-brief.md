@@ -23,7 +23,7 @@ What workers are:
 | `<committed repo task file …>` | the line, with the file path | no task file, or it isn't committed (`docs/specs`) |
 | `<has prereqs or the batch is full: …>` | the wait-turn line | no prereqs and a free running slot |
 | `<relaunch: …>` | the relaunch line | first launch |
-| `<warden channel: …>` | desktop and any harness: "Put it in the card's note."; CLI: "Send it to the warden with SendMessage, to: <name>." (`references/harness.md`) | never |
+| `<warden channel: …>` | desktop and any harness: "Put it in the card's note."; CLI: "Send it to the warden with SendMessage, to: <address>." (`references/harness.md`) | never |
 
 ```
 You are worker <id> in warden batch <batch>: <title>. Kind: <ship|scout>.
@@ -74,7 +74,8 @@ requirements from the intent and the code"; out of scope if the user named it>
 - Commits: `<warden-dir>/scripts/smithy commit style` once, then one atomic commit per concern with
   `<warden-dir>/scripts/smithy commit "<msg>" <paths>` in that style. PR: `<warden-dir>/scripts/smithy pr template`; fill
   every heading of the template if there is one, then `smithy pr create --base <base> --title "<t>"
-  --body-file <f>`. Never `git add -A` or `--no-verify`; skip any preview, nobody answers.
+  --body-file <f>`. Write the PR body file inside <worktree>/.smelt/ or the system temp dir, never
+  next to the worktree. Never `git add -A` or `--no-verify`; skip any preview, nobody answers.
 - One rigor path: CI green; bot review comments at most 3 rounds total, counted in
   `review_rounds` (read it back after a restart). A bot review is not a completion gate.
 - Scope: stop only when the change would break callers, change what a module is responsible
@@ -82,8 +83,8 @@ requirements from the intent and the code"; out of scope if the user named it>
   alone are not reasons to stop.
 - Same obstacle twice after a real fix attempt: state=blocked with the one thing you need; stop.
 - Do not create worktrees or issues; never start, fork or hand off sessions.
-- Waiting on CI or a PR: one blocking `<warden-dir>/scripts/smithy wait pr:<pr-url>` (or `run:<id>`,
-  `branch:<name>`); it prints one line when something happens. No sleep-then-check turns.
+- Waiting on CI or a PR: one blocking `<warden-dir>/scripts/smithy wait pr:<pr-url>` (or `run:<run-id>`,
+  `branch:<branch-name>`); it prints one line when something happens. No sleep-then-check turns.
 
 ## Status card
 `<warden-dir>/scripts/smithy cards set <batch> <id> key=value…` at every phase change and before

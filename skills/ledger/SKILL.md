@@ -17,7 +17,7 @@ runs. `smithy <command>` in this skill means `<skill-dir>/scripts/smithy <comman
 |---|---|
 | Index of all docs (Diátaxis: tutorials, how-to, reference, explanation) | `docs/README.md` |
 | Decisions that are hard to reverse | `docs/adr/NNNN-<slug>.md` |
-| Domain terms | `docs/GLOSSARY.md` |
+| Domain terms | `docs/GLOSSARY.md` (format: `references/GLOSSARY-FORMAT.md`) |
 | Why a module is the way it is, its entry points and invariants | `<module>/README.md` |
 | Codebase map for agents | `docs/agents/MAP.md` |
 | Judgement rules reviewers enforce | `docs/agents/STANDARDS.md` |
@@ -33,16 +33,17 @@ line, and pointers to the files above.
   standards file collects judgement rules the reviewers enforce). Add to AGENTS.md (or CLAUDE.md if
   that is what the repo uses) a short block: where docs live and the comment policy. Detect the
   stack and offer the matching lint config from `references/COMMENTS.md`; write it only on yes.
+  Done: the four files exist and are listed.
 - **adr `<title>`** — only when the ADR test below passes. `smithy adr "<title>"` creates the
   next numbered file from its built-in template (the shape in `references/ADR-FORMAT.md`); fill it from the conversation and the code,
   status `proposed` until the user accepts it. Superseding: new ADR, then change only the old
-  one's status line to `superseded by NNNN`.
+  one's status line to `superseded by NNNN`. Done: the ADR file is filled and its path given.
 - **module `<path>`** — write `<path>/README.md`: purpose, public entry points, invariants, the
   "why" that would otherwise be inline comments, links to ADRs. Add or fix doc comments on every
   exported symbol (what it does, params, returns, errors; not how). Remove explanatory comments
-  whose content now lives in the README.
+  whose content now lives in the README. Done: `smithy comments <path>` is clean.
 - **map** — write `docs/agents/MAP.md` per `references/MAP.md`, so agents stop re-exploring the
-  repo. Refresh it when entry points or layout change.
+  repo. Refresh it when entry points or layout change. Done: every entry point it names exists.
 - **sync `[base]`** — `references/DRIFT.md`: `smithy drift [base]` first (deterministic),
   then judge what it flags. Update the docs in the same branch; report what changed.
 - **comments `[paths]`** — `smithy comments <paths>` (or `--diff <base>`). For each finding:

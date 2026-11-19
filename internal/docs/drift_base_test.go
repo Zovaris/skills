@@ -26,8 +26,6 @@ func commitFile(t *testing.T, dir, name, text string) {
 	gitIn(t, dir, "commit", "-q", "-m", name)
 }
 
-// staleCloneOnFeature returns a clone whose local main lags origin/main by one commit (up.go)
-// and whose feature branch, cut from origin/main, adds feat.go.
 func staleCloneOnFeature(t *testing.T) string {
 	t.Helper()
 	up, err := filepath.EvalSymlinks(t.TempDir())
@@ -54,14 +52,17 @@ func runDrift(t *testing.T, dir string, args ...string) string {
 	}
 	stdout := os.Stdout
 	os.Stdout = w
+	defer func() { os.Stdout = stdout }()
+	done := make(chan []byte)
+	go func() {
+		b, _ := io.ReadAll(r)
+		done <- b
+	}()
 	Drift(args)
-	os.Stdout = stdout
 	w.Close()
-	out, _ := io.ReadAll(r)
-	return string(out)
+	return string(<-done)
 }
 
-// A stale local main must not pull already-merged upstream changes into the drift report.
 func TestDriftBranchBaseUsesOrigin(t *testing.T) {
 	out := runDrift(t, staleCloneOnFeature(t), "main")
 	if !strings.Contains(out, "base: origin/main (merge-base ") {
@@ -72,7 +73,6 @@ func TestDriftBranchBaseUsesOrigin(t *testing.T) {
 	}
 }
 
-// No base means origin's default branch, labelled the way smithy scan labels it.
 func TestDriftDefaultBaseIsOriginDefaultBranch(t *testing.T) {
 	out := runDrift(t, staleCloneOnFeature(t))
 	if !strings.Contains(out, "base: origin/main (merge-base ") || strings.Contains(out, "up.go") {

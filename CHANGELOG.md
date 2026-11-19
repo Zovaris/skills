@@ -6,6 +6,7 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 ## Unreleased
 
 ### CLI
+- `smithy changed <base>` with an unknown base exits 2 with `no such base <x>` instead of git's error and exit 0.
 - `smithy comments --diff` without a base exits 2 instead of passing as clean.
 - `smithy tasks` checks flags per subcommand: `--all` only for `board`, `--blocked-by`/`--key` only for `add` (`tasks ready --all` exits 2).
 - A repeated value flag: the last one wins for every command (`smithy route` kept the first).

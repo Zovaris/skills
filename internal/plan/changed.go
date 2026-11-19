@@ -86,6 +86,10 @@ func ChangedMain(args []string) int {
 	base := ""
 	if len(args) > 0 {
 		base = args[0]
+		if base != "" && exec.Command("git", "rev-parse", "-q", "--verify", base+"^{commit}").Run() != nil {
+			fmt.Fprintf(os.Stderr, "smithy changed: no such base %s\n", base)
+			return 2
+		}
 	}
 	if base == "" {
 		b, err := DefaultBase()

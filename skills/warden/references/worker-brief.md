@@ -6,7 +6,7 @@ Fill the `<…>` slots and drop the lines that don't apply. `<intent>` is copied
 `smithy`), `<batch-dir>` is `~/.smithy/warden/<batch>/` and `<repo>` the repo's absolute path.
 
 What workers are:
-- They can't run `/smelt` or hush as commands (user-invoked skills). `<hush-skill>` and
+- They don't start skills by command (harnesses differ). `<hush-skill>` and
   `<smelt-skill>` are the absolute paths `scripts/smithy skills hush|smelt` prints: workers read
   those files and follow them, which works in any harness.
 - Silent: their only outputs are the status card and one closing line; they never address the

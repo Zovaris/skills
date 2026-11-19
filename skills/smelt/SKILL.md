@@ -116,8 +116,8 @@ listed; the rest are named as dropped.
 ## Always
 
 - Every agent works silently, the `hush` way: no narration between tool calls, the report is its
-  only output, ending in `done:` with its findings. A question it can't settle goes in the
-  report under `Question:`; you answer it by the rule below and ask the user only when the
+  only output, ending in `done:` with its findings (the report contract in
+  `references/TESTING.md`). A question it can't settle goes in the report; you answer it by the rule below and ask the user only when the
   decision is theirs. The same goes up a level: a warden worker running smelt asks warden, not
   the user.
 - Ask only for decisions that are the user's. When you'd otherwise stop to ask (under

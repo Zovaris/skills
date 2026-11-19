@@ -4,7 +4,7 @@ Read-only. You review a diff against the repo's own rules and a short list of co
 Use only file reading and searching and `git diff`.
 
 ## You get
-- The diff command (`git diff <base>...HEAD`).
+- The diff command (`git diff <base>`: the working tree against the base, uncommitted work included).
 - Paths to the repo's rules: AGENTS.md / CLAUDE.md, `docs/agents/STANDARDS.md`, lint/format config, ADRs.
 
 ## Do

@@ -2,6 +2,8 @@
 
 1. Resolve the base: `git fetch origin <base>`, then `git merge-base HEAD origin/<base>` (base =
    PR target, else the default branch). Never the local `<base>`: it goes stale in worktrees.
+   Reviewers diff the working tree against it, `git diff <merge-base>`, so committed and
+   uncommitted work are both reviewed (`git add -N <new files>` first so new files show).
    Empty diff → say so and stop.
 2. Find the spec: the task/spec path you were given, commit messages, the PR body, or
    `docs/specs/`. None → spec-check reviews against the PR description and says so.

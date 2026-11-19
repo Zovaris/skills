@@ -5,6 +5,11 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+- Fixes from the release/next audit and worker feedback: one definition of a blocking review
+  finding (REVIEW.md), holdout tests stay untouched until their final run, `smithy scan` prints
+  binaries as warnings and counts a bare `=======` only next to a conflict start, the attempt cap
+  is a fixed 3 (no setting), no port rule, `CHANGELOG.md` merges with `merge=union`, worker briefs
+  name `state=working` and `smithy scan <base>`, prose-only changes skip test agents.
 - smelt: the adversary's tests are a holdout: hidden from the implementer, re-run on the final
   commit as the `holdout` receipt; passing visible but failing holdout is blocking.
 - smelt: spec-check flags test files the spec doesn't name and diffs over ~400 non-test lines.
@@ -21,8 +26,8 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
   prints pass@1 and pass^k per arm over `-k` trials. Costs tokens; never in CI.
 
 - ledger keeps always-loaded context small and where the harness reads it: `init` puts its block
-  (at most ~15 lines) in CLAUDE.md when that exists, or keeps it in AGENTS.md and adds `@AGENTS.md`
-  to CLAUDE.md; `smithy drift` reports the lines and bytes of AGENTS.md, CLAUDE.md, STANDARDS.md
+  (at most ~15 lines) in CLAUDE.md when only that exists, otherwise in AGENTS.md, and adds
+  `@AGENTS.md` to an existing CLAUDE.md; `smithy drift` reports the lines and bytes of AGENTS.md, CLAUDE.md, STANDARDS.md
   and SCRIPTS.md and flags STANDARDS.md past 30 rules; MAP.md holds only non-obvious facts (~1k
   tokens); STANDARDS-FORMAT names retire candidates at each sync.
 - Skill hygiene for scanners and strict validators: use-smithy's subagent note is a plain heading,
@@ -32,16 +37,17 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
   the frontmatter and pseudo-tag rules.
 - `smithy receipt run` records a receipt dirty when an untracked, non-ignored file is present
   (`.smelt/` and ignored files don't count). `smithy scan` also reports added or changed binary
-  files and .pyc/.so/.dylib/.dll/.exe/.wasm/.jar/.zip/.tar/.gz/.docx/.xlsx/.pptx files as "needs a
-  human look", and fails on git conflict markers outside fenced code in docs.
+  files and .pyc/.so/.dylib/.dll/.exe/.wasm/.jar/.zip/.tar/.gz/.docx/.xlsx/.pptx files as warnings
+  for a human look (exit 0), and fails on git conflict markers in any added line (fenced code in .md files is exempt; a bare
+  `=======` counts only when a `<<<<<<<` is in the same diff).
 - `smithy agent` has a wall-clock cap: the new `agent.timeout` setting (minutes, default 90,
-  `0` = none) or `--timeout <min>` kills the agent's process group, logs "timed out after Nm" and
+  `0` = none) or `--timeout <min>` kills the agent's process group (Unix; the agent process on Windows), logs "timed out after Nm" and
   exits 124; `--bg` runs are watched by a detached smithy that enforces it.
-- warden guards the batch: items that share files in their `Files` lists (or likely paths) get a
-  prereq unless the user said stack, no turn ends with live workers and no `smithy wait batch:`,
-  relaunches stop at `warden.max_attempts` (default 3) and the item is listed as blocked, stuck
-  reports and the final message carry takeover data (worktree, branch, session or pid, log),
-  workers' dev servers use port 3000 + NN, and issue text is never copied into Files or test lines.
+- warden instructs: items that share files in their `Files` lists (or likely paths) get a prereq
+  unless the user said stack, no turn ends with live workers and no `smithy wait batch:`, an item
+  is relaunched at most 3 times then listed as blocked, stuck reports and the final message carry
+  takeover data (worktree, branch, session or pid, log), and issue text is never copied into Files
+  or test lines.
 - ADRs 0001-0005 in `docs/adr/`: record decisions, gh optional, no decision-model adapter for now,
   release branch for big changes, learning in repo docs.
 

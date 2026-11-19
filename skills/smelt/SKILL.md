@@ -60,10 +60,11 @@ starting; a subagent or worker running smelt stays silent and puts them in its r
 Property and mutation need a tool in the repo (`smithy stack` shows it); without one they are
 "not applicable", never a new dependency the user didn't ask for.
 `fast` should finish in one sitting: no agent that needs the app running, no mutation run,
-full suite once at the end. A trivial change (copy, style, one-liner) is always `fast`.
+full suite once at the end. A trivial change (copy, style, one-liner) is always `fast`. A prose-only change (docs, skill
+text) needs no test agents: its seam is the doc lint, and review is spec-check alone.
 Risky means the change touches auth, money, personal data, input parsing, file or shell access,
 or secrets. Under hush, never ask, not even about the speed (pick it and say which at the end); high-impact
-decisions (security, money, personal data, production) still go to the user.
+decisions (security, money, personal data, production) still stop with a `blocked:` line (hush).
 
 ## Phases
 

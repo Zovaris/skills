@@ -8,9 +8,12 @@ their own git worktree, cut from your current commit, never from the base branch
 gives one) (or the harness's isolation option when it starts from HEAD) and
 pass the path. Their tests are input, not files to ship: move the cases worth keeping into the
 repo's existing test files in its own naming, drop the rest and any reference to the agent or
-its spec, and never commit an agent's file as is. Then remove those worktrees and branches
-(`smithy cleanup`). Launch them together so they run in parallel. Without a subagent tool: write each prompt to a file and run
+its spec, and never commit an agent's file as is. The adversary's file is the holdout (below): keep it
+untouched until its final run; cases you keep are copies written after that run. Then remove
+those worktrees and branches (`smithy cleanup`). Launch them together so they run in parallel. Without a subagent tool: write each prompt to a file and run
 `smithy agent --bg --cwd <worktree> --log <file> <prompt-file>` per agent, then read the logs.
+Where you may not create worktrees (a warden worker), an agent writes `zz_<agent>_test.*` files in
+yours instead, which you delete after taking what you keep.
 Read-only agents (spec-check, standards, security, builder) run as any fresh subagent (no
 particular type needed), or with `smithy agent --readonly` without a subagent tool.
 Give every agent the absolute path of this skill's `scripts/smithy` as `<smithy>`: agents run in the

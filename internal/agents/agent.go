@@ -38,7 +38,7 @@ Effort: --effort, else $AGENT_EFFORT, else the agent.effort setting (default med
 above medium is capped at medium. Passed as --effort (claude) or -c model_reasoning_effort
 (codex), and as $AGENT_EFFORT to every CLI; the others keep their own default and say so.
 Timeout: --timeout, else the agent.timeout setting (minutes, default 90; 0 = none). When it
-passes, the agent's whole process group is killed, "timed out after Nm" goes to the log and
+passes, the agent's whole process group is killed (Unix; on Windows only the agent process), "timed out after Nm" goes to the log and
 smithy agent exits 124; --bg runs are watched by a detached smithy that does the same.
 Extra flags for the chosen CLI: $AGENT_ARGS. Workers get WARDEN_HARNESS set to the CLI and the
 parent harness's variables removed, so their own scripts detect the right harness.

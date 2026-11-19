@@ -55,7 +55,6 @@ CLAUDE.md), `<repo>/.smithy/config.json`, `~/.smithy/config.json`, then the buil
 | Setting | Built-in | Meaning |
 |---|---|---|
 | `warden.max` | 3 | Running limit: workers past it are launched too and wait in `smithy wait-turn` |
-| `warden.max_attempts` | 3 | Launches per item, first included; past it a stuck item is `blocked` and listed for the user |
 | `warden.merge` | ask | unset (`smithy config get` exits 3): ask in the plan line, once per batch, "auto or manual?"; auto: workers merge green PRs after `smithy verify` says green; manual: they stop at `ready` |
 | `warden.cleanup` | auto | auto: end finished workers and remove worktrees and local branches without asking |
 | `warden.mode` | smelt fast | How workers build: `smelt fast\|normal\|full` or `plain`; an item that is risky by smelt's definition (auth, money, personal data, input parsing, file or shell access, secrets) runs at least `normal` |

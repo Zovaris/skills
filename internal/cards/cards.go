@@ -362,7 +362,12 @@ func Main(args []string) int {
 			fmt.Fprintln(os.Stderr, usage)
 			return 2
 		}
-		b, _ := json.MarshalIndent(read(filepath.Join(Home(), args[0], args[1]+".json")), "", "  ")
+		f := filepath.Join(Home(), args[0], args[1]+".json")
+		if _, err := os.Stat(f); err != nil {
+			fmt.Fprintf(os.Stderr, "no card %s in batch %s (%s)\n", args[1], args[0], f)
+			return 1
+		}
+		b, _ := json.MarshalIndent(read(f), "", "  ")
 		fmt.Println(string(b))
 	case "board", "live":
 		asJSON := false

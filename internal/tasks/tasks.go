@@ -75,7 +75,11 @@ func mtime(p string) time.Time {
 
 // Dirs lists this repo's task dirs, newest first: docs/specs/*, .docs/specs/*,
 // <plans>/<repo>/*, and any colon-separated $SMELT_TASKS_DIRS.
-func Dirs() []string {
+func Dirs() []string { return scan(true) }
+
+// scan lists the subdirs of the task-dir bases, newest first; withTasks keeps only those
+// holding tasks.
+func scan(withTasks bool) []string {
 	root := repoRoot()
 	bases := []string{filepath.Join(root, "docs", "specs"), filepath.Join(root, ".docs", "specs"), filepath.Join(PlansHome(), filepath.Base(root))}
 	for _, d := range strings.Split(os.Getenv("SMELT_TASKS_DIRS"), ":") {
@@ -94,7 +98,7 @@ func Dirs() []string {
 		}
 		for _, e := range entries {
 			full := filepath.Join(b, e.Name())
-			if e.IsDir() && hasTasks(full) {
+			if e.IsDir() && (!withTasks || hasTasks(full)) {
 				dirs = append(dirs, full)
 			}
 		}
@@ -111,6 +115,9 @@ func resolve(dir string) (string, error) {
 		return filepath.Abs(dir)
 	}
 	d := Dirs()
+	if len(d) == 0 {
+		d = scan(false)
+	}
 	if len(d) == 0 {
 		return "", fmt.Errorf("no task dir found (docs/specs/, .docs/specs/, ~/.smithy/plans/<repo>/ or $SMELT_TASKS_DIRS); pass one")
 	}
@@ -552,6 +559,7 @@ func Main(args []string) int {
 	case "where":
 		d := Dirs()
 		if len(d) == 0 {
+			fmt.Fprintln(os.Stderr, "no task dir for this repo (smithy task-dir <slug> makes one)")
 			return 3
 		}
 		fmt.Println(strings.Join(d, "\n"))

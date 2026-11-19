@@ -91,6 +91,7 @@ func SkillsMain(args []string) int {
 	}
 	p, ok := FindSkill(a)
 	if !ok {
+		fmt.Fprintf(os.Stderr, "smithy skills: %s is not installed (smithy skills --list)\n", a)
 		return 1
 	}
 	fmt.Println(p)

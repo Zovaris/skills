@@ -22,6 +22,22 @@ var allEvents = []string{"checks", "merged", "closed", "conflict", "review", "co
 
 type watcher interface{ poll() ([]string, error) }
 
+// firstPoll polls w up to tries times, waiting delay between tries, so a transient gh or
+// GraphQL error on the first read doesn't end the wait.
+func firstPoll(w watcher, tries int, delay time.Duration) ([]string, error) {
+	var err error
+	for i := 0; i < tries; i++ {
+		var lines []string
+		if lines, err = w.poll(); err == nil {
+			return lines, nil
+		}
+		if i < tries-1 {
+			time.Sleep(delay)
+		}
+	}
+	return nil, err
+}
+
 type opts struct {
 	events map[string]bool
 	all    bool
@@ -635,7 +651,13 @@ func Main(args []string) int {
 	for first := true; ; first = false {
 		var out []string
 		for _, w := range ws {
-			lines, err := w.poll()
+			var lines []string
+			var err error
+			if first {
+				lines, err = firstPoll(w, 3, 2*time.Second)
+			} else {
+				lines, err = w.poll()
+			}
 			if err != nil {
 				if first {
 					fmt.Fprintln(os.Stderr, "cannot read target:", err)

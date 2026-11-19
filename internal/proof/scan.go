@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/Zovaris/smithy/internal/ghx"
+	"github.com/Zovaris/smithy/internal/gitx"
 )
 
 const scanUsage = `usage: smithy scan [--base <branch|ref>]
@@ -129,43 +130,6 @@ func ScanFiles(names []string) []Finding {
 	return out
 }
 
-const emptyTree = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
-
-func branchName(s string) bool { return s != "HEAD" && !strings.ContainsAny(s, "~^:@{ ") }
-
-// resolveBase returns the commit to diff against and a label for it.
-func resolveBase(root, base string) (sha, label string) {
-	ref := ""
-	switch {
-	case base == "":
-		if r, err := ghx.Run("git", "-C", root, "symbolic-ref", "--quiet", "--short", "refs/remotes/origin/HEAD"); err == nil && r != "" {
-			ref = r
-		}
-	case branchName(base) && !strings.HasPrefix(base, "origin/"):
-		if _, err := ghx.Run("git", "-C", root, "rev-parse", "--verify", "--quiet", "refs/remotes/origin/"+base); err == nil {
-			ref = "origin/" + base
-		}
-	}
-	if ref == "" && base == "" {
-		if up, err := ghx.Run("git", "-C", root, "rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{upstream}"); err == nil && up != "" {
-			ref = up
-		} else {
-			return emptyTree, "the whole history (no origin default branch or upstream found)"
-		}
-	}
-	if ref == "" && !branchName(base) {
-		return base, base
-	}
-	if ref == "" {
-		ref = base
-	}
-	mb, err := ghx.Run("git", "-C", root, "merge-base", "HEAD", ref)
-	if err != nil || mb == "" {
-		return ref, ref + " (no merge-base with HEAD)"
-	}
-	return mb, fmt.Sprintf("%s (merge-base %s)", ref, short(mb))
-}
-
 // ScanMain runs `smithy scan`.
 func ScanMain(args []string) int {
 	base := ""
@@ -192,7 +156,7 @@ func ScanMain(args []string) int {
 		fmt.Fprintln(os.Stderr, "scan: --base must be a branch or ref, not an option")
 		return 2
 	}
-	base, label := resolveBase(root, base)
+	base, label := gitx.ResolveBase(root, base)
 	diff, err := ghx.Run("git", "-C", root, "-c", "core.quotepath=false", "diff", "--no-color", "--no-ext-diff", "-U0", base, "--")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "scan:", err)

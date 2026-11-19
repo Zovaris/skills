@@ -64,7 +64,21 @@ func idOf(ref, pattern string) string {
 func dash(s string) string { return strings.Join(strings.Fields(s), "-") }
 
 type check struct {
-	Name, Context, Status, Conclusion, State string
+	Name, Context, Status, Conclusion, State, StartedAt, CompletedAt string
+}
+
+// fingerprint identifies a rollup by its timestamps; "" when it has none.
+func fingerprint(rollup []check) string {
+	var b strings.Builder
+	stamped := false
+	for _, c := range rollup {
+		stamped = stamped || c.StartedAt != "" || c.CompletedAt != ""
+		fmt.Fprintf(&b, "%s|%s|%s|%s|%s|%s|%s;", c.Name, c.Context, c.Status, c.Conclusion, c.State, c.StartedAt, c.CompletedAt)
+	}
+	if !stamped {
+		return ""
+	}
+	return b.String()
 }
 
 type checks struct {
@@ -110,12 +124,14 @@ type prState struct {
 	url, state, mergeable, review, head string
 	num, comments, reviews              int
 	checks                              checks
+	fp                                  string
 }
 
 type prWatcher struct {
-	ref  string
-	last *prState
-	o    opts
+	ref   string
+	last  *prState
+	stale string
+	o     opts
 }
 
 func newPR(ref string, o opts) *prWatcher {
@@ -138,7 +154,7 @@ func (w *prWatcher) read() (*prState, error) {
 		return nil, err
 	}
 	return &prState{url: p.URL, num: p.Number, state: p.State, mergeable: p.Mergeable, review: p.ReviewDecision, head: p.HeadRefOid,
-		comments: len(p.Comments), reviews: len(p.Reviews), checks: summarize(p.StatusCheckRollup)}, nil
+		comments: len(p.Comments), reviews: len(p.Reviews), checks: summarize(p.StatusCheckRollup), fp: fingerprint(p.StatusCheckRollup)}, nil
 }
 
 func checksLine(s *prState) string {
@@ -158,6 +174,16 @@ func (w *prWatcher) poll() ([]string, error) {
 	}
 	var out []string
 	o, last := w.o, w.last
+	if last != nil && s.head != last.head && last.fp != "" {
+		w.stale = last.fp
+	}
+	if w.stale != "" {
+		if s.fp == w.stale {
+			s.checks = checks{state: "pending"}
+		} else if s.fp != "" {
+			w.stale = ""
+		}
+	}
 	w.last = s
 	if last == nil {
 		switch {

@@ -3,7 +3,7 @@
 Keeps pull requests mergeable: fixes red CI, rebases or merges the base after sibling merges,
 answers review threads, and stops at merged, closed or "needs you". It never adds scope.
 
-Started by you: `/tend …` ([how to start a skill in your harness](../../README.md#harnesses)), or by warden for its own batches.
+Started by you (by name, the way your harness starts skills), or by smelt and warden for their own PRs.
 
 ## Commands
 

@@ -6,15 +6,10 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 ## Unreleased
 
 ### CLI
-- Windows launcher: falls back to `curl.exe` with timeouts when `gh` is missing, and a failed
-  download prints `smithy: can't download v<version> (<asset>): <reason>` with exit 3; a CI job
-  runs it on Windows.
-- Windows launcher: the SHA-256 read from `certutil` skipped the hash line, so every install
-  failed with "checksum mismatch"; it now reads the hash.
 - `smithy cleanup` removes a branch whose commits already landed under new hashes (a rebase
   merge), instead of keeping it as unpushed.
 - Every command: `-h`/`--help` anywhere prints its usage on stdout and exits 0 before any repo
-  check, gh call or side effect; an unknown option prints `smithy <cmd>: unknown option <x>`
+  check, gh call or side effect (`smithy pr --help` and `smithy wait --help` included); an unknown option prints `smithy <cmd>: unknown option <x>`
   and the usage on stderr, exit 2 (so `smithy adr --bogus` no longer writes an ADR).
 - Usage mistakes exit 2 (`smithy commit "<msg>"` without paths, `smithy pr create` misuse).
 - `smithy changed` outside a repo says "not a git repo" (exit 2); `smithy comments <path>`
@@ -29,18 +24,17 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 - `smithy comments --diff` reads file names with `-z` (spaces and non-ASCII names count) and exits 2 for a base git can't resolve or one starting with `-`.
 - `smithy drift` exits 2 for a base git can't resolve and reads changed and tracked names with `-z`.
 - `smithy route` exits 2 for an unknown `--kind` or `--speed` and for a flag without its value.
-- `smithy config` reports a config file that isn't a JSON object (including `null`) on reads too, rejects empty or malformed keys, harness names and model names, and locks the file around writes so concurrent `set` calls keep every value.
-- The launcher times out downloads (`--connect-timeout 10 --max-time 120`) and a failed download prints one `smithy: can't download` line and exits 3.
+- `smithy config` reports a config file that isn't a JSON object (including `null`) on reads too, and `set` refuses one instead of overwriting it; it rejects empty or malformed keys, harness names and model names, and locks the file around writes so concurrent `set` calls keep every value.
 - `smithy scan` prints to stderr how many lines `smithy:allow` skipped and where.
 
 ### skills consistency
 - `warden.merge` has no built-in default: warden asks once per batch in its plan line (auto or
-  manual); a saved setting counts as the user's words. Production merges need the user's words.
+  manual); a saved setting counts as the user's words.
 - Merge, cleanup and report rules match use-smithy everywhere: workers end with `done: <id> …`,
   tend can stay until a PR merges and cleans up, warden ends tend when the batch is final, and
   nothing runs `git worktree remove --force`.
-- Sessions that can't ask use the session model and default mode; scout treats outside content as
-  data; warden is not invoked implicitly; slash commands are only examples of the words.
+- Sessions that can't ask use the session model and default mode (smelt included); scout treats
+  outside content as data; slash commands are only examples of the words.
 - smelt: fast with no plan builds from the task's criteria (in `.smelt/spec.md`, with its own
   `.gitignore`); reviewers diff the working tree against the base; a no-remote ship skips the PR.
 
@@ -52,20 +46,24 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 ### models
 - smithy ships no model names: `smithy config suggest-models` and `accept-models` are gone. The
   first time a tier is needed the skill asks the user to name it and saves it with
-  `smithy config set-model` in `~/.smithy/config.json`; a session that can't ask uses its own model.
+  `smithy config set-model` in `~/.smithy/config.json`.
 
 ### from the smelt validation run
 - The launcher builds the dev binary per checkout (`~/.smithy/bin/dev/<checkout id>`), so
   parallel worktrees never run each other's build.
 - `smithy route --agent <file|name>` routes a smelt agent (reviewers cheap, test agents mid).
 - `smithy comments --diff <base>` reports only the lines the change adds.
-- `smithy pr --help` prints usage; `smithy pr template` says why when there is no template.
+- `smithy pr template` says why when there is no template.
 - smelt: inline criteria go to `.smelt/spec.md` for the agents; test agents run together,
   in worktrees at absolute paths; VERIFY splits "ready to open" from "ready to merge"; a branch
-  the harness made is kept; the standards reviewer falls back to use-smithy's ground rules; a
-  session that can't ask uses its own model.
+  the harness made is kept; the standards reviewer falls back to use-smithy's ground rules.
 
 ### launcher
+- Windows: falls back to `curl.exe` when `gh` is missing; that curl path times out downloads
+  (`--connect-timeout 10 --max-time 120`), and a failed download prints
+  `smithy: can't download v<version> (<asset>): <reason>` with exit 3; a CI job runs it on Windows.
+- Windows: the SHA-256 read from `certutil` skipped the hash line, so every install failed with
+  "checksum mismatch"; it now reads the hash.
 - The binary is installed only after its GitHub build attestation is verified (needs `gh`);
   without it the launcher stops with how to fix it, unless `SMITHY_ALLOW_UNATTESTED=1`
   accepts a checksum-only install. Answers the skills.sh Snyk E004/W012 on the launcher.
@@ -114,10 +112,9 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
   quotes (`sh -c 'bun run test'`); `.smelt/` writes its own `.gitignore`; `list` says how many
   receipts from other commits it hid.
 - `smithy config set agent.effort high` saves `medium` and says so; other values than `low` or
-  `medium` are refused. New `smithy config unset [--repo] <key>`. `set` refuses a config file
-  that isn't JSON instead of overwriting it.
+  `medium` are refused. New `smithy config unset [--repo] <key>`.
 - `smithy stack` gives `bun run test` (the package's script), not `bun test` (Bun's runner).
-- `smithy wait --help` prints its usage; `smithy verify` usage says `<repo-dir>` is a local path.
+- `smithy verify` usage says `<repo-dir>` is a local path.
 - `smithy verify` says `draft` (exit 3) for a draft PR that is otherwise green, instead of
   `pending`; `checks` reads `green`/`red`/`pending`/`none` in `verify`, `pr-state` and `wait`
   alike (was `pass`/`fail` in the first two).
@@ -125,17 +122,19 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
   origin; tend and smelt pass URLs to `verify` and `wait`, so a bare number can't hit the wrong PR.
 - tend reads the PR state before any worktree, and only uses the main checkout when the PR
   branch is already there and clean.
-- smelt: agents work silently and send questions up; ship hands the PR to a tend subagent when
+- smelt: ship hands the PR to a tend subagent when
   tend is installed; review and scan use `origin/<base>`; test-agent worktrees start from your
   commit and their files are folded into the repo's tests, never committed as is; another review
   look only when the fix pays for it; agents that didn't apply are listed in the PR body.
 
 ### skills, from a best-practice review
-- Every skill can be run by an agent (no more `disable-model-invocation`); warden still asks for a
-  yes because it costs sessions. Docs no longer assume slash commands.
+- Every skill can be run by an agent (no more `disable-model-invocation`); warden is kept out of
+  implicit invocation and still asks for a yes because it costs sessions. Docs no longer assume
+  slash commands.
 - Merges: only the session that talks to the user decides; tend and workers merge on `merge
   auto`; a production merge needs the user's explicit yes, up front or asked at green.
-- Agents launched by smelt get a report contract (silent, `done:`, questions under `Question:`).
+- Agents launched by smelt get a report contract: they work silently, end with `done:` and send
+  questions up under `Question:`.
 - warden acts on the verdicts `smithy verify` really prints; tend keeps one review-round counter
   and handles `smithy wait` exit codes; smelt's ship phase moved to `references/SHIP.md`.
 

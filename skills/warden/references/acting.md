@@ -25,6 +25,7 @@ yourself: `smithy cards set <batch> <id> state=working decision_key=`. Log low a
 
 `smithy verify <repo> <branch> <pr>`:
 - `unpushed` or `red`: back to the worker in one line.
+- `draft`: green but still a draft; list it for the user, never merge it.
 - `ready` with `note=merge-blocked` in merge auto: merge it yourself (`gh pr merge`); refused here
   too → list it for the user, with the doctor's permission hint.
 - other `ready`: list it as waiting for the user's merge.

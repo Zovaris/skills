@@ -88,7 +88,8 @@ current step, so the warden sees where you are without asking.
   never pr_open.
 - Green and reviewed (`<warden-dir>/scripts/smithy verify <repo> <branch> <pr-url>` says `green`):
   tests_run=<commands actually run>, risks=<or none>. merge auto → merge into
-  <base>, state=merged; manual → state=ready. A PR into the production branch is manual unless
+  <base>, state=merged, then from <repo> run `<warden-dir>/scripts/smithy cleanup <repo> <branch>
+  <worktree>` (never forced); manual → state=ready. A PR into the production branch is manual unless
   the batch says the user approved a production merge. If the merge itself
   is refused (permission rule, branch protection, a classifier): don't retry around it;
   state=ready note=merge-blocked, and the warden merges.

@@ -100,7 +100,8 @@ read it once per batch).
 4. **Act** on each card whose stage isn't final (`references/acting.md`): decide by impact,
    verify PRs, clean up merged, reported and dropped items, recover stuck ones.
 5. **Finish** when every item is `merged`, `reported`, `dropped`, held or waiting on the user.
-   **End** every finished worker still running; leave `blocked` / `failed` ones open for the user.
+   **End** every finished worker still running, and the tend session once every item is final;
+   leave `blocked` / `failed` ones open for the user.
    Workers still `ready` end on their own when the PR closes where the harness auto-archives;
    otherwise the final message says `/warden cleanup` finishes them after the merges.
 6. **Tend**, when installed, keeps the PRs green, rebased and answered (spawned in step 2); a PR it

@@ -42,6 +42,9 @@ named in your reply.
   - `issues`: new issues with `--label` (default `agent`); see "Issues" below. Never builds them.
   - `all`: both.
   The default scope is `smithy config get tend.watch` when set, else `prs`.
+- `stay until merged` in the launch (smelt asks for it): at green, don't stop; wait with
+  `smithy wait pr:<pr-url>` until the PR merges or closes, then act as **merged / closed** below.
+  Red, conflicts or new review threads in the meantime go back through the loop.
 - `--card <batch> <id>`: when warden launched you, mirror your state on that card
   (`smithy cards set <batch> <id> key=value…`; cards are shared through `~/.smithy/warden`).
 
@@ -88,7 +91,8 @@ inside the repo). Then repeat:
    - **green, mergeable, approved or no review required** → `green` (`smithy verify` says `draft`
      for a draft PR: report `green (draft)` and leave it a draft). Merge only if whoever launched
      you said `merge auto`, never a draft, and into the production branch only when the launch
-     says the user approved it (use-smithy: merges); otherwise stop at green.
+     says the user approved it (use-smithy: merges); otherwise stop at green (or keep waiting when
+     told to stay until merged).
 3. Commit fixes with `smithy commit` (style once, one concern per commit); push without force
    unless the rebase rule above allows it.
 

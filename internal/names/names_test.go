@@ -22,3 +22,12 @@ func TestSlugCap(t *testing.T) {
 		t.Errorf("Slug too long or ends in a dash: %q", s)
 	}
 }
+
+func TestTypeDocsAndFeatures(t *testing.T) {
+	cases := map[string]string{"split json output": "feat", "CONTRIBUTING doc": "docs", "trial report": "docs", "rename flag": "refactor"}
+	for in, want := range cases {
+		if got := Type(in); got != want {
+			t.Errorf("%q → %s, want %s", in, got, want)
+		}
+	}
+}

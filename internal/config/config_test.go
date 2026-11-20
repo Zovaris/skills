@@ -501,3 +501,25 @@ func TestSetRefusesUnreadableFile(t *testing.T) {
 		t.Fatalf("file changed: %q", b)
 	}
 }
+
+func TestRepoFileInWorktreeIsTheMainCheckouts(t *testing.T) {
+	main := t.TempDir()
+	run := func(dir string, args ...string) {
+		t.Helper()
+		c := exec.Command("git", args...)
+		c.Dir = dir
+		if out, err := c.CombinedOutput(); err != nil {
+			t.Fatalf("git %v: %v %s", args, err, out)
+		}
+	}
+	run(main, "init", "-q")
+	run(main, "-c", "user.email=a@b", "-c", "user.name=a", "commit", "-q", "--allow-empty", "-m", "x")
+	wt := filepath.Join(t.TempDir(), "wt")
+	run(main, "worktree", "add", "-q", wt)
+	t.Chdir(wt)
+	got, _ := filepath.EvalSymlinks(filepath.Dir(filepath.Dir(RepoFile())))
+	want, _ := filepath.EvalSymlinks(main)
+	if got != want {
+		t.Fatalf("RepoFile in worktree = %s, want under %s", RepoFile(), main)
+	}
+}

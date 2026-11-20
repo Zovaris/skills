@@ -20,7 +20,8 @@ For each finding:
    sentence of reason in the thread or the PR body.
 
 No performative agreement: no "great catch", no "you're absolutely right", no fixing something
-just to make a reviewer happy. Correctness and the spec decide, not who wrote the comment.
+just to make a reviewer happy. Changing an agreed spec to close a finding is the user's call
+(under hush, `smithy consult`, logged in "Decided without you"). Correctness and the spec decide, not who wrote the comment.
 
 Human PR comments: reply in the comment's thread, not in a new top-level comment. Bot reviewers:
 at most 3 rounds in total; a bot review is not a completion gate.

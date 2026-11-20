@@ -26,7 +26,7 @@ The slash form is one example: the same words in plain text work in any harness 
 |---|---|
 | `/smelt <task>` | infer: no agreed plan → `plan` (at `fast`: `build`, criteria from the task); plan/spec/task exists → `build`; a bug → `debug` |
 | `/smelt brainstorm <idea>` | `references/BRAINSTORM.md` only: the why, approaches, a draft design |
-| `/smelt plan <idea>` | brainstorm → grill → spec → builder check (`full` or a long spec) → task list → ask how to run it |
+| `/smelt plan <idea>` | brainstorm → grill → spec → builder check (more than 8 criteria, or open questions left) → task list → ask how to run it |
 | `/smelt build next [dir]` | `smithy tasks next`, mark it `doing`, build it to `ship`, mark it `done` |
 | `/smelt build all [dir]` | `references/EXECUTE.md`: every task here, one implementer subagent each |
 | `/smelt <phase> <task>` | that phase only: `spec`, `build`, `test`, `review`, `ship`, `retro` |
@@ -48,10 +48,10 @@ starting; a subagent or worker running smelt stays silent and puts them in its r
 | | fast | normal (default) | full |
 |---|---|---|---|
 | For | small or clear changes, warden workers | most features and fixes | risky logic, money, data, auth, public APIs |
-| Plan / spec | skipped; criteria from the task | spec if none exists | brainstorm + grill + spec + builder check + tasks |
+| Plan / spec | skipped; criteria from the task | spec if none exists | brainstorm + grill + spec + builder check (if needed) + tasks |
 | Build | TDD on the acceptance criteria only | TDD on every behaviour | TDD on every behaviour |
 | Test agents | regression (bugs); none for a feature | + adversary; property or e2e when the change fits; mutation on core logic | + 2 adversaries, property, mutation, e2e when applicable; hostile after review when it runs |
-| Review | a fresh spec-check agent (self-check against `agents/spec-check.md` only without a subagent tool); security only if the change is risky | spec-check + standards (+ security if risky) | spec-check + standards + security |
+| Review | a fresh spec-check agent (self-check against `agents/spec-check.md` only without a subagent tool); security only if the change is risky | one reviewer running spec-check and standards (+ security if risky) | spec-check + standards + security |
 | Verify gate | always | always | always |
 | Docs | ADR only if forced | glossary/ADR when they apply | glossary/ADR when they apply + retro |
 
@@ -83,7 +83,8 @@ the user confirms; else `references/DOCS.md`.
 **Done:** the user approved the design and confirmed the decisions.
 
 **spec · Spec and tasks** — `references/SPEC.md`, then `references/TASKS.md`. Spec with agreed
-test seams; at `full` or for a long spec, a fresh `agents/builder.md` subagent sorts what's
+test seams; for a spec with more than 8 criteria or with questions still open, a fresh
+`agents/builder.md` subagent sorts what's
 still open into answered / minor (decide) / theirs (ask). Then tracer-bullet tasks with Files
 and Interfaces, self-reviewed, where the user picks; then ask how to run them: here one at a
 time (`build next`), here all at once (`build all`), in parallel with warden (if installed),

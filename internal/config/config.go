@@ -58,7 +58,8 @@ func UserFile() string {
 	return filepath.Join(ghx.Home(), "config.json")
 }
 
-// RepoFile is this repo's settings file ("" outside a repo). Before 0.8 it was
+// RepoFile is this repo's settings file ("" outside a repo). In a linked worktree it is the main
+// checkout's, unless the worktree tracks its own, so one setting holds for every worktree. Before 0.8 it was
 // .agents/config.json, still read until someone moves it.
 func RepoFile() string {
 	cwd, _ := os.Getwd()
@@ -67,6 +68,14 @@ func RepoFile() string {
 		return ""
 	}
 	f := filepath.Join(top, ".smithy", "config.json")
+	if _, err := ghx.Run("git", "-C", top, "ls-files", "--error-unmatch", ".smithy/config.json"); err != nil {
+		if common, err := ghx.Run("git", "-C", top, "rev-parse", "--path-format=absolute", "--git-common-dir"); err == nil && filepath.Base(common) == ".git" {
+			if main := filepath.Dir(common); main != top {
+				top = main
+				f = filepath.Join(top, ".smithy", "config.json")
+			}
+		}
+	}
 	if _, err := os.Stat(f); err != nil {
 		if old := filepath.Join(top, ".agents", "config.json"); exists(old) {
 			return old

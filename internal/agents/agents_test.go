@@ -317,3 +317,24 @@ func TestConsultPrefersJudgeTier(t *testing.T) {
 		t.Fatal("consult usage must name the judge tier")
 	}
 }
+
+func TestRouteProseTaskIsCheapEvenWhenItMentionsMoney(t *testing.T) {
+	tier, why := Route("Write CONTRIBUTING doc\nExplain that money is integer cents.", "ship", "fast")
+	if tier != "cheap" {
+		t.Fatalf("tier = %s (%v)", tier, why)
+	}
+	if tier, _ := Route("Add payment retries", "ship", "normal"); tier != "strong" {
+		t.Fatalf("risky title routed %s", tier)
+	}
+}
+
+func TestAgentBackgroundReportsAnImmediateFailure(t *testing.T) {
+	p, log := timeoutPrompt(t)
+	t.Setenv("AGENT_CMD", "sh -c 'echo Not logged in; exit 1'")
+	old := startCheck
+	startCheck = 3 * time.Second
+	defer func() { startCheck = old }()
+	if rc := AgentMain([]string{"--bg", "--timeout", "0", "--log", log, p}); rc != 1 {
+		t.Fatalf("rc = %d, want 1", rc)
+	}
+}

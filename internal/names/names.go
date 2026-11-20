@@ -55,9 +55,9 @@ func Type(title string) string {
 	switch {
 	case pre("fix") || has("bug", "crash", "broken", "error", "regression"):
 		return "fix"
-	case pre("doc") || has("readme", "adr"):
+	case pre("doc") || has("readme", "adr", "contributing", "changelog", "documentation", "docs", "guide", "report"):
 		return "docs"
-	case pre("refactor", "rename", "extract", "move", "split"):
+	case pre("refactor", "rename", "extract", "move"):
 		return "refactor"
 	case pre("test") || has("coverage"):
 		return "test"

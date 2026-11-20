@@ -128,6 +128,10 @@ func PRMain(args []string) int {
 		die(p, use)
 		return 2
 	}
+	if okGH, origin := ghx.OriginIsGitHub(); !okGH && origin != "" {
+		fmt.Fprintf(os.Stderr, "smithy pr: no PR opened: origin (%s) is not a GitHub remote. Push the branch and open the review in that forge by hand, or stop at the branch.\n", origin)
+		return 3
+	}
 	branch := git("branch", "--show-current")
 	var open []struct {
 		URL string `json:"url"`

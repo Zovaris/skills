@@ -26,6 +26,7 @@ cross-cutting, or the last fix round).`
 var (
 	risky   = []string{"auth", "login", "password", "secret", "token", "permission", "security", "payment", "billing", "money", "invoice", "migration", "schema", "database", "concurren", "race condition", "lock", "crypto", "encrypt", "data loss", "delete user", "production", "public api"}
 	hard    = []string{"architecture", "redesign", "refactor", "performance", "investigate", "root cause", "why does", "ambiguous", "trade-off", "cross-cutting", "rewrite", "remake", "protocol", "parser", "compiler", "algorithm"}
+	prose   = []string{"doc", "docs", "documentation", "readme", "contributing", "changelog", "guide", "adr", "wording"}
 	trivial = []string{"typo", "copy change", "wording", "rename", "bump", "version", "color", "colour", "style tweak", "readme", "comment", "lint", "format"}
 
 	criteriaRe  = regexp.MustCompile(`(?m)^\s*- \[[ x]\]`)
@@ -72,6 +73,10 @@ func Route(text, kind, speed string) (string, []string) {
 	interfaces := section(interfaceRe, text, bulletRe)
 	score, reasons := 1, []string{}
 	risk, hrd, triv := matches(low, risky), matches(low, hard), matches(low, trivial)
+	title := strings.ToLower(strings.SplitN(strings.TrimSpace(text), "\n", 2)[0])
+	if len(matches(title, prose)) > 0 && len(matches(title, risky)) == 0 {
+		return Tiers[0], []string{"prose only: " + strings.Join(first(matches(title, prose), 2), ", ")}
+	}
 	if kind == "scout" || kind == "review" || kind == "tend" {
 		score = 0
 		reasons = append(reasons, kind+" work")

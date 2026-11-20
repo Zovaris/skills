@@ -91,8 +91,13 @@ func CleanupMain(args []string) int {
 	if rlErr != nil {
 		unpushed = "unknown"
 	}
-	if force || quiet("git", "merge-base", "--is-ancestor", branch, base) == nil || unpushed == "" || landed(branch, base) {
+	merged := quiet("git", "merge-base", "--is-ancestor", branch, base) == nil || landed(branch, base)
+	if force || merged || unpushed == "" {
 		if stderrOnly("git", "branch", "-D", branch) == nil {
+			// A merged branch's remote copy is spent: delete it too, so no feat/* branch lingers.
+			if merged && quiet("git", "show-ref", "-q", "--verify", "refs/remotes/origin/"+branch) == nil {
+				_ = quiet("git", "push", "-q", "origin", "--delete", branch)
+			}
 			fmt.Println("cleaned", branch)
 			return 0
 		}

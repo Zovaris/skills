@@ -7,7 +7,7 @@ do it on the user's yes.
 
 ## decide (`needs_decision`)
 
-By `impact` (you may raise it, never lower it):
+By `impact` (you may raise it, never lower it; `impact_by=decide` means the decision model raised it):
 - **low** (local, cheap to undo, restores or completes the intent): decide on the merits.
 - **medium** (shapes a module or internal contract): `smithy consult` with the worker's question and
   options verbatim, in neutral order. `NEED-INFO` goes back to the worker; `ESCALATE` makes it
@@ -25,12 +25,18 @@ yourself: `smithy cards set <batch> <id> state=working decision_key=`. Log low a
 
 `smithy verify <repo> <branch> <pr-url>` prints one verdict:
 - `green`: merge auto, and either not the production branch or the user approved a production
-  merge for this batch → merge if the worker hasn't (card `note=merge-blocked` means it was
-  refused: `smithy pr merge <pr>` yourself; refused again → list it with the doctor's permission hint).
+  merge for this batch → `smithy pr merge <pr>` (workers never merge: the merge permission is
+  the user's, given to you, and a permission check would refuse it from a worker). Use the repo's
+  usual merge method; a rebase merge refused because the branch has merge commits → a merge
+  commit, never a force-push. Not mergeable (the base moved) → **tell** the worker to merge the base and push. Refused → list
+  it with the doctor's permission hint.
   Production without that yes, or merge manual → card `state=ready`, listed for the user.
-- `pending`: wait (`smithy wait pr:<pr-url>`).
+- `pending`: wait on every pending PR of the batch in one call, `smithy wait pr:<a> pr:<b> …`
+  (no tokens while it waits), then verify the ones it names.
+- A `ready` card with `note=no-github-pr` has no PR to verify: list its branch for the user.
 - `draft`: green but still a draft; list it for the user, never merge it.
-- `unpushed` or `red`: back to the worker in one line.
+- `unpushed` or `red`: **tell** the worker in one line (a red check names its failing job); a
+  worker that already ended gets the line in its inbox and is respawned.
 - `merged`: next section.
 - `closed` (closed without merge): `state=dropped note="PR closed without merge"`, `smithy cleanup`,
   **end** the worker, set the source to `dropped`, name it in the final message.
@@ -66,7 +72,13 @@ line each, grouped as **Decisions** and **Followups**, each with the PR it came 
 Recovery ladder, one rung per wake:
 1. Answer from the intent if the note asks something it settles.
 2. One corrective line to the worker (**tell**).
-3. Relaunch in the **same worktree** with the brief's relaunch line.
-4. After a second relaunch fails, tell the user with the `note`.
+3. Relaunch in the **same worktree** with the brief's relaunch line, only while the item's
+   `launches` is below 3 (first launch included).
+4. At the cap, set the card `state=blocked` and tell the user
+   with the `note`; the item stays listed as blocked until they act.
 
 Never a fresh worktree for the same task.
+
+Takeover data: every stuck report, and the final message for any item not merged, gives per item
+the worktree path, branch, session id or pid, and log path (`<batch-dir>/<id>.log`), so the user
+can take over by hand.

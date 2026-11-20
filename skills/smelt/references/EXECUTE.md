@@ -9,7 +9,7 @@ alternative.
 
 Each implementer gets the model `smithy route --file <task file> --speed <speed>` picks
 (cheap, mid or strong, from the task's risk, difficulty and size); reviewers use
-`smithy route --kind review`; the last fix round goes one tier up. You may move a pick one tier with
+`smithy route --kind review`; the last fix round uses strong. You may move a pick one tier with
 a reason; a model the user named always wins. A tier whose model is unset prints `-`: ask the
 user once to name it and save it with `smithy config set-model <tier> <name>`; until then, or when
 you can't ask, use the session default.
@@ -28,11 +28,11 @@ For each task:
    - `DONE` → step 4.
    - `DONE_WITH_CONCERNS` → read the concerns, decide each (ruling), then step 4.
    - `NEEDS_CONTEXT` → answer from the spec or code (ruling) and send it back; if only the user
-     can answer, ask (under hush, decide and rule).
+     can answer, ask (under hush, stop with a `blocked:` line).
    - `BLOCKED` → `smithy tasks set <file> status=todo`, note why, move to the next unblocked task.
 4. **Verify** (the verify gate): read the diff, run the task's tests and the suite.
-5. **Review** the diff with a fresh `agents/spec-check.md` (task file as the spec) and, at
-   `normal`/`full`, `agents/standards.md`. Handle findings with the receiving-review rules.
+5. **Check** the diff in one wave, as SKILL.md's speed table says (task file as the spec): at
+   `fast` the spec-check checklist yourself, at `normal`/`full` the agents in parallel. Handle findings with the receiving-review rules.
 6. **Fix loop**: send the reproduced findings back to a fresh implementer with the diff. At most
    3 rounds; round 3 uses the strong model. Still failing → `BLOCKED` with the findings.
 7. Commit the task atomically (`smithy commit`). Its `status=done pr=<url>` is set at ship, once
@@ -45,7 +45,7 @@ After the last task: one whole-branch review (the review phase), one fix wave, t
 Decisions that come up without the user, by impact:
 - **low** (local, cheap to undo): decide yourself.
 - **medium** (shapes a module or an internal contract): `smithy consult "<question>"
-  "<options, neutral order>" [--context <file>]`, one tool-less call to the user's strong model
+  "<options, neutral order>" [--context <file>]`, one tool-less call to the user's judge model (else strong)
   in whatever harness you're in. Follow its pick; `NEED-INFO` → find that out and ask again;
   `ESCALATE` → it's high.
 - **high** (scope, customer-visible behaviour, money, data, security, public API, production,

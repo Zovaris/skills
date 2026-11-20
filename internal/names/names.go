@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"unicode"
 
 	"github.com/Zovaris/smithy/internal/config"
 	"github.com/Zovaris/smithy/internal/ghx"
@@ -52,12 +53,22 @@ func Type(title string) string {
 		}
 		return false
 	}
+	word := func(words ...string) bool {
+		for _, f := range strings.FieldsFunc(t, func(r rune) bool { return !unicode.IsLetter(r) }) {
+			for _, w := range words {
+				if f == w {
+					return true
+				}
+			}
+		}
+		return false
+	}
 	switch {
 	case pre("fix") || has("bug", "crash", "broken", "error", "regression"):
 		return "fix"
-	case pre("doc") || has("readme", "adr"):
+	case pre("doc ", "docs") || word("readme", "adr", "contributing", "changelog", "documentation", "docs", "doc", "guide", "report"):
 		return "docs"
-	case pre("refactor", "rename", "extract", "move", "split"):
+	case pre("refactor", "rename", "extract", "move"):
 		return "refactor"
 	case pre("test") || has("coverage"):
 		return "test"

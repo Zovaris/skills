@@ -58,8 +58,8 @@ requirements from the intent and the code"; out of scope if the user named it>
   its folder between calls, so start every command with `cd <worktree> &&`. Then check `pwd -P` and `git rev-parse --show-toplevel` equal <worktree> and the branch
   is <branch>. If not: state=blocked note=wrong-worktree, stop.
 <has prereqs or the batch is full: "- Then wait for your turn: run `<warden-dir>/scripts/smithy wait-turn
-  <batch> <id>` (one blocking call; if your harness moves it to the background, wait for it to end, never poll;
-  exit 4 means run it again, exit 0 means go). When it says go, set `state=working`,
+  <batch> <id> 50` in the background and wait for it to end (no tokens while it waits; never
+  poll); exit 4 means run it again, exit 0 means go. When it says go, set `state=working`,
   `git fetch origin && git merge origin/<base>` (or the prereq's branch when stacked) so you
   start from the merged prereqs.">
 <relaunch: "- This is a relaunch. Read <batch-dir>/<id>.inbox.md first if it exists. Before any

@@ -21,7 +21,8 @@ else update the docs the change touched (`references/DOCS.md`). Then:
   they found, agents not run and why, "Decided without you" (from `rulings.md` if any), ADRs
   added. Title in the commit style: `smithy pr create --base <b> --title "<t>" --body-file <f>`;
   write the PR body file inside the worktree's `.smelt/` or the system temp dir, never next to
-  the worktree. From a task file: `smithy tasks set <file> status=done pr=<url>`. Then wait
+  the worktree. From a task file: `smithy tasks set <file> status=done pr=<url>`. A warden worker ends
+  here (its brief). Alone, wait
   with `smithy wait pr:<pr-url>` (no tokens while it waits), in the background where the harness
   wakes on exit, else in the foreground; never sleep loops. Only when it reports red CI, a
   conflict or a review comment, hand that PR to **tend** (`smithy skills tend` prints its path)
@@ -32,8 +33,8 @@ else update the docs the change touched (`references/DOCS.md`). Then:
   pushes the branch and prints the compare URL: end there, report the branch and URL, and skip
   the wait (the user opens the PR by hand). Merge with `smithy pr merge <pr>`, never
   `gh pr merge`.
-  (2) **Merge** the PR or locally into the base only when the user asks or the session that
-  launched you said `merge auto` (a warden worker); into the production
+  (2) **Merge** the PR or locally into the base only when the user asks (warden merges its
+  workers' PRs; workers never do); into the production
   branch only on their explicit yes for this change. (3) **Keep** the branch for later. Discard
   work only when the user explicitly says to.
 - **No remote, or not GitHub** (`git remote` prints nothing, or `smithy pr create` exits 3:

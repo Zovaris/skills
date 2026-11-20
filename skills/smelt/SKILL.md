@@ -51,9 +51,9 @@ starting; a subagent or worker running smelt stays silent and puts them in its r
 | Plan / spec | skipped; criteria from the task | spec if none exists | brainstorm + grill + spec + builder check (if needed) + tasks |
 | Build | TDD on the acceptance criteria only | TDD on every behaviour | TDD on every behaviour |
 | Checks (scripts) | suite, typecheck, lint, `smithy scan` | same, plus property tests you write when the repo has a PBT library | same, plus the mutation tool run as a command |
-| Agents (one wave, in parallel) | none: you check the diff against `agents/spec-check.md` yourself; a security agent only if the change is risky | adversary (runtime logic only; regression instead for a reported bug) + one reviewer (spec-check and standards; + security if risky) | 2 adversaries, property, a reviewer for spec-check and standards, security, and one agent reading the surviving mutants; hostile after the fixes when something runs |
+| Agents (one wave, in parallel) | none: you check the diff against `agents/spec-check.md` yourself; a security agent only if the change is risky | adversary (runtime logic only; regression instead for a reported bug) + one reviewer (spec-check and standards); security as a third only if risky, never more than three | adversary, property, one reviewer for spec-check and standards, security, one agent reading the surviving mutants, e2e when UI or endpoints changed; hostile last, for a service or CLI that runs |
 | Re-review | none | the same reviewer, resumed, looks only at the fixes for a blocking finding | same |
-| Target | ~5 min, no subagent | ~10–15 min, 2 subagents | the safest flow |
+| Target | ~5 min, no subagent | ~10–15 min, 2–3 subagents | the safest flow, ~6 subagents |
 | Verify gate | always | always | always |
 | Docs | ADR only if forced | glossary/ADR when they apply | glossary/ADR when they apply + retro |
 
@@ -134,6 +134,10 @@ listed; the rest are named as dropped.
   hush, in `build all`, or the user is away): low impact → decide; medium → one
   `smithy consult` call to the user's judge model (else strong); high → the user. Security, money and personal data are always high. Record each in the PR's
   "Decided without you".
+- Command shapes that trip agents: `smithy receipt run --claim "<c>" -- <cmd> <args>` (argv after
+  `--`, not one quoted string); `smithy commit` wants a clean index and a subject under 72
+  characters; a test fixture that looks like a secret gets `smithy:allow` on its line for
+  `smithy scan`.
 - No claim without fresh evidence (`references/VERIFY.md`): every "passes" names the command
   and its result; every "an agent did it" comes with its diff.
 - Never `--no-verify`, never skip or delete a failing test to go green.

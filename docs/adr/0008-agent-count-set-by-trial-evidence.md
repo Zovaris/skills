@@ -16,11 +16,13 @@ those two still found real bugs in 4 of 5 tasks.
 
 Cost is controlled by how many agents run, so each one has to earn its place with findings in a
 trial:
-- At `normal`, spec-check and standards run as one reviewer; one second look per round covers
-  every fixed finding; the builder check runs only for specs over 8 criteria or with open
+- At `normal`, spec-check and standards run as one reviewer; a fixed blocking finding is
+  confirmed by resuming the same reviewer; the builder check runs only for specs over 8 criteria or with open
   questions; regression runs only for a reported bug with a repro.
-- Further cuts (one adversary at full for a pure function, security at full only for a risky
-  diff) wait for a trial with a planted bug, so a cut is never taken on "found nothing" alone.
+- Trial 3's planted bugs (`docs/trials/2026-11-trial-3.md`): every defect was caught at normal by
+  four agents or more; the full-only agents (a second adversary, a separate standards reviewer,
+  hostile on a library) found nothing new for +168k. So full runs one adversary and one combined
+  reviewer too, and hostile only where something runs; normal caps at three agents.
 - Each trial's report lives in `docs/trials/`; this ADR is updated, not duplicated, when one
   changes the agent set.
 

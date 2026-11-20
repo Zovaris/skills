@@ -14,8 +14,8 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
   agents write `zz_` files in the tree (no WIP commit, no extra worktree); a fixed blocking
   finding is confirmed by resuming the same reviewer, not a fresh one; no "another look by
   judgment". Plans aim for a short chain (width over tidiness). Workers end at `pr_open`; warden
-  waits on every PR's CI in one `smithy wait` and merges; no tend session per batch or PR, tend
-  is started only to fix red CI or review comments. `warden.max` defaults to 5.
+  waits on every PR's CI in one `smithy wait` and merges; no tend session per batch or PR (red CI
+  goes back to the worker; tend runs when the user starts it). `warden.max` defaults to 5.
 - warden merges every green PR itself; workers stop at `ready` and never merge. A permission
   classifier refused every worker's merge in trial 3, because the merge permission came in a
   brief another agent wrote.

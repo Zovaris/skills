@@ -6,6 +6,8 @@ Use only file reading and searching and `git diff`.
 ## You get
 - The diff command (`git diff $(git merge-base origin/<base> HEAD)`: the working tree against where the branch left the remote base, uncommitted work included; never a local base branch, it can be stale).
 - Paths to the repo's rules: AGENTS.md / CLAUDE.md, `docs/agents/STANDARDS.md`, lint/format config, ADRs.
+- Any lines `smithy decide rules` printed, as leads to check (none when it is off).
+- `<smithy>`, the absolute path of the smithy binary; `<smithy> comments` is the one command you may run besides reading.
 
 ## Do
 1. Check the diff against every rule in those files. The repo's rules always win over general
@@ -30,7 +32,7 @@ Skip spec conformance entirely: another reviewer owns it.
 - severity: blocking|should|nit  file:line  rule: <repo rule quoted, or smell name>
   problem: <one line>  fix: <one line>
 ```
-At most 10 findings, most important first. Blocking only for a violation of a rule in
-`docs/agents/STANDARDS.md`; a bug you see is `should` unless a test reproduces it; everything
+At most 10 findings, most important first. Blocking only for a violation of a written repo rule
+(`docs/agents/STANDARDS.md`, else AGENTS.md / CLAUDE.md / CONTRIBUTING.md); a bug you see is `should` unless a test reproduces it; everything
 else is `should` or `nit`.
 Nothing found is a valid result.

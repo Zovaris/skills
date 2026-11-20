@@ -19,7 +19,7 @@ checkout's, so one setting holds for every worktree. You never edit them by hand
 | `tasks.commit` | ask | Commit specs and tasks (`docs/specs/`) or keep them out of git (`.docs/specs/`). |
 | `tasks.ignore` | ask | When not committed: a committed `.gitignore` line, or `.git/info/exclude` (this machine only). |
 | `tasks.location` | `repo` | `repo`, `local` (`~/.smithy/plans`) or `board`. |
-| `warden.merge` | unset (warden asks once per batch) | Unset: warden asks once per batch in its plan line (auto or manual); `auto`: warden merges green PRs (workers never merge); `manual`: they stop at ready. A value you save counts as your words. |
+| `warden.merge` | unset (warden asks once per batch) | Unset: warden asks once per batch in its plan line (auto or manual); `auto`: warden merges green PRs (workers never merge); `manual`: warden lists each green PR for you. A value you save counts as your words. |
 | `warden.cleanup` | `auto` | End finished workers and remove their worktrees and branches without asking. |
 | `warden.max` / `warden.mode` | `5` / `smelt fast` | Parallel workers; how workers build: `smelt fast`, `smelt normal`, `smelt full` or `plain`. |
 | `tend.watch` / `tend.label` | `prs` / `agent` | What `/tend watch` follows (comma list of `prs`, `issues`, `actions`, `base`, `alerts`, or `all`); the issue label it may queue. |

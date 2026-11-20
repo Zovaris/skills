@@ -29,12 +29,12 @@ All agents of a speed run together in one wave with the reviewer (hostile runs a
 
 | Agent | Run when | Cost | Writes tests |
 |---|---|---|---|
-| `agents/adversary.md` | normal and full, for runtime logic (not docs, glue or test-only diffs); 2 at full | medium | yes |
+| `agents/adversary.md` | normal and full, for runtime logic (not docs, glue or test-only diffs) | medium | yes |
 | `agents/regression.md` | every fix of a reported bug with a repro (a review that finds and fixes bugs gets the adversary, not both) | low | no (runs the fixer's test) |
 | `agents/property.md` | full, for parsers, serializers, math, money, sorting, state machines (at normal you write the property tests yourself) | medium | yes |
 | `agents/mutation.md` | full, after you run the mutation tool from `smithy stack` yourself: the agent reads only the surviving mutants | high CPU | proposes |
 | `agents/e2e.md` | full, when UI flows or HTTP endpoints changed and the app can run locally | high | yes |
-| `agents/hostile.md` | full, after the fixes, on a runnable CLI, API, worker or job that takes outside input, retries, writes state or calls dependencies | high | no (reports) |
+| `agents/hostile.md` | full, last, on a runnable CLI, API, worker or job that takes outside input, retries, writes state or calls dependencies | high | no (reports) |
 | `agents/spec-check.md` + `agents/standards.md` | one reviewer subagent at normal and full; at fast you run the spec-check checklist yourself | low | no |
 
 Hostile runs last, against a build of the fixed commit. Any fix

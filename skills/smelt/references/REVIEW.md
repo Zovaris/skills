@@ -23,7 +23,8 @@
      user's to see before merge.
 4. Show the reports separately, as returned (a combined reviewer's two reports stay two). Don't merge, dedupe or rerank them: they answer
    different questions. Blocking: a spec-check `missing`, `partial` or `wrong`; a failing holdout, adversary or
-   regression test; a violation of a rule in `docs/agents/STANDARDS.md`. A high security finding
+   regression test; a violation of a written repo rule (`docs/agents/STANDARDS.md`, else AGENTS.md /
+   CLAUDE.md / CONTRIBUTING.md). A high security finding
    is shown to the user. Every other finding is advisory.
 5. Handle each finding with the receiving-review rules: verify, then fix (bug findings: failing
    test first) or decline. Give every finding a disposition in the PR body (or the final message):

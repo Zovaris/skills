@@ -49,6 +49,8 @@ re-run of its repro, not on your word.
 Characterization: before a refactor of untested code, snapshot current behaviour first
 (vitest/jest `toMatchSnapshot`, Python syrupy/approvaltests), refactor, require zero diffs.
 Never update snapshots in the same pass.
+When the old version still runs, a differential check is stronger: feed old and new the same
+generated inputs and require equal outputs.
 
 ## What each agent must not get
 

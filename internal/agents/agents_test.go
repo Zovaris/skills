@@ -311,3 +311,9 @@ func advPrompt(t *testing.T) (string, string, string) {
 	os.WriteFile(p, []byte("x"), 0o644)
 	return d, p, filepath.Join(d, "agent.log")
 }
+
+func TestConsultPrefersJudgeTier(t *testing.T) {
+	if !strings.Contains(consultUsage, "judge tier") {
+		t.Fatal("consult usage must name the judge tier")
+	}
+}

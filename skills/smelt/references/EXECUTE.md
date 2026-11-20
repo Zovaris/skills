@@ -45,7 +45,7 @@ After the last task: one whole-branch review (the review phase), one fix wave, t
 Decisions that come up without the user, by impact:
 - **low** (local, cheap to undo): decide yourself.
 - **medium** (shapes a module or an internal contract): `smithy consult "<question>"
-  "<options, neutral order>" [--context <file>]`, one tool-less call to the user's strong model
+  "<options, neutral order>" [--context <file>]`, one tool-less call to the user's judge model (else strong)
   in whatever harness you're in. Follow its pick; `NEED-INFO` → find that out and ask again;
   `ESCALATE` → it's high.
 - **high** (scope, customer-visible behaviour, money, data, security, public API, production,

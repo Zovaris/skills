@@ -23,7 +23,7 @@ when the user has something to decide or the batch is done. Silent means no runn
 | `smithy wait-turn <batch> <id>` | A launched worker waits here until its prereqs merge and a running slot frees |
 | `smithy verify <repo> <branch> [pr]` | Proof for a PR claim: pushed head matches, checks, mergeable |
 | `smithy route` | Picks a model tier (cheap, mid, strong) per task |
-| `smithy consult "<question>" "<options>" [--context <f>]` | One tool-less call to the user's strong model through the current harness's CLI |
+| `smithy consult "<question>" "<options>" [--context <f>]` | One tool-less call to the user's judge model (else strong) through the current harness's CLI |
 | `smithy config` | Settings and per-harness models (`get`, `set`, `model`, `set-model`, `list`) |
 | `smithy agent` | Runs any headless agent CLI (claude, codex, opencode, gemini, cursor, pi, dsh, `$AGENT_CMD`) |
 | `smithy task-dir <slug>` · `smithy tasks list\|ready\|set\|add\|board\|where` | Where a new task list goes; the shared task list (same format as smelt) |

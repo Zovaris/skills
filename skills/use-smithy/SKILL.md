@@ -63,7 +63,8 @@ Not installed? Do the work the plain way and, once, mention the skill that would
   branches are removed (the `smithy commit`, `smithy pr`, `smithy cleanup` commands).
 - Decisions that pass ledger's ADR test (hard to reverse, surprising, a real trade-off) go to an ADR. No explanatory code comments: API doc
   comments only, the "why" lives in docs.
-- Models come in three tiers per harness (cheap, mid, strong); `smithy route` picks the tier per job
+- Models come in three tiers per harness (cheap, mid, strong), plus an optional `judge`: the
+  smartest model the user has, used only by `smithy consult`. `smithy route` picks the tier per job
   and `smithy config model <tier>` gives the model. When a tier is unset (exit 3, or `-` from
   smithy route), ask the user in one message to name each unset tier for this harness (smithy
   ships no model names) and save them with `smithy config set-model <tier> <name>`; they live in
@@ -73,7 +74,7 @@ Not installed? Do the work the plain way and, once, mention the skill that would
   model and say so at the end. `smithy route --agent <file>` routes a smelt agent.
 - Ask only for decisions that are the user's: scope, money, prod, data, security, irreversible
   actions, pushing, merging. Other decisions that would stop the work: low impact, decide;
-  medium, one `smithy consult` call to the user's strong model (smelt, warden, tend ship it; it
+  medium, one `smithy consult` call to the user's judge model (else strong) (smelt, warden, tend ship it; it
   uses the current harness's CLI, no tools); log what was decided and why.
 
 ## 4 · Turn repeated work into scripts

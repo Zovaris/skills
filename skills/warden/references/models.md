@@ -17,7 +17,7 @@ Unset tiers print `-`: in the plan line ask the user to name each unset tier and
 `smithy config set-model <tier> <name>`. Until then that item uses the session default. Under
 hush, or in a session another one launched, don't ask: use the session's model and say so.
 
-Other roles: `smithy consult` uses `strong`; tend runs on `cheap` and hands code fixes to `strong`.
+Other roles: `smithy consult` uses `judge` (optional, the smartest model), else `strong`; tend runs on `cheap` and hands code fixes to `strong`.
 
 ## Effort
 

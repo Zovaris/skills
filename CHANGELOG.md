@@ -5,6 +5,14 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+- `smithy decide` (off until `decide.url` and `decide.model` are set): an optional decision
+  model; the URL picks the wire format (Respan `/scores` behaviors, else System One: Jev, Kev,
+  Clef, span-02). `decide rules` gives the standards reviewer leads on likely rule breaks;
+  `smithy cards set` raises a new question's impact with it, never lowers it. Three failed calls
+  in a row disable it until `decide.enabled` is set true again. Answers go to `~/.smithy/decide.log`.
+- `smithy pr-state` prints `action` (cleanup, fix-ci, sync-base, answer-review, wait, done); tend
+  follows it.
+- smelt normal runs mutation on core logic when the repo has a mutation tool.
 - smelt VERIFY: an "it runs" check (start it once, hit the changed path) for changes to something
   that starts. Trimmed always-loaded text in smelt, worker briefs and use-smithy (setup moves to
   `references/SETUP.md`).

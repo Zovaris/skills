@@ -13,6 +13,8 @@
    - `agents/standards.md` at `normal` and `full`, with the diff command and the paths of the
      repo's rules (AGENTS.md / CLAUDE.md, CONTRIBUTING.md, `docs/agents/STANDARDS.md`, lint config); with none of
      those, the ground rules in use-smithy section 3 and the language's formatter and linter.
+     Lines that `smithy decide rules --base <merge-base>` prints (nothing when it is off) go
+     with them as leads to check, not findings.
    - `agents/security.md` at `full` speed, and at any speed when the diff touches auth, money,
      personal data, input parsing, file or shell access, or secrets. Its high findings are the
      user's to see before merge.

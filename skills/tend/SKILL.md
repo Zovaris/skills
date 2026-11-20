@@ -71,29 +71,29 @@ user's main checkout, work there only when it is clean and on that branch; other
 "needs you" rather than switching it. Else add one at `smithy names worktree <pr-branch>` (never
 inside the repo). Then repeat:
 
-1. `smithy pr-state <pr>` → `{state, checks, mergeable, review, unresolved, behind}`; `checks` is
-   `green`, `red`, `pending` or `none`, the same words `smithy wait` and `smithy verify` use.
-2. Act on the first thing that applies:
-   - **merged / closed** → stop this PR. Remove the worktree you created, and the branch and
+1. `smithy pr-state <pr>` → `{state, checks, mergeable, review, unresolved, behind, action}`;
+   `checks` is `green`, `red`, `pending` or `none`, the same words `smithy wait` and `smithy verify` use.
+2. Do what `action` names (it is the first row below that applies; the rows say how):
+   - **merged / closed** (`cleanup`) → stop this PR. Remove the worktree you created, and the branch and
      worktree the launcher names as its own (`smithy cleanup <repo> <branch> [<worktree>]`,
      never forced); report `merged <url>, cleaned <what>` so the launcher can end its sessions.
-   - **checks red** → `gh run view <run> --log-failed` when `gh` is installed (else open the failing check's page from the PR). Same test passes on a plain rerun and
+   - **checks red** (`fix-ci`) → `gh run view <run> --log-failed` when `gh` is installed (else open the failing check's page from the PR). Same test passes on a plain rerun and
      nothing in the diff touches it → flaky: rerun once (`gh run rerun <run> --failed` when `gh` is installed) and note
      it. Otherwise it is a real failure: hand it to the fix model, failing test first when it is
      a bug, and push the fix. Red again after a second real fix → "needs you".
-   - **conflicting or behind base** → follow the repo: rebase if its history is linear (no merge
+   - **conflicting or behind base** (`sync-base`) → follow the repo: rebase if its history is linear (no merge
      commits on the base in `git log --merges -5`), else merge the base. A rebase needs a force
      push: `--force-with-lease` only on branches of a warden batch you were given, or of a PR the
      user asked you to tend by name; on anyone else's branch, merge the base instead or stop
      with "needs you". Conflicts you can't resolve from both sides' intent → "needs you".
-   - **unresolved review threads** (human or bot) → `references/RECEIVING.md`. At most 3 bot rounds
+   - **unresolved review threads** (`answer-review`, human or bot) → `references/RECEIVING.md`. At most 3 bot rounds
      per PR (a person you disagree with twice → "needs you"); the count lives in the card's `review_rounds` (`smithy cards set <batch> <id>
      review_rounds=<n>`); without a card, in `~/.smithy/tend/<owner>-<repo>-<n>.rounds`.
-   - **checks pending** → `smithy wait pr:<pr-url>` in the background (foreground where the
+   - **checks pending** (`wait`) → `smithy wait pr:<pr-url>` in the background (foreground where the
      harness can't wake on exit); it returns one line when checks finish, the PR merges or closes,
      or a review lands. Exit 0: read the state again. Exit 4 (heartbeat): wait again. Exit 2 or 3
      (bad target, no gh and no token, or signed out): "needs you". Never sleep-then-check turns.
-   - **green, mergeable, approved or no review required** → `green` (`smithy verify` says `draft`
+   - **green, mergeable, approved or no review required** (`done`) → `green` (`smithy verify` says `draft`
      for a draft PR: report `green (draft)` and leave it a draft). Merge (`smithy pr merge <pr>`) only if whoever launched
      you said `merge auto`, never a draft, and into the production branch only when the launch
      says the user approved it (use-smithy: merges); otherwise stop at green (or keep waiting when

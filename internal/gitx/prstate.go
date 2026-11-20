@@ -29,6 +29,39 @@ type PRState struct {
 	Behind     any    `json:"behind"`
 	Head       any    `json:"head"`
 	Base       any    `json:"base"`
+	Action     string `json:"action"`
+}
+
+// Action is the first step tend takes on a PR in this state, in tend's order: cleanup (merged
+// or closed), fix-ci, sync-base (conflicting or behind), answer-review, wait (checks pending),
+// done (green: stop, or merge when allowed).
+func Action(s PRState) string {
+	switch {
+	case s.State == "MERGED" || s.State == "CLOSED":
+		return "cleanup"
+	case s.Checks == "red":
+		return "fix-ci"
+	case s.Mergeable == "CONFLICTING" || behind(s.Behind) > 0:
+		return "sync-base"
+	case s.Unresolved > 0:
+		return "answer-review"
+	case s.Checks == "pending":
+		return "wait"
+	}
+	return "done"
+}
+
+func behind(v any) int {
+	switch n := v.(type) {
+	case json.Number:
+		i, _ := n.Int64()
+		return int(i)
+	case int:
+		return n
+	case float64:
+		return int(n)
+	}
+	return 0
 }
 
 type stateView struct {
@@ -105,7 +138,7 @@ func Summarize(view, thr, cmp []byte) (PRState, error) {
 	if review == "" {
 		review = "none"
 	}
-	return PRState{
+	st := PRState{
 		URL:        v.URL,
 		State:      v.State,
 		Checks:     Checks(up, stateFailRe, statePendingRe),
@@ -115,7 +148,9 @@ func Summarize(view, thr, cmp []byte) (PRState, error) {
 		Behind:     orElse(c.BehindBy, 0),
 		Head:       v.HeadRefName,
 		Base:       v.BaseRefName,
-	}, nil
+	}
+	st.Action = Action(st)
+	return st, nil
 }
 
 func printState(s PRState) int {

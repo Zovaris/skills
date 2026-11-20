@@ -344,3 +344,28 @@ func TestRouteDocWordsAreWholeWords(t *testing.T) {
 		t.Fatalf("doctor/docker routed cheap: %v", why)
 	}
 }
+
+func TestRouteReadsNegationAndTokenMeaning(t *testing.T) {
+	for text, want := range map[string]string{
+		"Add a CI workflow. No secrets needed.":           "mid",
+		"Context meter shows stale context tokens":        "mid",
+		"Rotate the API token used for deploys":           "strong",
+		"Fix race condition in the queue worker shutdown": "strong",
+	} {
+		if tier, why := Route(text, "ship", "normal"); tier != want {
+			t.Errorf("%q → %s %v, want %s", text, tier, why, want)
+		}
+	}
+	_, why := Route("handle concurrent writes", "ship", "normal")
+	if !strings.Contains(strings.Join(why, " "), "concurrent") {
+		t.Errorf("reason cut off: %v", why)
+	}
+}
+
+func TestRouteNotDoesNotNegateRisk(t *testing.T) {
+	for _, text := range []string{"Do not store the secret in logs", "Ensure the change does not break auth"} {
+		if tier, why := Route(text, "ship", "normal"); tier != "strong" {
+			t.Errorf("%q → %s %v", text, tier, why)
+		}
+	}
+}

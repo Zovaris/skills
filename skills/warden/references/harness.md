@@ -12,7 +12,7 @@ State is always the batch dir and git, so the same batch can be run from any har
 | **end** worker | `archive_session` | `claude stop <id>` + `claude rm <id>` | `kill <pid>` if alive |
 | auto-end on PR close | the worker turns on the app's auto-archive for its PR (if your harness supports it) | none: run warden cleanup | none: run warden cleanup |
 | worker closing line goes to | the card's note | `SendMessage` to the warden's name | the card's note |
-| **subagent** (short read-only job) | Agent tool | Agent tool | the harness's own (Codex `spawn_agent`, OpenCode, Gemini, Cursor and DeepSeek subagents); Pi has none: `smithy agent --readonly [--model <m>] <prompt-file>` |
+| **subagent** (short read-only job, or a worker in the fallback below) | Agent tool | Agent tool | the harness's own (Codex `spawn_agent`, OpenCode, Gemini, Cursor and DeepSeek subagents); Pi has none: `smithy agent --readonly [--model <m>] <prompt-file>` |
 
 Always write the brief to `<batch-dir>/<id>.brief.md` before spawning, whatever the adapter: a
 respawn reuses it.
@@ -43,6 +43,14 @@ Your name: `ListAgents` prints "This session is <name>"; put "Message the warden
 SendMessage, to: \"<name>\"" in the brief. Launch from the workspace root (a trusted folder),
 `--permission-mode` = this session's mode. `claude agents --json` lists workers. No PR auto-fix:
 `smithy verify` the `pr_open` items on each wake and tell a red one to fix CI.
+
+## Subagent workers (fallback)
+
+When **spawn** is refused (a desktop session another session started, or an event turn) and no
+headless CLI is signed in (`smithy agent --bg` fails at start), run each worker as a background
+**subagent** of this session with the brief's full text as its prompt. The cards stay the
+channel; **tell** is the harness's message to that subagent, **end** its stop. Workers die with
+this session, so say so in the plan line.
 
 ## Any harness (smithy agent)
 

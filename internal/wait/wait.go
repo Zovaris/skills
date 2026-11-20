@@ -451,7 +451,12 @@ func (w *listWatcher) poll() ([]string, error) {
 type batchWatcher struct {
 	name, since, stuckBefore string
 	all                      bool
+	seen                     map[string]string
 }
+
+// mark is what makes a card worth a wake: its stage, state, CI verdict and PR. Other field
+// updates (phase, progress, notes, tend mirroring the same state) don't wake the warden twice.
+func mark(r cards.Row) string { return r.Stage + "|" + r.State + "|" + r.CI + "|" + r.PR }
 
 var act = map[string]bool{"decide": true, "stuck": true, "verify": true, "merged": true, "reported": true, "dropped": true}
 
@@ -477,7 +482,11 @@ func newBatch(name string, all bool) (*batchWatcher, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &batchWatcher{name: name, since: time.Now().UTC().Format("2006-01-02T15:04:05.000Z"), stuckBefore: stuck(rows), all: all}, nil
+	seen := map[string]string{}
+	for _, r := range rows {
+		seen[r.ID] = mark(r)
+	}
+	return &batchWatcher{name: name, since: time.Now().UTC().Format("2006-01-02T15:04:05.000Z"), stuckBefore: stuck(rows), all: all, seen: seen}, nil
 }
 
 func (w *batchWatcher) poll() ([]string, error) {
@@ -487,7 +496,7 @@ func (w *batchWatcher) poll() ([]string, error) {
 	}
 	var out []string
 	for _, r := range rows {
-		if r.Updated != nil && *r.Updated > w.since && (w.all || act[r.Stage]) {
+		if r.Updated != nil && *r.Updated > w.since && (w.all || (act[r.Stage] && w.seen[r.ID] != mark(r))) {
 			out = append(out, fmt.Sprintf("batch %s %s  %s  %s  %s  %s", w.name, r.ID, r.Stage, r.Phase, r.Progress, r.Text))
 		}
 	}

@@ -5,6 +5,15 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+- Fixes from trial 2 on claude-mods (`docs/trials/2026-11-trial-2.md`): `smithy wait batch:`
+  wakes once per card change of stage, state, CI or PR (tend mirroring no longer loops it);
+  `pr_open` needs `pr=`; board notes are cut at 160 characters; `smithy route` skips negated
+  words ("no secrets needed"), reads "token" only as a credential, takes small-change words from
+  the title and shows the matched word; `stack.<key>` in the repo config sets a command
+  `smithy stack` can't detect. Skills: a subagent-worker fallback in warden's harness, a CI item
+  runs first, specs out of git go by absolute path, test agents' worktrees are allowed inside
+  workers, regression only for reported bugs, and a blocking finding closes on a look at the
+  last fix.
 - Fixes from the 2026-11 trial (`docs/trials/2026-11-trial.md`): `smithy pr create` stops with
   exit 3 and a plain message when origin isn't GitHub, and `doctor` warns; `smithy agent --bg`
   reports an agent that dies at start (no login, bad flag) instead of printing a pid; repo

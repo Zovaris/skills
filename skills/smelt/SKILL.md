@@ -50,7 +50,7 @@ starting; a subagent or worker running smelt stays silent and puts them in its r
 | For | small or clear changes, warden workers | most features and fixes | risky logic, money, data, auth, public APIs |
 | Plan / spec | skipped; criteria from the task | spec if none exists | brainstorm + grill + spec + builder check (if needed) + tasks |
 | Build | TDD on the acceptance criteria only | TDD on every behaviour | TDD on every behaviour |
-| Test agents | regression (bugs); none for a feature | + adversary; property or e2e when the change fits; mutation on core logic | + 2 adversaries, property, mutation, e2e when applicable; hostile after review when it runs |
+| Test agents | regression (reported bugs with a repro); none for a feature | + adversary; property or e2e when the change fits; mutation on core logic | + 2 adversaries, property, mutation, e2e when applicable; hostile after review when it runs |
 | Review | a fresh spec-check agent (self-check against `agents/spec-check.md` only without a subagent tool); security only if the change is risky | one reviewer running spec-check and standards (+ security if risky) | spec-check + standards + security |
 | Verify gate | always | always | always |
 | Docs | ADR only if forced | glossary/ADR when they apply | glossary/ADR when they apply + retro |

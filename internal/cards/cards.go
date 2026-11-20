@@ -121,6 +121,9 @@ func Set(batch, id string, pairs []string) (map[string]any, error) {
 			delete(cur, k)
 		}
 	}
+	if state == "pr_open" && s(cur, "pr") == "" {
+		return nil, fmt.Errorf("pr_open requires pr=<url>")
+	}
 	if state == "needs_decision" {
 		for _, k := range []string{"decision_key", "question", "impact"} {
 			if s(cur, k) == "" {
@@ -269,6 +272,9 @@ func Rows(batch string) ([]Row, error) {
 			PR: or(s(card, "pr")), CI: or(s(card, "ci")), Age: "-", Text: s(card, "question")}
 		if r.Text == "" {
 			r.Text = s(card, "note")
+			if rs := []rune(r.Text); len(rs) > 160 {
+				r.Text = string(rs[:157]) + "..."
+			}
 		}
 		if held(item) {
 			r.Text = "hold"

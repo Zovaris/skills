@@ -79,7 +79,8 @@ requirements from the intent and the code"; out of scope if the user named it>
   for, or need coordinated redesign → needs_decision, impact high. File count or failing tests
   alone are not reasons to stop.
 - Same obstacle twice after a real fix attempt: state=blocked with the one thing you need; stop.
-- Do not create worktrees or issues; never start, fork or hand off sessions.
+- Do not create worktrees or issues, except the test agents' worktrees smelt's TESTING.md makes
+  (remove them once their cases are moved in); never start, fork or hand off sessions.
 - Waiting on CI or a PR: one blocking `<warden-dir>/scripts/smithy wait pr:<pr-url>` (or `run:<run-id>`,
   `branch:<branch-name>`); it prints one line when something happens. No sleep-then-check turns.
 
@@ -93,7 +94,7 @@ as the current step.
   impact (low: local, cheap to undo; medium: shapes a module or internal contract; high: widens
   scope, customer-visible, money, data, security, public API/schema, prod, irreversible). End
   your turn. The warden closes the question; later progress doesn't.
-- PR opened: state=pr_open. If your harness supports it, turn on PR watching, CI auto-fix and
+- PR opened: state=pr_open pr=<url>. If your harness supports it, turn on PR watching, CI auto-fix and
   auto-archive of this session when the PR closes. A draft or unfinished PR is state=blocked,
   never pr_open.
 - Green and reviewed (`<warden-dir>/scripts/smithy verify <repo> <branch> <pr-url>` says `green`):

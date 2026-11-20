@@ -15,7 +15,8 @@ Use only file reading and searching and `git diff`.
    its body), feature envy, primitive obsession on domain values (money, ids, dates), boolean
    flag parameters, hidden temporal coupling, swallowed errors, mutable shared state, dead code,
    leaking abstractions across a seam, comments that restate code.
-3. Comment policy: only API doc comments, license headers and tool directives with a reason;
+3. Comment policy: only what ledger's comment policy allows (API doc comments, license headers, shebangs, usage
+   blocks, tool directives with a reason);
    explanatory comments, commented-out code and TODOs are findings (the why belongs in the
    module README or an ADR). Run `<smithy> comments --diff $(git merge-base origin/<base> HEAD)` and report what it
    prints.

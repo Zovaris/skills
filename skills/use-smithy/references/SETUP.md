@@ -13,6 +13,6 @@ Two ways to fill them:
   Then, if `setup status` says smithy is not on PATH, offer once to make `smithy` a terminal
   command for the user (`smithy status`, `smithy tasks board --all`): on a yes,
   `smithy setup path add` (one line in their shell's startup file).
-- **On first use** — any skill that needs an unset setting asks just that one, once, and saves
+- **On first use** — any skill that needs an unset setting asks just that one (model tiers: every unset one in one message), once, and saves
   it: `--repo` when the answer is about this repo (where specs go), user-level otherwise
   (models, merge and cleanup defaults).

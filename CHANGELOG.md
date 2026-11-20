@@ -5,6 +5,13 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+- **Lighter warden and smelt, from the A/B trial.** The arm with smithy used ~10× the tokens and ~3× the time of
+  the arm without it, and caught the same three planted bugs. So: `route` no longer sends `lockfile`
+  work to the strong tier (`lock` became `lock contention`, `deadlock`, `mutex`); task files carry a
+  `Speed:` line that warden reads; `smelt plan` skips brainstorm, grill and the builder check for a
+  spec already agreed; the adversary reads only signatures in round one when its brief has a diff;
+  `wait-turn` runs in the foreground for subagent workers; rule tests cover every variant the spec
+  names; `smithy cleanup` deletes the merged remote branch.
 - **Three speeds that differ, and agents only where they earn their cost.** Each subagent costs
   ~60k tokens and minutes however short its prompt (trials 1–3), so: `fast` runs scripts only
   (tests, typecheck, lint, scan) and checks the diff against the spec itself, no subagent unless

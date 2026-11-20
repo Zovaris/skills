@@ -9,7 +9,7 @@ alternative.
 
 Each implementer gets the model `smithy route --file <task file> --speed <speed>` picks
 (cheap, mid or strong, from the task's risk, difficulty and size); reviewers use
-`smithy route --kind review`; the last fix round goes one tier up. You may move a pick one tier with
+`smithy route --kind review`; the last fix round uses strong. You may move a pick one tier with
 a reason; a model the user named always wins. A tier whose model is unset prints `-`: ask the
 user once to name it and save it with `smithy config set-model <tier> <name>`; until then, or when
 you can't ask, use the session default.
@@ -28,7 +28,7 @@ For each task:
    - `DONE` → step 4.
    - `DONE_WITH_CONCERNS` → read the concerns, decide each (ruling), then step 4.
    - `NEEDS_CONTEXT` → answer from the spec or code (ruling) and send it back; if only the user
-     can answer, ask (under hush, decide and rule).
+     can answer, ask (under hush, stop with a `blocked:` line).
    - `BLOCKED` → `smithy tasks set <file> status=todo`, note why, move to the next unblocked task.
 4. **Verify** (the verify gate): read the diff, run the task's tests and the suite.
 5. **Review** the diff with a fresh `agents/spec-check.md` (task file as the spec) and, at

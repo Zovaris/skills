@@ -41,7 +41,7 @@ without acting on one.
 
 ## Stop only for
 
-What is the user's alone: money, prod, client data, security, irreversible or destructive
+What is the user's alone: scope, public API, money, prod, client data, security, irreversible or destructive
 actions, a credential/login, or the same obstacle hit twice after a real fix attempt. Then send
 one line and stop: `blocked: <why>`.
 

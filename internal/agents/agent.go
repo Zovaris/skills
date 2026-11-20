@@ -430,8 +430,18 @@ func Run(o Options) int {
 			fmt.Fprintln(os.Stderr, err)
 			return 1
 		}
+		done := make(chan error, 1)
+		go func() { done <- cmd.Wait() }()
+		select {
+		case err := <-done:
+			var ee *exec.ExitError
+			if err != nil && !(errors.As(err, &ee) && ee.ExitCode() == 124) {
+				fmt.Fprintf(os.Stderr, "smithy agent: %s exited right after starting (%v): %s\n", s.Argv[0], err, lastLine(log))
+				return 1
+			}
+		case <-time.After(startCheck):
+		}
 		fmt.Println(strconv.Itoa(cmd.Process.Pid), log)
-		_ = cmd.Process.Release()
 		return 0
 	}
 	rc := wait(cmd, o.Timeout, out)
@@ -443,6 +453,22 @@ func Run(o Options) int {
 		os.Remove(out.Name())
 	}
 	return rc
+}
+
+// startCheck is how long --bg watches a new agent for an immediate failure (bad login, bad flag).
+var startCheck = 3 * time.Second
+
+func lastLine(file string) string {
+	b, err := os.ReadFile(file)
+	if err != nil {
+		return ""
+	}
+	lines := strings.Split(strings.TrimSpace(string(b)), "\n")
+	l := lines[len(lines)-1]
+	if len(l) > 300 {
+		l = l[:300]
+	}
+	return l
 }
 
 func wait(cmd *exec.Cmd, timeout time.Duration, out *os.File) int {

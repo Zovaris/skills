@@ -5,6 +5,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/Zovaris/smithy/internal/ghx"
 )
 
 const cleanupUsage = "usage: smithy cleanup <repo> <branch> [<worktree>] [--force]\n  removes <worktree> only when it is passed, and never the folder it runs in; a branch checked\n  out in another worktree is kept"
@@ -85,14 +87,21 @@ func CleanupMain(args []string) int {
 	if base == "" {
 		base = "origin/main"
 	}
-	unpushed := git("rev-list", branch, "--not", "--remotes")
+	unpushed, rlErr := ghx.Run("git", "rev-list", branch, "--not", "--remotes", "--exclude=refs/heads/"+branch, "--branches")
+	if rlErr != nil {
+		unpushed = "unknown"
+	}
 	if force || quiet("git", "merge-base", "--is-ancestor", branch, base) == nil || unpushed == "" || landed(branch, base) {
 		if stderrOnly("git", "branch", "-D", branch) == nil {
 			fmt.Println("cleaned", branch)
 			return 0
 		}
 	}
-	fmt.Printf("kept %s: has commits not on any remote; push it or pass --force\n", branch)
+	if removed {
+		fmt.Printf("removed %s; kept branch %s: it has commits on no remote and no other branch; push it or pass --force\n", wt, branch)
+		return 1
+	}
+	fmt.Printf("kept %s: has commits on no remote and no other branch; push it or pass --force\n", branch)
 	return 1
 }
 

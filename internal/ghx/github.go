@@ -122,6 +122,12 @@ func repoFromRemote(remote string) string {
 	return ""
 }
 
+// OriginIsGitHub reports whether the origin remote points at the GitHub host ("" origin: false).
+func OriginIsGitHub() (bool, string) {
+	u := strings.TrimSpace(originURL())
+	return repoFromRemote(u) != "", u
+}
+
 func okName(s string) bool { return nameRe.MatchString(s) && s != "." && s != ".." }
 
 func splitRepo(repo string) (string, string, error) {

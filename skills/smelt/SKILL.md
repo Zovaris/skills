@@ -26,7 +26,7 @@ The slash form is one example: the same words in plain text work in any harness 
 |---|---|
 | `/smelt <task>` | infer: no agreed plan → `plan` (at `fast`: `build`, criteria from the task); plan/spec/task exists → `build`; a bug → `debug` |
 | `/smelt brainstorm <idea>` | `references/BRAINSTORM.md` only: the why, approaches, a draft design |
-| `/smelt plan <idea>` | brainstorm → grill → spec → builder check (`full` or a long spec) → task list → ask how to run it |
+| `/smelt plan <idea>` | brainstorm → grill → spec → builder check (more than 8 criteria, or open questions left) → task list → ask how to run it |
 | `/smelt build next [dir]` | `smithy tasks next`, mark it `doing`, build it to `ship`, mark it `done` |
 | `/smelt build all [dir]` | `references/EXECUTE.md`: every task here, one implementer subagent each |
 | `/smelt <phase> <task>` | that phase only: `spec`, `build`, `test`, `review`, `ship`, `retro` |
@@ -48,10 +48,10 @@ starting; a subagent or worker running smelt stays silent and puts them in its r
 | | fast | normal (default) | full |
 |---|---|---|---|
 | For | small or clear changes, warden workers | most features and fixes | risky logic, money, data, auth, public APIs |
-| Plan / spec | skipped; criteria from the task | spec if none exists | brainstorm + grill + spec + builder check + tasks |
+| Plan / spec | skipped; criteria from the task | spec if none exists | brainstorm + grill + spec + builder check (if needed) + tasks |
 | Build | TDD on the acceptance criteria only | TDD on every behaviour | TDD on every behaviour |
 | Test agents | regression (bugs); none for a feature | + adversary; property or e2e when the change fits; mutation on core logic | + 2 adversaries, property, mutation, e2e when applicable; hostile after review when it runs |
-| Review | a fresh spec-check agent (self-check against `agents/spec-check.md` only without a subagent tool); security only if the change is risky | spec-check + standards (+ security if risky) | spec-check + standards + security |
+| Review | a fresh spec-check agent (self-check against `agents/spec-check.md` only without a subagent tool); security only if the change is risky | one reviewer running spec-check and standards (+ security if risky) | spec-check + standards + security |
 | Verify gate | always | always | always |
 | Docs | ADR only if forced | glossary/ADR when they apply | glossary/ADR when they apply + retro |
 
@@ -59,7 +59,7 @@ Property and mutation need a tool in the repo (`smithy stack` shows it); without
 "not applicable", never a new dependency the user didn't ask for.
 `fast` should finish in one sitting: no agent that needs the app running, no mutation run,
 full suite once at the end. A trivial change (copy, style, one-liner) is always `fast`. A prose-only change (docs, skill
-text) needs no test agents: its seam is the doc lint, and review is spec-check alone.
+text) needs no test agents: its seam is the doc lint if the repo has one, and review is spec-check alone, at any speed.
 Risky means the change touches auth, money, personal data, input parsing, file or shell access,
 or secrets. Under hush, never ask, not even about the speed (pick it and say which at the end); high-impact
 decisions (security, money, personal data, production) still stop with a `blocked:` line (hush).
@@ -83,7 +83,8 @@ the user confirms; else `references/DOCS.md`.
 **Done:** the user approved the design and confirmed the decisions.
 
 **spec · Spec and tasks** — `references/SPEC.md`, then `references/TASKS.md`. Spec with agreed
-test seams; at `full` or for a long spec, a fresh `agents/builder.md` subagent sorts what's
+test seams; for a spec with more than 8 criteria or with questions still open, a fresh
+`agents/builder.md` subagent sorts what's
 still open into answered / minor (decide) / theirs (ask). Then tracer-bullet tasks with Files
 and Interfaces, self-reviewed, where the user picks; then ask how to run them: here one at a
 time (`build next`), here all at once (`build all`), in parallel with warden (if installed),
@@ -102,8 +103,9 @@ Agents that write tests work in their own git worktree. You fix the code; they n
 **Done:** every reproduced finding fixed (failing test first) or rejected with one line; VERIFY
 gate on the suite.
 
-**review** — `references/REVIEW.md` (findings: `references/RECEIVING.md`). Fresh **subagents**: `agents/standards.md`,
-`agents/spec-check.md`, and `agents/security.md` when the speed or the change calls for it;
+**review** — `references/REVIEW.md` (findings: `references/RECEIVING.md`). Fresh **subagents**: `agents/standards.md` and
+`agents/spec-check.md` (one subagent given both at `normal`), and `agents/security.md` when the
+speed or the change calls for it;
 never merge or rerank their reports. Findings and human PR comments: `references/RECEIVING.md`.
 **Done:** no open blocking finding (closed by a reviewer, not by you); every high security
 finding shown to the user.

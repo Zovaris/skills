@@ -27,7 +27,7 @@ Before saying something is done, fixed, passing or ready:
 | Bug fixed | the regression test failed before the fix and passes after (both runs shown) |
 | Types / lint clean | typecheck and lint commands from `smithy stack`, exit 0 |
 | Criterion met | a test that exercises it, named, passing |
-| It runs | for a change to something that starts (server, CLI, worker) with a `dev` or run command in `smithy stack`: start it once and hit the changed path (one request or invocation), output shown. Green tests don't prove it boots |
+| It runs | for a change to something that starts (server, CLI, worker), with the `dev` line of `smithy stack` or the binary's main entry (`go run ./cmd/…`, `node bin/…`): start it once and hit the changed path (one request or invocation), output shown. Green tests don't prove it boots |
 | An agent or worker completed a task | the VCS diff it produced (`git diff`, `git log -p`), read, plus its tests passing when you run them |
 | Refactor safe | suite green before and after, no snapshot or assertion changed |
 | Ready to open a PR | `smithy scan` clean (secrets, conflict markers; each binary warning looked at), `smithy receipt list` fresh for HEAD, the diff matches the task |

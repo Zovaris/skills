@@ -8,7 +8,8 @@
 2. Find the spec: the task/spec path you were given, commit messages, the PR body, or
    `docs/specs/`. None → spec-check reviews against the PR description and says so.
 3. Launch fresh **subagents** in parallel (read-only), each prompt ending in the report contract
-   (`references/TESTING.md`), at the speed set in SKILL.md:
+   (`references/TESTING.md`), at the speed set in SKILL.md. At `normal`, spec-check and standards
+   run as one subagent given both files, returning both reports one after the other:
    - `agents/spec-check.md` always, with the diff command and the spec path.
    - `agents/standards.md` at `normal` and `full`, with the diff command and the paths of the
      repo's rules (AGENTS.md / CLAUDE.md, CONTRIBUTING.md, `docs/agents/STANDARDS.md`, lint config); with none of
@@ -19,7 +20,7 @@
    - `agents/security.md` at `full` speed, and at any speed when the diff touches auth, money,
      personal data, input parsing, file or shell access, or secrets. Its high findings are the
      user's to see before merge.
-4. Show the reports separately, as returned. Don't merge, dedupe or rerank them: they answer
+4. Show the reports separately, as returned (a combined reviewer's two reports stay two). Don't merge, dedupe or rerank them: they answer
    different questions. Blocking: a spec-check `missing`, `partial` or `wrong`; a failing holdout, adversary or
    regression test; a violation of a rule in `docs/agents/STANDARDS.md`. A high security finding
    is shown to the user. Every other finding is advisory.
@@ -27,9 +28,10 @@
    test first) or decline. Give every finding a disposition in the PR body (or the final message):
    `fixed`, `declined: <why>`, `false positive` or `not reproduced`.
 6. **The reviewer closes, not you.** At `full` speed, and at any speed for any blocking finding
-   you fixed or a high security finding you fixed, send the fix's diff and the finding to a fresh subagent with the
-   same agent file, asked only "is this finding resolved, and did the fix add a new problem?".
-   One bounded second look per finding; a finding it keeps open goes back to step 5, and a
+   you fixed or a high security finding you fixed, send one fresh subagent per round the fixes'
+   diff, every fixed finding, the agent files they came from and `smithy receipt list` output,
+   asked only "is each finding resolved, and did the fixes add a new problem?".
+   One bounded second look per round, covering every fixed finding; a finding it keeps open goes back to step 5, and a
    second "still open" goes to the user.
 7. **Another look only when it pays.** After fixing what a second look kept open, decide with
    judgment, not by habit: a fix that changes behaviour, touches a risky area or is more than a

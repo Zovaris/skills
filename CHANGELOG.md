@@ -5,6 +5,15 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+- Fixes from the 2026-11 trial (`docs/trials/2026-11-trial.md`): `smithy pr create` stops with
+  exit 3 and a plain message when origin isn't GitHub, and `doctor` warns; `smithy agent --bg`
+  reports an agent that dies at start (no login, bad flag) instead of printing a pid; repo
+  settings saved in a worktree go to the main checkout, and receipts ignore that file and `zz_*`
+  agent tests; `smithy cleanup` removes branches whose commits another branch has; `smithy route`
+  sends prose-only tasks to cheap; `smithy names` types docs and stops calling "split" a refactor.
+- Fewer agents: at normal, spec-check and standards run as one reviewer; one second look per
+  round covers every fixed finding; the builder check runs only for specs over 8 criteria or with
+  open questions. Worker briefs list the card states.
 - tend watches the repo, not just PRs: `smithy wait` gains `actions[:<branch>]` (red workflow
   runs, push, schedule or manual), `base[:<branch>]` (the branch moved) and `alerts` (new
   Dependabot alerts, skipped with a note without access); `watch:` takes a comma list or `all`.

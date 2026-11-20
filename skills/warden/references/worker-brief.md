@@ -85,8 +85,9 @@ requirements from the intent and the code"; out of scope if the user named it>
 
 ## Status card
 `<warden-dir>/scripts/smithy cards set <batch> <id> key=value…` at every phase change and before
-every end of turn. Keep `progress` as <done>/<total> of your task list and `phase` as the
-current step, so the warden sees where you are without asking.
+every end of turn. `state` is one of: waiting, working, needs_decision, blocked, failed, pr_open,
+ready, merged, dropped, reported. Keep `progress` as <done>/<total> of your task list and `phase`
+as the current step.
 - Decision needed: state=needs_decision with decision_key (short slug), question, options (JSON
   list, each with its trade-off and the code lines that matter, neutral), recommendation and
   impact (low: local, cheap to undo; medium: shapes a module or internal contract; high: widens
@@ -118,6 +119,6 @@ current step, so the warden sees where you are without asking.
 ## Closing line
 <warden channel: "Send it to the warden with SendMessage, to: <address>." | "Put it in the card's note.">
 End each turn with exactly one line and nothing else:
-"done: <id> PR <url>" | "done: <id> ready <url>" | "done: <id> reported" |
+"done: <id> PR <url>" | "done: <id> ready <url or branch>" | "done: <id> reported" |
 "done: <id> decide: <question>" | "done: <id> blocked: <why>".
 ```

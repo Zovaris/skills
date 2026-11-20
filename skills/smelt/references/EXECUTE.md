@@ -32,7 +32,7 @@ For each task:
    - `BLOCKED` → `smithy tasks set <file> status=todo`, note why, move to the next unblocked task.
 4. **Verify** (the verify gate): read the diff, run the task's tests and the suite.
 5. **Review** the diff with a fresh `agents/spec-check.md` (task file as the spec) and, at
-   `normal`/`full`, `agents/standards.md`. Handle findings with the receiving-review rules.
+   `normal`/`full`, `agents/standards.md` (one subagent given both at `normal`). Handle findings with the receiving-review rules.
 6. **Fix loop**: send the reproduced findings back to a fresh implementer with the diff. At most
    3 rounds; round 3 uses the strong model. Still failing → `BLOCKED` with the findings.
 7. Commit the task atomically (`smithy commit`). Its `status=done pr=<url>` is set at ship, once

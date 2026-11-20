@@ -29,6 +29,7 @@ yourself: `smithy cards set <batch> <id> state=working decision_key=`. Log low a
   refused: `smithy pr merge <pr>` yourself; refused again → list it with the doctor's permission hint).
   Production without that yes, or merge manual → card `state=ready`, listed for the user.
 - `pending`: wait (`smithy wait pr:<pr-url>`).
+- A `ready` card with `note=no-github-pr` has no PR to verify: list its branch for the user.
 - `draft`: green but still a draft; list it for the user, never merge it.
 - `unpushed` or `red`: back to the worker in one line.
 - `merged`: next section.

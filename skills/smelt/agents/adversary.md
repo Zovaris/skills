@@ -11,6 +11,8 @@ point. Assume it is wrong somewhere.
 
 Do not open the implementation bodies of the code under test until you have written your first
 round of tests from the spec alone. After that, you may read them to aim a second round.
+If your brief includes a diff, skip its bodies in round one and read only the signatures and types;
+the bodies come in round two.
 
 ## Do
 1. List the spec's claims and, for each, the ways it could break: boundaries (0, 1, max, max+1,

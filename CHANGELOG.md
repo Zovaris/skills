@@ -5,6 +5,13 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+- **`route` no longer sends lockfile work to the strong tier.** `lock` matched `lockfile`; it is now
+  `lock contention`, `deadlock` and `mutex`.
+- **`smithy cleanup` deletes the merged remote branch**, including when the local branch is already gone.
+- **`smelt plan` skips brainstorm, grill and the builder check for a spec the user already agreed.**
+- **The smelt adversary skips implementation bodies in round one** when its brief includes a diff.
+- **Warden's subagent workers run `wait-turn` in the foreground** (9 minutes, the tool limit).
+- **Rule tests cover every variant the spec names**, one case each.
 - **Three speeds that differ, and agents only where they earn their cost.** Each subagent costs
   ~60k tokens and minutes however short its prompt (trials 1–3), so: `fast` runs scripts only
   (tests, typecheck, lint, scan) and checks the diff against the spec itself, no subagent unless

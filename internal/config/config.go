@@ -28,7 +28,7 @@ var Known = []Setting{
 	{"git.branch", "{type}/{key}-{slug}", "smelt warden", "branch name template: {type} feat/fix/docs/refactor/test/chore, {key} ticket or task id, {slug} from the title"},
 	{"git.worktree", "{parent}/worktrees/{repo}-{branch}", "smelt warden tend", "worktree path template ({branch} with / as -)"},
 	{"tasks.ignore", "ask", "smelt plan", "with tasks.commit false: gitignore (commit a .gitignore line) or exclude (local .git/info/exclude)"},
-	{"warden.merge", "ask", "warden", "auto: workers merge green PRs; manual: they stop at ready; unset: warden asks per batch"},
+	{"warden.merge", "ask", "warden", "auto: warden merges green PRs (workers never do); manual: they stop at ready; unset: warden asks per batch"},
 	{"warden.cleanup", "auto", "warden", "auto: end finished workers and remove worktrees and local branches without asking"},
 	{"warden.max", "3", "warden", "parallel workers (a token-cost cap)"},
 	{"warden.mode", "smelt fast", "warden", "worker mode: smelt fast, smelt normal, smelt full or plain"},

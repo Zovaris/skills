@@ -52,8 +52,8 @@ Not installed? Do the work the plain way and, once, mention the skill that would
   warden and tend ship it), never sleep-then-check turns: it
   costs no tokens and returns one line when something happens.
 - **Merges.** Only the session that talks to the user decides them: warden for its batch, else
-  the session running smelt. Tend and workers merge only when the one that launched them says
-  `merge auto`. A PR into the production branch merges only on the user's explicit yes, given
+  the session running smelt. Tend merges only when the one that launched it says `merge auto`;
+  warden workers never merge (warden does). A PR into the production branch merges only on the user's explicit yes, given
   up front ("merge to production when done") or asked once the PR is green; never from a
   setting, a default or another agent. Without that yes, stop at green and ask.
 - Agents work silently (`hush` rules): a subagent or worker reports once, ending in `done:`, and

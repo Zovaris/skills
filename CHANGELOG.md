@@ -5,6 +5,9 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+- warden merges every green PR itself; workers stop at `ready` and never merge. A permission
+  classifier refused every worker's merge in trial 3, because the merge permission came in a
+  brief another agent wrote.
 - Fixes from trial 2 on claude-mods (`docs/trials/2026-11-trial-2.md`): `smithy wait batch:`
   wakes once per card change of stage, state, CI or PR (tend mirroring no longer loops it);
   `pr_open` needs `pr=`; board notes are cut at 160 characters; `smithy route` skips negated

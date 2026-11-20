@@ -24,7 +24,7 @@ rules if installed): no talk between tool calls, one line per PR at the end. Sil
 | `smithy names` | Worktree path for a PR branch |
 | `smithy wait <target>…` | Zero-token wait on GitHub: `pr:<url>` (a bare number means the current checkout's repo), `run:<id>`, `branch:<name>`, `prs`, `issues:<label>` |
 | `smithy wait watch[:prs\|issues\|all]` | Watch mode: wait for new or updated PRs / labeled issues (scope from `tend.watch`) |
-| `smithy consult` | One tool-less call to the user's strong model for a technical choice |
+| `smithy consult` | One tool-less call to the user's judge model (else strong) for a technical choice |
 | `smithy config` | The user's models and tend settings |
 | `smithy agent` · `smithy harness` · `smithy route` | Run a fix subagent on any CLI (when the harness has no subagent tool), detect the harness, pick a tier |
 
@@ -108,7 +108,7 @@ Tend fixes red PRs itself; it hands a PR back only when it hits something it mus
 | Situation | Card (warden launched you) | Without warden |
 |---|---|---|
 | Red twice after real fixes, or a conflict it can't resolve safely | `state=blocked note=<why>` | `needs you <url>: <why>` |
-| A technical choice inside the PR's scope (which fix, which approach) | settled with `smithy consult` (the user's strong model), noted in the commit or reply; `ESCALATE` → next row | same |
+| A technical choice inside the PR's scope (which fix, which approach) | settled with `smithy consult` (the user's judge model (else strong)), noted in the commit or reply; `ESCALATE` → next row | same |
 | A decision the user owns (scope, API, data, security) | `state=needs_decision` with question, options, recommendation, `impact=high` | `needs you <url>: <question>` |
 | 3 review rounds used, or a force push it isn't allowed to do | `state=blocked note=<why>` | `needs you <url>: <why>` |
 | Green | `state=pr_open` (or `ready` for manual merge), `ci=green` | `green <url>` |

@@ -364,7 +364,7 @@ func Normalize(key, value string) (string, string, error) {
 	return "", "", fmt.Errorf("agent.effort must be low or medium, got %q", value)
 }
 
-func tier(t string) bool { return t == "cheap" || t == "mid" || t == "strong" }
+func tier(t string) bool { return t == "cheap" || t == "mid" || t == "strong" || t == "judge" }
 
 // Model returns the user's model for a tier in the current harness.
 func Model(t string) (string, error) {
@@ -408,8 +408,8 @@ func AutoMigrate() {
 }
 
 const usage = `usage: smithy config <command>
-  model <cheap|mid|strong>              model for this harness; exit 3 when unset
-  set-model <cheap|mid|strong> <name> [harness]
+  model <cheap|mid|strong|judge>              model for this harness; exit 3 when unset
+  set-model <cheap|mid|strong|judge> <name> [harness]
   get <key>                             effective value (repo, user, default); exit 3 when unset
   set [--repo] <key> <value>            value stored as JSON when it is JSON
   unset [--repo] <key>                  remove a saved value (back to the default)
@@ -436,7 +436,7 @@ func Main(args []string) int {
 	switch args[0] {
 	case "model":
 		if len(args) < 2 || !tier(args[1]) {
-			fmt.Fprintln(os.Stderr, "usage: smithy config model <cheap|mid|strong>")
+			fmt.Fprintln(os.Stderr, "usage: smithy config model <cheap|mid|strong|judge>")
 			return 2
 		}
 		m, err := Model(args[1])
@@ -446,7 +446,7 @@ func Main(args []string) int {
 		fmt.Println(m)
 	case "set-model":
 		if len(args) < 3 || !tier(args[1]) {
-			fmt.Fprintln(os.Stderr, "usage: smithy config set-model <cheap|mid|strong> <name> [harness]")
+			fmt.Fprintln(os.Stderr, "usage: smithy config set-model <cheap|mid|strong|judge> <name> [harness]")
 			return 2
 		}
 		if len(args) > 3 {
@@ -548,7 +548,7 @@ func Main(args []string) int {
 				return readFail(err)
 			}
 		}
-		for _, t := range []string{"cheap", "mid", "strong"} {
+		for _, t := range []string{"cheap", "mid", "strong", "judge"} {
 			v, ok := readKey(UserFile(), "models."+h+"."+t)
 			src := ""
 			if ok {

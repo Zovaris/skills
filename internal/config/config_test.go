@@ -432,7 +432,7 @@ func TestMainListSources(t *testing.T) {
 			t.Fatalf("missing %q in %q", want, so)
 		}
 	}
-	if n := strings.Count(so, "\n"); n != 3+len(Known) {
+	if n := strings.Count(so, "\n"); n != 4+len(Known) {
 		t.Fatalf("lines = %d", n)
 	}
 }

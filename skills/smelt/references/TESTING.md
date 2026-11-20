@@ -29,7 +29,7 @@ shape your file asks for (its status block included), then one last line
 recommendation; never stop to ask.
 ```
 
-All test agents of a speed run together, in parallel, before review. Which ones run depends on the speed (table in SKILL.md); within it, use this to choose.
+All test agents of a speed run together, in parallel, before review (hostile runs after it). Which ones run depends on the speed (table in SKILL.md); within it, use this to choose.
 
 | Agent | Run when | Cost | Writes tests |
 |---|---|---|---|
@@ -40,7 +40,7 @@ All test agents of a speed run together, in parallel, before review. Which ones 
 | `agents/e2e.md` | UI flows or HTTP endpoints changed and the app can run locally | high | yes |
 | `agents/hostile.md` | after review, on a runnable CLI, API, worker or job that takes outside input, retries, writes state or calls dependencies | high | no (reports) |
 | `agents/spec-check.md` | always in review | low | no |
-| `agents/standards.md` | always in review | low | no |
+| `agents/standards.md` | review at normal and full | low | no |
 
 Hostile runs last: after the diff is reviewed, against a build of the reviewed commit. Any fix
 it triggers goes through build (failing test first) and review again; its findings close on the
@@ -49,6 +49,8 @@ re-run of its repro, not on your word.
 Characterization: before a refactor of untested code, snapshot current behaviour first
 (vitest/jest `toMatchSnapshot`, Python syrupy/approvaltests), refactor, require zero diffs.
 Never update snapshots in the same pass.
+When the old version still runs, a differential check is stronger: feed old and new the same
+generated inputs and require equal outputs.
 
 ## What each agent must not get
 

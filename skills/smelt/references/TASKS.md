@@ -59,7 +59,6 @@ spec stays in the repo or local dir and the issues link to it.
 # NN · <title>
 Status: todo
 Blocked by: <NN, NN | none>
-Speed: <fast | normal | full>
 PR: -
 Spec: ./spec.md
 

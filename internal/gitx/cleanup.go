@@ -71,21 +71,22 @@ func CleanupMain(args []string) int {
 		removed = true
 	}
 	attached("git", "worktree", "prune")
+	base := git("symbolic-ref", "-q", "--short", "refs/remotes/origin/HEAD")
+	if base == "" {
+		base = "origin/main"
+	}
 	if quiet("git", "show-ref", "-q", "--verify", "refs/heads/"+branch) != nil {
 		if !removed {
 			fmt.Fprintln(os.Stderr, "smithy cleanup: no branch", branch)
 			return 1
 		}
+		dropRemote(branch, base)
 		fmt.Println("cleaned", branch)
 		return 0
 	}
 	if git("branch", "--show-current") == branch {
 		fmt.Printf("kept %s: it is checked out here\n", branch)
 		return 1
-	}
-	base := git("symbolic-ref", "-q", "--short", "refs/remotes/origin/HEAD")
-	if base == "" {
-		base = "origin/main"
 	}
 	unpushed, rlErr := ghx.Run("git", "rev-list", branch, "--not", "--remotes", "--exclude=refs/heads/"+branch, "--branches")
 	if rlErr != nil {
@@ -94,10 +95,7 @@ func CleanupMain(args []string) int {
 	merged := quiet("git", "merge-base", "--is-ancestor", branch, base) == nil || landed(branch, base)
 	if force || merged || unpushed == "" {
 		if stderrOnly("git", "branch", "-D", branch) == nil {
-			// A merged branch's remote copy is spent: delete it too, so no feat/* branch lingers.
-			if merged && quiet("git", "show-ref", "-q", "--verify", "refs/remotes/origin/"+branch) == nil {
-				_ = quiet("git", "push", "-q", "origin", "--delete", branch)
-			}
+			dropRemote(branch, base)
 			fmt.Println("cleaned", branch)
 			return 0
 		}
@@ -108,6 +106,21 @@ func CleanupMain(args []string) int {
 	}
 	fmt.Printf("kept %s: has commits on no remote and no other branch; push it or pass --force\n", branch)
 	return 1
+}
+
+// dropRemote deletes origin's copy of branch once it has landed in base (merged, or rebased and
+// squashed in), so no feat/* branch lingers after a merge. It reports a failed push.
+func dropRemote(branch, base string) {
+	ref := "refs/remotes/origin/" + branch
+	if quiet("git", "show-ref", "-q", "--verify", ref) != nil {
+		return
+	}
+	if quiet("git", "merge-base", "--is-ancestor", ref, base) != nil && !landed(ref, base) {
+		return
+	}
+	if quiet("git", "push", "-q", "origin", "--delete", branch) != nil {
+		fmt.Printf("kept remote %s: could not delete it; delete it on the remote\n", branch)
+	}
 }
 
 // landed reports whether every commit of branch not in base has an equivalent change in base,

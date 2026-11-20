@@ -34,7 +34,7 @@ All test agents of a speed run together, in parallel, before review (hostile run
 | Agent | Run when | Cost | Writes tests |
 |---|---|---|---|
 | `agents/adversary.md` | any non-trivial runtime logic (not for docs or test-script-only diffs); run 2 when the logic is risky | medium | yes |
-| `agents/regression.md` | every bug fix | low | no (runs the fixer's test) |
+| `agents/regression.md` | every fix of a reported bug with a repro (a review that finds and fixes bugs gets the adversary, not both) | low | no (runs the fixer's test) |
 | `agents/property.md` | parsers, serializers, math, money, sorting, state machines, invariants such as length bounds or round-trips on pure functions | medium | yes |
 | `agents/mutation.md` | normal and full, before merge on core logic (parsers, money, state, rules the spec names; not glue code), when `smithy stack` shows a mutation tool | high CPU | proposes |
 | `agents/e2e.md` | UI flows or HTTP endpoints changed and the app can run locally | high | yes |

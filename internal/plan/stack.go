@@ -227,6 +227,26 @@ func Stack(dir string) []Line {
 		typecheck, pbt = or(typecheck, "go vet ./..."), or(pbt, "go fuzz (go test -fuzz)")
 	}
 
+	var over struct {
+		Stack map[string]string `json:"stack"`
+	}
+	if b, err := os.ReadFile(filepath.Join(dir, ".smithy", "config.json")); err == nil {
+		_ = json.Unmarshal(b, &over)
+	}
+	set := func(k string, v *string) {
+		if o := strings.TrimSpace(over.Stack[k]); o != "" {
+			*v = o
+		}
+	}
+	set("test", &test)
+	set("single", &single)
+	set("typecheck", &typecheck)
+	set("lint", &lint)
+	set("e2e", &e2e)
+	set("mutation", &mutation)
+	set("property", &pbt)
+	set("coverage", &cov)
+	set("dev", &dev)
 	out("test", test)
 	out("single", single)
 	out("typecheck", typecheck)

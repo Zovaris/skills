@@ -44,6 +44,14 @@ SendMessage, to: \"<name>\"" in the brief. Launch from the workspace root (a tru
 `--permission-mode` = this session's mode. `claude agents --json` lists workers. No PR auto-fix:
 `smithy verify` the `pr_open` items on each wake and tell a red one to fix CI.
 
+## Subagent workers (fallback)
+
+When **spawn** is refused (a desktop session another session started, or an event turn) and no
+headless CLI is signed in (`smithy agent --bg` fails at start), run each worker as a background
+**subagent** of this session with the brief's full text as its prompt. The cards stay the
+channel; **tell** is the harness's message to that subagent, **end** its stop. Workers die with
+this session, so say so in the plan line.
+
 ## Any harness (smithy agent)
 
 `smithy agent` picks the installed CLI (or `AGENT_CLI`) and passes the flags it needs to work

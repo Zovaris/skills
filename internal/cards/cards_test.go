@@ -211,7 +211,7 @@ func TestSetStateAllowed(t *testing.T) {
 		}
 		t.Run(st, func(t *testing.T) {
 			setup(t)
-			if c := mustSet(t, "b", "a", "state="+st); c["state"] != st {
+			if c := mustSet(t, "b", "a", "state="+st, "pr=https://github.com/o/r/pull/1"); c["state"] != st {
 				t.Fatal(c)
 			}
 		})
@@ -569,5 +569,15 @@ func TestRaiseImpactRechecksALoweredImpact(t *testing.T) {
 	c, _ := Set("b", "j", []string{"impact=low"})
 	if c["impact"] != "high" {
 		t.Fatalf("impact lowered: %v", c["impact"])
+	}
+}
+
+func TestPROpenNeedsAPR(t *testing.T) {
+	t.Setenv("WARDEN_HOME", t.TempDir())
+	if _, err := Set("b", "p", []string{"state=pr_open"}); err == nil {
+		t.Fatal("pr_open without pr accepted")
+	}
+	if _, err := Set("b", "p", []string{"state=pr_open", "pr=https://github.com/o/r/pull/1"}); err != nil {
+		t.Fatal(err)
 	}
 }

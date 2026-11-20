@@ -40,11 +40,11 @@ else update the docs the change touched (`references/DOCS.md`). Then:
   branch only on their explicit yes for this change. (3) **Keep** the branch for later. Discard
   work only when the user explicitly says to.
 - **No remote, or not GitHub** (`git remote` prints nothing, or `smithy pr create` exits 3:
-  origin is another forge or a local repo): commit, branch, receipts and scan as above, push the
-  branch if there is a remote, then skip the PR, tend and the wait, and say so in the final
+  origin is another forge or a local repo): commit, branch, receipts and scan as above, then
+  skip the PR, tend and the wait, and say so in the final
   message (a warden worker: `state=ready note=no-github-pr`).
 - **Clean up** once merged or discarded: `smithy cleanup <repo> <branch> [<worktree>]`,
-  only for worktrees and branches smelt created. It refuses to drop unpushed work; never force it.
+  only for worktrees and branches smelt created. It keeps work that is on no remote and no other branch; never force it.
   The merge usually comes later, from the user: give tend the branch, and the worktree only
   when smelt created it ("on merge, clean up <branch> [<worktree>]"); `smithy cleanup` never
   removes a worktree it isn't given; end the test and review agents as soon as their

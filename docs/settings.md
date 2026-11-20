@@ -1,7 +1,8 @@
 # Settings
 
 Two JSON files, the repo's first: `<repo>/.smithy/config.json` (this repo only) and
-`~/.smithy/config.json` (your defaults). You never edit them by hand:
+`~/.smithy/config.json` (your defaults). In a linked worktree the repo file is the main
+checkout's, so one setting holds for every worktree. You never edit them by hand:
 
 - **use-smithy setup** asks everything up front, or each skill asks a setting the first time it
   needs it and saves your answer;

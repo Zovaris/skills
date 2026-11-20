@@ -39,10 +39,19 @@ var (
 // Tiers are the model tiers, cheapest first.
 var Tiers = []string{"cheap", "mid", "strong"}
 
+func suffix(w string) string {
+	for _, p := range prose {
+		if p == w {
+			return `s?\b`
+		}
+	}
+	return ""
+}
+
 func matches(low string, words []string) []string {
 	var out []string
 	for _, w := range words {
-		if regexp.MustCompile(`(?i)\b` + regexp.QuoteMeta(w)).MatchString(low) {
+		if regexp.MustCompile(`(?i)\b` + regexp.QuoteMeta(w) + suffix(w)).MatchString(low) {
 			out = append(out, w)
 		}
 	}

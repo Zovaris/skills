@@ -21,7 +21,7 @@ Started by you (by name, the way your harness starts skills) or by an agent thro
 | | fast | normal (default) | full |
 |---|---|---|---|
 | For | small or clear changes | most features and fixes | auth, money, data, public APIs |
-| Plan | criteria from the task | a spec if none exists | brainstorm, grill, spec, tasks |
+| Plan | criteria from the task | a spec if none exists | brainstorm, grill, spec, builder check for large or open specs, tasks |
 | Test agents | regression for bugs | + adversary, property or E2E when it fits, mutation on core logic | + mutation, two adversaries, hostile run after review |
 | Review | spec check | spec + standards | spec + standards + security |
 

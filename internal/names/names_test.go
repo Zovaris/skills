@@ -31,3 +31,9 @@ func TestTypeDocsAndFeatures(t *testing.T) {
 		}
 	}
 }
+
+func TestTypeAddressIsNotDocs(t *testing.T) {
+	if got := Type("validate email address"); got != "feat" {
+		t.Fatalf("got %s", got)
+	}
+}

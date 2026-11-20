@@ -456,7 +456,7 @@ func Run(o Options) int {
 }
 
 // startCheck is how long --bg watches a new agent for an immediate failure (bad login, bad flag).
-var startCheck = 5 * time.Second
+var startCheck = 3 * time.Second
 
 func lastLine(file string) string {
 	b, err := os.ReadFile(file)

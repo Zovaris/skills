@@ -59,7 +59,7 @@ Property and mutation need a tool in the repo (`smithy stack` shows it); without
 "not applicable", never a new dependency the user didn't ask for.
 `fast` should finish in one sitting: no agent that needs the app running, no mutation run,
 full suite once at the end. A trivial change (copy, style, one-liner) is always `fast`. A prose-only change (docs, skill
-text) needs no test agents: its seam is the doc lint, and review is spec-check alone.
+text) needs no test agents: its seam is the doc lint if the repo has one, and review is spec-check alone, at any speed.
 Risky means the change touches auth, money, personal data, input parsing, file or shell access,
 or secrets. Under hush, never ask, not even about the speed (pick it and say which at the end); high-impact
 decisions (security, money, personal data, production) still stop with a `blocked:` line (hush).
@@ -103,8 +103,9 @@ Agents that write tests work in their own git worktree. You fix the code; they n
 **Done:** every reproduced finding fixed (failing test first) or rejected with one line; VERIFY
 gate on the suite.
 
-**review** — `references/REVIEW.md` (findings: `references/RECEIVING.md`). Fresh **subagents**: `agents/standards.md`,
-`agents/spec-check.md`, and `agents/security.md` when the speed or the change calls for it;
+**review** — `references/REVIEW.md` (findings: `references/RECEIVING.md`). Fresh **subagents**: `agents/standards.md` and
+`agents/spec-check.md` (one subagent given both at `normal`), and `agents/security.md` when the
+speed or the change calls for it;
 never merge or rerank their reports. Findings and human PR comments: `references/RECEIVING.md`.
 **Done:** no open blocking finding (closed by a reviewer, not by you); every high security
 finding shown to the user.

@@ -338,3 +338,9 @@ func TestAgentBackgroundReportsAnImmediateFailure(t *testing.T) {
 		t.Fatalf("rc = %d, want 1", rc)
 	}
 }
+
+func TestRouteDocWordsAreWholeWords(t *testing.T) {
+	if tier, why := Route("Fix doctor exit code on docker hosts", "ship", "normal"); tier == "cheap" {
+		t.Fatalf("doctor/docker routed cheap: %v", why)
+	}
+}

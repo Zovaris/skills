@@ -31,7 +31,7 @@
    you fixed or a high security finding you fixed, send one fresh subagent per round the fixes'
    diff, every fixed finding, the agent files they came from and `smithy receipt list` output,
    asked only "is each finding resolved, and did the fixes add a new problem?".
-   One bounded second look per finding; a finding it keeps open goes back to step 5, and a
+   One bounded second look per round, covering every fixed finding; a finding it keeps open goes back to step 5, and a
    second "still open" goes to the user.
 7. **Another look only when it pays.** After fixing what a second look kept open, decide with
    judgment, not by habit: a fix that changes behaviour, touches a risky area or is more than a

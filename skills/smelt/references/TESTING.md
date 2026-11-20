@@ -25,6 +25,8 @@ shape your file asks for (its status block included), then one last line
 recommendation; never stop to ask.
 ```
 
+Rule tests (a pattern, a prefix list, a token format) must cover every variant the spec names, one case each: a bug that drops one prefix passes a test of two. Mutation tools don't mutate character classes, so they won't catch it either.
+
 All agents of a speed run together in one wave with the reviewer (hostile runs after the fixes). Which ones run depends on the speed (table in SKILL.md); within it, use this to choose.
 
 | Agent | Run when | Cost | Writes tests |

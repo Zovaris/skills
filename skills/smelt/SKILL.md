@@ -26,7 +26,7 @@ The slash form is one example: the same words in plain text work in any harness 
 |---|---|
 | `/smelt <task>` | infer: no agreed plan → `plan` (at `fast`: `build`, criteria from the task); plan/spec/task exists → `build`; a bug → `debug` |
 | `/smelt brainstorm <idea>` | `references/BRAINSTORM.md` only: the why, approaches, a draft design |
-| `/smelt plan <idea>` | brainstorm → grill → spec → builder check (more than 8 criteria, or open questions left) → task list → ask how to run it |
+| `/smelt plan <idea>` | brainstorm → grill → spec → builder check (more than 8 criteria, or open questions left) → task list → ask how to run it. A spec the user already agreed skips brainstorm, grill and the builder check: straight to the task list |
 | `/smelt build next [dir]` | `smithy tasks next`, mark it `doing`, build it to `ship`, mark it `done` |
 | `/smelt build all [dir]` | `references/EXECUTE.md`: every task here, one implementer subagent each |
 | `/smelt <phase> <task>` | that phase only: `spec`, `build`, `test`, `review`, `ship`, `retro` |

@@ -5,6 +5,17 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+- **Three speeds that differ, and agents only where they earn their cost.** Each subagent costs
+  ~60k tokens and minutes however short its prompt (trials 1–3), so: `fast` runs scripts only
+  (tests, typecheck, lint, scan) and checks the diff against the spec itself, no subagent unless
+  the change is risky; `normal` adds one parallel wave, the adversary and one reviewer, with
+  property tests written by the worker; `full` adds a second adversary, property, security, the
+  mutation tool run as a command with an agent reading the survivors, and hostile last. Test
+  agents write `zz_` files in the tree (no WIP commit, no extra worktree); a fixed blocking
+  finding is confirmed by resuming the same reviewer, not a fresh one; no "another look by
+  judgment". Plans aim for a short chain (width over tidiness). Workers end at `pr_open`; warden
+  waits on every PR's CI in one `smithy wait` and merges; no tend session per batch or PR (red CI
+  goes back to the worker; tend runs when the user starts it). `warden.max` defaults to 5.
 - warden merges every green PR itself; workers stop at `ready` and never merge. A permission
   classifier refused every worker's merge in trial 3, because the merge permission came in a
   brief another agent wrote.

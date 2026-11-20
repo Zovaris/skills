@@ -38,12 +38,19 @@ spec stays in the repo or local dir and the issues link to it.
 - Each fits one fresh context window; split anything bigger than ~1 day of human work.
 - `Blocked by` only for real dependencies (one task needs another's code or schema). Tasks that
   merely touch nearby files are not blocked; tasks that would edit the same lines are.
+- **Width over tidiness:** tasks run in parallel, so the wall time is the longest chain, not the
+  task count. Shape the split so the chain is short: one shared foundation first (skeleton, CI,
+  a schema or interface), then as many independent tasks as possible, each coding against the
+  agreed interface rather than waiting for its implementation. A chain longer than 2 is a
+  finding: say so with the list and how to shorten it.
 - **Self-review** before showing it:
   1. Coverage: every acceptance criterion of the spec lands in exactly one task.
   2. Interfaces line up: each `Consumes` is `Produces`d by a blocker or already exists.
   3. Collisions: tasks without a `Blocked by` between them don't modify the same files.
   4. Proportion: no task is a horizontal layer, none is bigger than a day, none is trivial
      enough to merge into its neighbour.
+  5. Width: the longest `Blocked by` chain, and each task's speed (fast unless it holds logic
+     that earns normal or full).
 - Show the list (number, title, one line, blocked by) and wait for approval before writing.
 
 ## Task file — `NN-<slug>.md`

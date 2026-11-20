@@ -50,7 +50,7 @@ named in your reply.
   (default `smithy config get tend.watch`, else `prs`): `prs` (open PRs by the user, a warden
   batch's; with `--label`, also wait on `prs:<label>`), `issues` (labeled, default `agent`), `actions` (red workflow runs
   on the default branch), `base` (the default branch moved), `alerts` (Dependabot).
-- `stay until merged` in the launch (smelt asks for it): at green, don't stop; wait with
+- `stay until merged` in the launch: at green, don't stop; wait with
   `smithy wait pr:<pr-url>` until the PR merges or closes, then act as **merged / closed** in
   `references/PR.md`.
   Red, conflicts or new review threads in the meantime go back through `references/PR.md`.

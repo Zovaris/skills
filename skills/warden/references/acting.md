@@ -31,10 +31,12 @@ yourself: `smithy cards set <batch> <id> state=working decision_key=`. Log low a
   commit, never a force-push. Not mergeable (the base moved) → **tell** the worker to merge the base and push. Refused → list
   it with the doctor's permission hint.
   Production without that yes, or merge manual → card `state=ready`, listed for the user.
-- `pending`: wait (`smithy wait pr:<pr-url>`).
+- `pending`: wait on every pending PR of the batch in one call, `smithy wait pr:<a> pr:<b> …`
+  (no tokens while it waits), then verify the ones it names.
 - A `ready` card with `note=no-github-pr` has no PR to verify: list its branch for the user.
 - `draft`: green but still a draft; list it for the user, never merge it.
-- `unpushed` or `red`: back to the worker in one line.
+- `unpushed` or `red`: **tell** the worker in one line (a red check names its failing job); a
+  worker that already ended gets the line in its inbox and is respawned.
 - `merged`: next section.
 - `closed` (closed without merge): `state=dropped note="PR closed without merge"`, `smithy cleanup`,
   **end** the worker, set the source to `dropped`, name it in the final message.

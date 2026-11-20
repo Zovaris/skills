@@ -54,8 +54,8 @@ CLAUDE.md), `<repo>/.smithy/config.json`, `~/.smithy/config.json`, then the buil
 
 | Setting | Built-in | Meaning |
 |---|---|---|
-| `warden.max` | 3 | Running limit: workers past it are launched too and wait in `smithy wait-turn` |
-| `warden.merge` | ask | unset (`smithy config get` exits 3): ask in the plan line, once per batch, "auto or manual?"; auto: you merge each green PR after `smithy verify` says green (workers never merge); manual: they stop at `ready` |
+| `warden.max` | 5 | Running limit: workers past it are launched too and wait in `smithy wait-turn` |
+| `warden.merge` | ask | unset (`smithy config get` exits 3): ask in the plan line, once per batch, "auto or manual?"; auto: you merge each green PR after `smithy verify` says green (workers never merge); manual: you list each green PR for the user |
 | `warden.cleanup` | auto | auto: end finished workers and remove worktrees and local branches without asking |
 | `warden.mode` | smelt fast | How workers build: `smelt fast\|normal\|full` or `plain`; an item that is risky by smelt's definition (auth, money, personal data, input parsing, file or shell access, secrets) runs at least `normal` |
 | `warden.worker_model` | route | Models per item: `references/models.md` |
@@ -94,9 +94,8 @@ read it once per batch).
    or the prereq's branch when `stack` is true). Write each brief from `references/worker-brief.md` to
    `<batch-dir>/<id>.brief.md` and **spawn** all at once on each item's model
    (`references/models.md`) with the brief's full text as the prompt, never a pointer to the
-   file (spawn refused: `references/harness.md`, Subagent workers). Record each session id or pid and bump `launches`. With tend installed and ship items whose
-   merge is manual (their PRs stay open waiting for a person), spawn one tend session now too, on the cheap model: "Read <tend-skill> and follow it
-   for `batch <batch>`; report through the cards (`--card <batch> <id>`)".
+   file (spawn refused: `references/harness.md`, Subagent workers). Record each session id or pid and bump `launches`. No tend session: waiting costs nothing
+   in the binary, and an agent is only started when there is something to fix.
 3. **Watch.** Never end a turn while any worker is live without a running `smithy wait batch:<batch>`
    (**wake**, in the background): a turn that ends without it leaves the batch unsupervised. It wakes
    you only for cards that need you, not progress. Never sleep or poll in a turn. On wake read only the cards it printed; `smithy cards get` when a line isn't enough; a
@@ -104,13 +103,12 @@ read it once per batch).
 4. **Act** on each card whose stage isn't final (`references/acting.md`): decide by impact,
    verify PRs, clean up merged, reported and dropped items, recover stuck ones.
 5. **Finish** when every item is `merged`, `reported`, `dropped`, held or waiting on the user.
-   **End** every finished worker still running, and the tend session once every item is final;
+   **End** every finished worker still running;
    leave `blocked` / `failed` ones open for the user.
    Workers still `ready` end on their own when the PR closes where the harness auto-archives;
    otherwise the final message says running warden cleanup (e.g. `/warden cleanup`) finishes them after the merges.
-6. **Tend**, when installed, keeps manual-merge PRs green, rebased and answered (spawned in step 2); a
-   PR it can't get green comes back as a card. With merge auto, every card comes to you at
-   `ready` and you merge it, so no tend session is needed. Without tend, list the open PRs in the final message.
+6. **Open PRs** (merge manual) are listed in the final message with their state. The user can
+   run tend on them (`/tend watch`) to keep them green until they merge.
 
 ## Talking to the user
 

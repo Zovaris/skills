@@ -17,8 +17,8 @@ For each finding:
    - A real trade-off that is the user's (behaviour, API, cost) → ask them, with your
      recommendation.
 5. **Close it.** Fixed and verified → resolve it silently or with the commit. A reviewer's
-   blocking finding closes on the reviewer's second look at the last fix's commit, never at an
-   earlier one: a fix pushed after that look gets one more only as REVIEW.md step 7 decides. Declined → one
+   blocking finding closes when the same reviewer, resumed, confirms it at the last fix's commit
+   (REVIEW.md step 6); a fix pushed after that confirmation goes back to it once more. Declined → one
    sentence of reason in the thread or the PR body.
 
 No performative agreement: no "great catch", no "you're absolutely right", no fixing something

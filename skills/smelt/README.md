@@ -22,8 +22,9 @@ Started by you (by name, the way your harness starts skills) or by an agent thro
 |---|---|---|---|
 | For | small or clear changes | most features and fixes | auth, money, data, public APIs |
 | Plan | criteria from the task | a spec if none exists | brainstorm, grill, spec, builder check for large or open specs, tasks |
-| Test agents | regression for reported bugs | + adversary, property or E2E when it fits, mutation on core logic | + mutation, two adversaries, hostile run after review |
-| Review | spec check | spec + standards | spec + standards + security |
+| Checks (scripts) | suite, typecheck, lint, scan | + property tests you write | + the mutation tool |
+| Agents, one wave in parallel | none (you check against the spec) | adversary + one reviewer | two adversaries, property, reviewer, security, mutant reader; hostile last |
+| Target | ~5 min | ~10–15 min | the safest flow |
 
 Every speed builds test-first and passes the verify gate: no "done" without fresh evidence.
 

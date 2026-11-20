@@ -75,7 +75,7 @@ func TestEffectivePrecedence(t *testing.T) {
 	gitInit(t, e.repo)
 
 	v, src, err := Effective("warden.max")
-	if v != "3" || src != "default" || err != nil {
+	if v != "5" || src != "default" || err != nil {
 		t.Fatalf("default: %q %q %v", v, src, err)
 	}
 	write(t, e.user, `{"warden":{"max":5}}`)

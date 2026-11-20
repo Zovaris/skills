@@ -64,7 +64,7 @@ requirements from the intent and the code"; out of scope if the user named it>
   start from the merged prereqs.">
 <relaunch: "- This is a relaunch. Read <batch-dir>/<id>.inbox.md first if it exists. Before any
   outside action, check git log, git status and `gh pr list --head <branch>` (when `gh` is installed); continue from what
-  exists, never open a second PR or force-push (tend may rebase the branch after you end).">
+  exists, never open a second PR or force-push.">
 - Stay current with the base: `git fetch origin && git merge origin/<base>` (resolve, run the
   tests) before opening the PR. Other PRs merge into the same base while you work.
 - Commits: `<warden-dir>/scripts/smithy commit style` once, then one atomic commit per concern with
@@ -72,16 +72,11 @@ requirements from the intent and the code"; out of scope if the user named it>
   every heading of the template if there is one, then `smithy pr create --base <base> --title "<t>"
   --body-file <f>`. Write the PR body file inside <worktree>/.smelt/ or the system temp dir, never
   next to the worktree. Never `git add -A` or `--no-verify`; skip any preview, nobody answers.
-- One rigor path: CI green; bot review comments at most 3 rounds total, counted in
-  `review_rounds` (read it back after a restart). A bot review is not a completion gate.
 - Scope: stop only when the change would break callers, change what a module is responsible
   for, or need coordinated redesign → needs_decision, impact high. File count or failing tests
   alone are not reasons to stop.
 - Same obstacle twice after a real fix attempt: state=blocked with the one thing you need; stop.
-- Do not create worktrees or issues, except the test agents' worktrees smelt's TESTING.md makes
-  (remove them once their cases are moved in); never start, fork or hand off sessions.
-- Waiting on CI or a PR: one blocking `<warden-dir>/scripts/smithy wait pr:<pr-url>` (or `run:<run-id>`,
-  `branch:<branch-name>`); it prints one line when something happens. No sleep-then-check turns.
+- Do not create worktrees or issues; never start, fork or hand off sessions.
 
 ## Status card
 `<warden-dir>/scripts/smithy cards set <batch> <id> key=value…` at every phase change and before
@@ -93,12 +88,10 @@ as the current step.
   impact (low: local, cheap to undo; medium: shapes a module or internal contract; high: widens
   scope, customer-visible, money, data, security, public API/schema, prod, irreversible). End
   your turn. The warden closes the question; later progress doesn't.
-- PR opened: state=pr_open pr=<url>. If your harness supports it, turn on PR watching, CI auto-fix and
-  auto-archive of this session when the PR closes. A draft or unfinished PR is state=blocked,
-  never pr_open.
-- Green and reviewed (`<warden-dir>/scripts/smithy verify <repo> <branch> <pr-url>` says `green`):
-  tests_run=<commands actually run>, risks=<or none>, state=ready. Never merge yourself: the
-  warden merges (merge auto) or the user does (manual), and the warden cleans up your worktree.
+- PR opened, local checks green and every blocking finding closed: state=pr_open pr=<url>
+  tests_run=<commands actually run> risks=<or none>, then end your turn. Don't wait for CI and
+  never merge: the warden waits on every PR's CI at once, merges, and comes back to you only
+  if CI goes red or the base moves. A draft or unfinished PR is state=blocked, never pr_open.
 - Work found after your PR merged: small and inside this task's intent (a missed case, a typo, a
   failing edge test) → fix it yourself in a follow-up PR from a new branch `<branch>-fix`, same
   rules. Anything bigger or outside the intent → write it as a new task file `NN-<slug>.md` in

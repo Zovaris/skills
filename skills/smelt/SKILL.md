@@ -50,15 +50,19 @@ starting; a subagent or worker running smelt stays silent and puts them in its r
 | For | small or clear changes, warden workers | most features and fixes | risky logic, money, data, auth, public APIs |
 | Plan / spec | skipped; criteria from the task | spec if none exists | brainstorm + grill + spec + builder check (if needed) + tasks |
 | Build | TDD on the acceptance criteria only | TDD on every behaviour | TDD on every behaviour |
-| Test agents | regression (reported bugs with a repro); none for a feature | + adversary; property or e2e when the change fits; mutation on core logic | + 2 adversaries, property, mutation, e2e when applicable; hostile after review when it runs |
-| Review | a fresh spec-check agent (self-check against `agents/spec-check.md` only without a subagent tool); security only if the change is risky | one reviewer running spec-check and standards (+ security if risky) | spec-check + standards + security |
+| Checks (scripts) | suite, typecheck, lint, `smithy scan` | same, plus property tests you write when the repo has a PBT library | same, plus the mutation tool run as a command |
+| Agents (one wave, in parallel) | none: you check the diff against `agents/spec-check.md` yourself; a security agent only if the change is risky | adversary (runtime logic only; regression instead for a reported bug) + one reviewer (spec-check and standards; + security if risky) | 2 adversaries, property, a reviewer for spec-check and standards, security, and one agent reading the surviving mutants; hostile after the fixes when something runs |
+| Re-review | none | the same reviewer, resumed, looks only at the fixes for a blocking finding | same |
+| Target | ~5 min, no subagent | ~10–15 min, 2 subagents | the safest flow |
 | Verify gate | always | always | always |
 | Docs | ADR only if forced | glossary/ADR when they apply | glossary/ADR when they apply + retro |
 
+Agents are the cost: each one is ~60k tokens and minutes however short its prompt, so a speed
+adds agents only where they find what scripts can't, and launches them together in one wave.
 Property and mutation need a tool in the repo (`smithy stack` shows it); without one they are
 "not applicable", never a new dependency the user didn't ask for.
-`fast` should finish in one sitting: no agent that needs the app running, no mutation run,
-full suite once at the end. A trivial change (copy, style, one-liner) is always `fast`. A prose-only change (docs, skill
+`fast` should finish in one sitting: no subagent unless the change is risky, full suite once
+at the end. A trivial change (copy, style, one-liner) is always `fast`. A prose-only change (docs, skill
 text) needs no test agents: its seam is the doc lint if the repo has one, and review is spec-check alone, at any speed.
 Risky means the change touches auth, money, personal data, input parsing, file or shell access,
 or secrets. Under hush, never ask, not even about the speed (pick it and say which at the end); high-impact
@@ -97,24 +101,20 @@ spec, stop and say so). Single test files while working, typecheck often, full s
 end. **Done:** `references/VERIFY.md` gate for "suite, typecheck and lint green" and "every
 criterion has a test".
 
-**test · Attack** — `references/TESTING.md`. Launch the speed's agents as parallel
-**subagents**, each with only what its file in `agents/` lists, never your plan or reasoning.
-Agents that write tests work in their own git worktree. You fix the code; they never do.
-**Done:** every reproduced finding fixed (failing test first) or rejected with one line; VERIFY
-gate on the suite.
-
-**review** — `references/REVIEW.md` (findings: `references/RECEIVING.md`). Fresh **subagents**: `agents/standards.md` and
-`agents/spec-check.md` (one subagent given both at `normal`), and `agents/security.md` when the
-speed or the change calls for it;
-never merge or rerank their reports. Findings and human PR comments: `references/RECEIVING.md`.
-**Done:** no open blocking finding (closed by a reviewer, not by you); every high security
-finding shown to the user.
-At `full`, with something that runs, launch `agents/hostile.md` on the reviewed commit next
-(`references/TESTING.md`); its fixes go back through build and review.
+**check · One wave** — `references/TESTING.md` and `references/REVIEW.md` (findings:
+`references/RECEIVING.md`). Once the build's checks are green, launch every agent the speed
+lists at the same time, as parallel **subagents**, each with only what its file in `agents/`
+lists, never your plan or reasoning. Test agents write `zz_<agent>_test.*` files in your tree;
+you fix the code, they never do. Never merge or rerank their reports. A blocking finding you
+fixed closes when the same reviewer, resumed, says so.
+**Done:** every reproduced finding fixed (failing test first) or declined with one line, no
+open blocking finding, every high security finding shown to the user, VERIFY gate on the suite.
+At `full`, with something that runs, `agents/hostile.md` runs on the fixed commit last; its
+fixes go back through build and the same reviewer.
 
 **ship** — `references/SHIP.md`: docs, branch, integrate, atomic commits, secret scan, then
-close as a PR (the default, handed to tend), a local merge (only when asked) or a kept branch;
-clean up and propose up to 3 evidence-backed lessons. **Done:** VERIFY gate for "ready to open a PR", then the PR opened and handed to tend
+close as a PR (the default), a local merge (only when asked) or a kept branch;
+clean up and propose up to 3 evidence-backed lessons. **Done:** VERIFY gate for "ready to open a PR", then the PR opened
 (or committed when there's no remote); no stray worktrees or local branches from this task.
 
 **retro** — `references/DOCS.md`. Mechanical mistakes → an automated check; judgement calls →

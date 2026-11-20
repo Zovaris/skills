@@ -30,7 +30,7 @@ var Known = []Setting{
 	{"tasks.ignore", "ask", "smelt plan", "with tasks.commit false: gitignore (commit a .gitignore line) or exclude (local .git/info/exclude)"},
 	{"warden.merge", "ask", "warden", "auto: warden merges green PRs (workers never do); manual: they stop at ready; unset: warden asks per batch"},
 	{"warden.cleanup", "auto", "warden", "auto: end finished workers and remove worktrees and local branches without asking"},
-	{"warden.max", "3", "warden", "parallel workers (a token-cost cap)"},
+	{"warden.max", "5", "warden", "parallel workers (a token-cost cap)"},
 	{"warden.mode", "smelt fast", "warden", "worker mode: smelt fast, smelt normal, smelt full or plain"},
 	{"warden.worker_model", "route", "warden", "route: pick cheap/mid/strong per task; session: same model as the parent session; or one model name for every worker"},
 	{"agent.effort", "medium", "smelt warden scout tend", "reasoning effort for every agent smithy starts: low or medium; anything higher is capped at medium"},

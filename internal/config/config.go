@@ -38,7 +38,7 @@ var Known = []Setting{
 	{"watch.events", "checks,merged,closed,conflict,review,comment,push,new,updated", "smithy wait", "which events wake an agent waiting on GitHub"},
 	{"watch.every", "30", "smithy wait", "seconds between GitHub polls"},
 	{"watch.max", "50", "smithy wait", "minutes before a heartbeat exit (4) when nothing happened"},
-	{"tend.watch", "prs", "tend", "what /tend watch looks at: prs, issues or all"},
+	{"tend.watch", "prs", "tend", "what /tend watch follows: a comma list of prs, issues, actions, base, alerts, or all"},
 	{"tend.label", "agent", "tend", "label of issues tend may queue for warden"},
 	{"decide.url", "", "smithy decide", "decision model endpoint; set with decide.model to turn smithy decide on (a path ending in /scores uses the behavior format, else System One)"},
 	{"decide.model", "", "smithy decide", "decision model id, e.g. span-01-free, jev-latest, kev-latest"},

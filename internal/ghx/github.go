@@ -473,6 +473,7 @@ func PRMerge(ref, method string) error {
 }
 
 type apiRun struct {
+	ID         int64   `json:"id"`
 	Name       string  `json:"name"`
 	Status     string  `json:"status"`
 	Conclusion *string `json:"conclusion"`
@@ -486,13 +487,14 @@ func (r apiRun) gh() map[string]any {
 	if r.Conclusion != nil {
 		c = *r.Conclusion
 	}
-	return map[string]any{"name": r.Name, "status": r.Status, "conclusion": c, "headSha": r.HeadSha, "createdAt": r.CreatedAt, "url": r.HTMLURL}
+	return map[string]any{"databaseId": r.ID, "name": r.Name, "status": r.Status, "conclusion": c, "headSha": r.HeadSha, "createdAt": r.CreatedAt, "url": r.HTMLURL}
 }
 
-// RunList is `gh run list --branch <b> --limit 30` with status, conclusion, name, headSha, createdAt.
+// RunList is `gh run list --branch <b> --limit 30` with databaseId, status, conclusion, name,
+// headSha, createdAt and url.
 func RunList(branch string, v any) error {
 	return via(func() error {
-		return GH(v, "run", "list", "--branch", branch, "--limit", "30", "--json", "status,conclusion,name,headSha,createdAt")
+		return GH(v, "run", "list", "--branch", branch, "--limit", "30", "--json", "databaseId,status,conclusion,name,headSha,createdAt,url")
 	}, func() error {
 		repo, err := RepoName()
 		if err != nil {
@@ -669,4 +671,40 @@ func ReviewThreads(repo string, num int) ([]byte, error) {
 		return err
 	})
 	return b, err
+}
+
+// Alerts lists the repo's open Dependabot alerts: number, severity, package and url. It fails
+// when the token or app may not read them.
+func Alerts(v any) error {
+	repo, err := RepoName()
+	if err != nil {
+		return err
+	}
+	o, n, err := splitRepo(repo)
+	if err != nil {
+		return err
+	}
+	path := "/repos/" + o + "/" + n + "/dependabot/alerts?state=open&per_page=100"
+	var raw []struct {
+		Number           int    `json:"number"`
+		HTMLURL          string `json:"html_url"`
+		SecurityAdvisory struct {
+			Severity string `json:"severity"`
+		} `json:"security_advisory"`
+		Dependency struct {
+			Package struct {
+				Name string `json:"name"`
+			} `json:"package"`
+		} `json:"dependency"`
+	}
+	if err := via(func() error { return GH(&raw, "api", strings.TrimPrefix(path, "/")) },
+		func() error { return call("GET", path, nil, &raw) }); err != nil {
+		return err
+	}
+	out := []map[string]any{}
+	for _, a := range raw {
+		out = append(out, map[string]any{"number": a.Number, "url": a.HTMLURL,
+			"severity": a.SecurityAdvisory.Severity, "package": a.Dependency.Package.Name})
+	}
+	return reshape(out, v)
 }

@@ -510,13 +510,17 @@ Targets (any mix):
   prs[:<label>]       a PR opened or updated: yours, a warden batch's, or with the label
   issues[:<label>]    an issue opened or updated with the label (default agent)
   batch:<name>        a warden card needs the warden (--all: any card change); polls every 10 s
-  watch[:prs|issues|all]  tend's watch mode: new or updated PRs and/or labeled issues
-                      (scope from tend.watch, label from tend.label)
+  actions[:<branch>]  a workflow run on the branch (default: origin's default) finished red,
+                      push, schedule or manual
+  base[:<branch>]     the branch (default: origin's default) moved on origin
+  alerts              a new open Dependabot alert (skipped, with a note, without read access)
+  watch[:<scopes>]    tend's watch mode; scopes is a comma list of prs, issues, actions, base,
+                      alerts, or all (default tend.watch; issue label from tend.label)
 Finished checks are reported at once. Exit 0 = events, 4 = heartbeat, 2 = bad target, 3 = no GitHub access (gh missing or signed out and no GH_TOKEN).
 Defaults: settings watch.events, watch.every (30 s), watch.max (50 min).`
 
-// expandWatch turns `watch[:prs|issues|all]` into prs and issues targets, the scope and label
-// coming from tend.watch and tend.label when not given.
+// expandWatch turns `watch[:<scopes>]` into targets, the scopes and issue label coming from
+// tend.watch and tend.label when not given.
 func expandWatch(targets []string) ([]string, bool) {
 	var out []string
 	watch := false
@@ -530,12 +534,17 @@ func expandWatch(targets []string) ([]string, bool) {
 		if scope == "" {
 			scope = config.Get("tend.watch", "prs")
 		}
-		label := config.Get("tend.label", "agent")
-		if scope != "issues" {
-			out = append(out, "prs")
+		if scope == "all" {
+			scope = "prs,issues,actions,base,alerts"
 		}
-		if scope != "prs" {
-			out = append(out, "issues:"+label)
+		for _, s := range strings.Split(scope, ",") {
+			switch s = strings.TrimSpace(s); s {
+			case "issues":
+				out = append(out, "issues:"+config.Get("tend.label", "agent"))
+			case "":
+			default:
+				out = append(out, s)
+			}
 		}
 	}
 	return out, watch
@@ -597,7 +606,7 @@ func Main(args []string) int {
 			if arg != "" {
 				continue
 			}
-		case "prs", "issues":
+		case "prs", "issues", "actions", "base", "alerts":
 			continue
 		}
 		fmt.Fprintf(os.Stderr, "smithy wait: unknown target %s\n", t)
@@ -653,6 +662,12 @@ func Main(args []string) int {
 			w, err = newList("issue", arg, o)
 		case "batch":
 			w, err = newBatch(arg, all)
+		case "actions":
+			w = newActions(arg)
+		case "base":
+			w = newBase(arg)
+		case "alerts":
+			w = &alertsWatcher{seen: newSeen("alerts")}
 		default:
 			err = fmt.Errorf("unknown target %s", t)
 		}

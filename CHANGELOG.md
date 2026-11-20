@@ -5,6 +5,11 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+- tend watches the repo, not just PRs: `smithy wait` gains `actions[:<branch>]` (red workflow
+  runs, push, schedule or manual), `base[:<branch>]` (the branch moved) and `alerts` (new
+  Dependabot alerts, skipped with a note without access); `watch:` takes a comma list or `all`.
+  Each event has a short recipe in `tend/references/`, read only when it fires; recipes report by
+  default and open fix PRs only with `--fix`.
 - `smithy decide` (off until `decide.url` and `decide.model` are set): an optional decision
   model; the URL picks the wire format (Respan `/scores` behaviors, else System One: Jev, Kev,
   Clef, span-02). `decide rules` gives the standards reviewer leads on likely rule breaks;

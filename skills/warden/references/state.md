@@ -32,7 +32,7 @@ decision model raised it), `tests_run`, `risks`,
 | `needs_decision` | Asked a question (`decision_key`, `question`, `options`, `impact`); stays open until you close it |
 | `blocked` / `failed` | Stopped; `note` says what it needs |
 | `pr_open` | PR opened |
-| `ready` | Green and waiting for a manual merge (or `note=merge-blocked`) |
+| `ready` | Green: the warden merges it (merge auto) or the user does (manual) |
 | `merged` · `reported` · `dropped` | Final: PR merged, scout report written, nothing to do |
 
 `smithy cards board` adds a **stage** per item (what you do with it): `waiting`, `working`, `decide`

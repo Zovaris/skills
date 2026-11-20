@@ -66,8 +66,7 @@ requirements from the intent and the code"; out of scope if the user named it>
   outside action, check git log, git status and `gh pr list --head <branch>` (when `gh` is installed); continue from what
   exists, never open a second PR or force-push (tend may rebase the branch after you end).">
 - Stay current with the base: `git fetch origin && git merge origin/<base>` (resolve, run the
-  tests) before opening the PR and again right before merging. Other workers merge into the same
-  base while you work.
+  tests) before opening the PR. Other PRs merge into the same base while you work.
 - Commits: `<warden-dir>/scripts/smithy commit style` once, then one atomic commit per concern with
   `<warden-dir>/scripts/smithy commit "<msg>" <paths>` in that style. PR: `<warden-dir>/scripts/smithy pr template`; fill
   every heading of the template if there is one, then `smithy pr create --base <base> --title "<t>"
@@ -98,13 +97,8 @@ as the current step.
   auto-archive of this session when the PR closes. A draft or unfinished PR is state=blocked,
   never pr_open.
 - Green and reviewed (`<warden-dir>/scripts/smithy verify <repo> <branch> <pr-url>` says `green`):
-  tests_run=<commands actually run>, risks=<or none>. merge auto → `<warden-dir>/scripts/smithy pr merge <pr-url>` into
-  <base>, state=merged, then from <repo> run `<warden-dir>/scripts/smithy cleanup <repo> <branch>
-  <worktree>` (never forced). Use the repo's usual merge method; if a rebase merge is refused because
-  syncing the base left merge commits, use a merge commit, never a force-push. Manual → state=ready. A PR into the production branch is manual unless
-  the batch says the user approved a production merge. If the merge itself
-  is refused (permission rule, branch protection, a classifier): don't retry around it;
-  state=ready note=merge-blocked, and the warden merges.
+  tests_run=<commands actually run>, risks=<or none>, state=ready. Never merge yourself: the
+  warden merges (merge auto) or the user does (manual), and the warden cleans up your worktree.
 - Work found after your PR merged: small and inside this task's intent (a missed case, a typo, a
   failing edge test) → fix it yourself in a follow-up PR from a new branch `<branch>-fix`, same
   rules. Anything bigger or outside the intent → write it as a new task file `NN-<slug>.md` in

@@ -25,8 +25,11 @@ yourself: `smithy cards set <batch> <id> state=working decision_key=`. Log low a
 
 `smithy verify <repo> <branch> <pr-url>` prints one verdict:
 - `green`: merge auto, and either not the production branch or the user approved a production
-  merge for this batch → merge if the worker hasn't (card `note=merge-blocked` means it was
-  refused: `smithy pr merge <pr>` yourself; refused again → list it with the doctor's permission hint).
+  merge for this batch → `smithy pr merge <pr>` (workers never merge: the merge permission is
+  the user's, given to you, and a permission check would refuse it from a worker). Use the repo's
+  usual merge method; a rebase merge refused because the branch has merge commits → a merge
+  commit, never a force-push. Not mergeable (the base moved) → **tell** the worker to merge the base and push. Refused → list
+  it with the doctor's permission hint.
   Production without that yes, or merge manual → card `state=ready`, listed for the user.
 - `pending`: wait (`smithy wait pr:<pr-url>`).
 - A `ready` card with `note=no-github-pr` has no PR to verify: list its branch for the user.

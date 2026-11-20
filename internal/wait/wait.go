@@ -514,6 +514,7 @@ Targets (any mix):
                       push, schedule or manual
   base[:<branch>]     the branch (default: origin's default) moved on origin
   alerts              a new open Dependabot alert (skipped, with a note, without read access)
+                      actions and alerts already there on the first run are recorded, not reported
   watch[:<scopes>]    tend's watch mode; scopes is a comma list of prs, issues, actions, base,
                       alerts, or all (default tend.watch; issue label from tend.label)
 Finished checks are reported at once. Exit 0 = events, 4 = heartbeat, 2 = bad target, 3 = no GitHub access (gh missing or signed out and no GH_TOKEN).

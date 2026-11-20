@@ -18,7 +18,10 @@ func TestActionFollowsTendOrder(t *testing.T) {
 		{PRState{State: "OPEN", Checks: "pending", Mergeable: "MERGEABLE", Behind: json.Number("0"), Unresolved: 1}, "answer-review"},
 		{PRState{State: "OPEN", Checks: "pending", Mergeable: "MERGEABLE"}, "wait"},
 		{PRState{State: "OPEN", Checks: "green", Mergeable: "MERGEABLE", Behind: 0}, "done"},
-		{PRState{State: "OPEN", Checks: "none", Mergeable: "UNKNOWN"}, "done"},
+		{PRState{State: "OPEN", Checks: "none", Mergeable: "UNKNOWN"}, "wait"},
+		{PRState{State: "OPEN", Checks: "green", Mergeable: "MERGEABLE", Review: "CHANGES_REQUESTED"}, "needs-you"},
+		{PRState{State: "OPEN", Checks: "green", Mergeable: "BLOCKED"}, "needs-you"},
+		{PRState{State: "OPEN", Checks: "none", Mergeable: "MERGEABLE", Review: "APPROVED"}, "done"},
 	}
 	for _, c := range cases {
 		if got := Action(c.s); got != c.want {

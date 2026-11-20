@@ -34,7 +34,8 @@ type PRState struct {
 
 // Action is the first step tend takes on a PR in this state, in tend's order: cleanup (merged
 // or closed), fix-ci, sync-base (conflicting or behind), answer-review, wait (checks pending),
-// done (green: stop, or merge when allowed).
+// needs-you (changes requested or review required with no open thread, or not mergeable for
+// another reason), done (green, mergeable, approved or no review required).
 func Action(s PRState) string {
 	switch {
 	case s.State == "MERGED" || s.State == "CLOSED":
@@ -45,8 +46,10 @@ func Action(s PRState) string {
 		return "sync-base"
 	case s.Unresolved > 0:
 		return "answer-review"
-	case s.Checks == "pending":
+	case s.Checks == "pending" || s.Mergeable == "UNKNOWN":
 		return "wait"
+	case s.Review == "CHANGES_REQUESTED" || s.Review == "REVIEW_REQUIRED" || s.Mergeable != "MERGEABLE":
+		return "needs-you"
 	}
 	return "done"
 }

@@ -15,7 +15,7 @@ the cautious side; median 0.4 s, free. Quality numbers elsewhere are vendor-repo
 ## Decision Outcome
 
 `smithy decide`, off until the user sets `decide.url` and `decide.model` (no default model),
-called from the binary over plain HTTP (stdlib). The URL picks the wire format: Respan `/scores`
+called from the binary over HTTPS (plain HTTP only to a local model), stdlib only. The URL picks the wire format: Respan `/scores`
 behaviors, else System One (Jev, Kev local, Clef, span-02). It only adds caution: rule flags are
 leads for the standards reviewer, never findings or approvals; `smithy cards set` raises a new
 question's impact with it, never lowers it. Off, failing or slow → callers behave as without it,

@@ -560,3 +560,14 @@ func TestRaiseImpactHookOnlyRaisesNewQuestions(t *testing.T) {
 		t.Fatalf("hook ran without a new question: calls=%d err=%v", calls, err)
 	}
 }
+
+func TestRaiseImpactRechecksALoweredImpact(t *testing.T) {
+	t.Setenv("WARDEN_HOME", t.TempDir())
+	RaiseImpact = func(q, imp string) (string, bool) { return "high", imp != "high" }
+	defer func() { RaiseImpact = nil }()
+	Set("b", "j", []string{"state=needs_decision", "decision_key=k", "question=q", "impact=high"})
+	c, _ := Set("b", "j", []string{"impact=low"})
+	if c["impact"] != "high" {
+		t.Fatalf("impact lowered: %v", c["impact"])
+	}
+}

@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"sort"
@@ -65,18 +66,32 @@ func FromConfig() (*Client, error) {
 	if c.URL == "" || c.Model == "" || config.Get("decide.enabled", "true") == "false" {
 		return nil, ErrOff
 	}
+	u, err := url.Parse(c.URL)
+	if err != nil || (u.Scheme != "https" && !(u.Scheme == "http" && local(u.Hostname()))) {
+		return nil, fmt.Errorf("decide.url must be https (or http to localhost), got %q", redactURL(c.URL))
+	}
 	if env := config.Get("decide.key_env", ""); env != "" {
 		c.Key = os.Getenv(env)
 		if c.Key == "" {
 			return nil, fmt.Errorf("no key: %s is empty", env)
 		}
 	}
-	ms, err := strconv.Atoi(config.Get("decide.timeout", "3000"))
+	ms, err2 := strconv.Atoi(config.Get("decide.timeout", "3000"))
+	err = err2
 	if err != nil || ms <= 0 {
 		ms = 3000
 	}
 	c.Timeout = time.Duration(ms) * time.Millisecond
 	return c, nil
+}
+
+func local(h string) bool { return h == "localhost" || h == "127.0.0.1" || h == "::1" }
+
+func redactURL(s string) string {
+	if i := strings.IndexByte(s, '?'); i >= 0 {
+		return s[:i] + "?…"
+	}
+	return s
 }
 
 const maxFails = 3
@@ -97,10 +112,11 @@ func recordResult(err error) string {
 		os.WriteFile(failFile(), []byte(strconv.Itoa(n)), 0o600)
 		return ""
 	}
-	os.Remove(failFile())
 	if e := config.Set(config.UserFile(), "decide.enabled", "false"); e != nil {
-		return ""
+		os.WriteFile(failFile(), []byte(strconv.Itoa(n)), 0o600)
+		return "smithy decide: could not disable itself: " + e.Error()
 	}
+	os.Remove(failFile())
 	return fmt.Sprintf("smithy decide: disabled after %d failed calls in a row; turn it back on with: smithy config set decide.enabled true", maxFails)
 }
 
@@ -291,7 +307,7 @@ func Main(args []string) int {
 		_, err := FromConfig()
 		switch {
 		case err == nil:
-			fmt.Println("decide: on", config.Get("decide.url", ""), config.Get("decide.model", ""))
+			fmt.Println("decide: on", redactURL(config.Get("decide.url", "")), config.Get("decide.model", ""))
 		case errors.Is(err, ErrOff) && config.Get("decide.enabled", "true") == "false":
 			fmt.Println("decide: disabled (smithy config set decide.enabled true)")
 		case errors.Is(err, ErrOff):

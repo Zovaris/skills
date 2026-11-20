@@ -155,7 +155,7 @@ func TestSummarize(t *testing.T) {
 	}
 	s, _ := Summarize([]byte(`{"url":"u","state":"OPEN"}`), []byte(`{}`), []byte(`{}`))
 	b, _ := json.Marshal(s)
-	if string(b) != `{"url":"u","state":"OPEN","checks":"none","mergeable":"UNKNOWN","review":"none","unresolved":0,"behind":0,"head":null,"base":null,"action":"done"}` {
+	if string(b) != `{"url":"u","state":"OPEN","checks":"none","mergeable":"UNKNOWN","review":"none","unresolved":0,"behind":0,"head":null,"base":null,"action":"wait"}` {
 		t.Errorf("defaults: %s", b)
 	}
 }

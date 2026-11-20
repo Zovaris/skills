@@ -130,7 +130,7 @@ func Set(batch, id string, pairs []string) (map[string]any, error) {
 		if !has([]string{"low", "medium", "high"}, s(cur, "impact")) {
 			return nil, fmt.Errorf("impact must be low, medium or high")
 		}
-		if RaiseImpact != nil && hasKey(pairs, "question") {
+		if RaiseImpact != nil && (hasKey(pairs, "question") || hasKey(pairs, "impact")) {
 			if v, ok := RaiseImpact(s(cur, "question"), s(cur, "impact")); ok {
 				cur["impact"] = v
 				cur["impact_by"] = "decide"

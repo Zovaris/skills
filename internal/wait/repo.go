@@ -26,7 +26,11 @@ type seenSet struct {
 }
 
 func newSeen(name string) *seenSet {
-	repo, _ := ghx.RepoName()
+	repo, err := ghx.RepoName()
+	if err != nil || repo == "" {
+		cwd, _ := os.Getwd()
+		repo = filepath.Base(ghx.RepoRoot(cwd))
+	}
 	s := &seenSet{file: filepath.Join(tendDir(), strings.ReplaceAll(repo, "/", "-")+"-"+name+".json"), keys: map[string]bool{}}
 	if b, err := os.ReadFile(s.file); err == nil {
 		var ks []string
@@ -71,6 +75,13 @@ func defaultBranch() string {
 	if r, err := ghx.Run("git", "symbolic-ref", "--quiet", "--short", "refs/remotes/origin/HEAD"); err == nil && r != "" {
 		return strings.TrimPrefix(r, "origin/")
 	}
+	if r, err := ghx.Run("git", "ls-remote", "--symref", "origin", "HEAD"); err == nil {
+		for _, l := range strings.Split(r, "\n") {
+			if f := strings.Fields(l); len(f) >= 2 && f[0] == "ref:" {
+				return strings.TrimPrefix(f[1], "refs/heads/")
+			}
+		}
+	}
 	return "main"
 }
 
@@ -89,7 +100,7 @@ func newActions(branch string) *actionsWatcher {
 
 func (w *actionsWatcher) poll() ([]string, error) {
 	var runs []struct {
-		DatabaseID                     int64
+		DatabaseID                    int64
 		Status, Conclusion, Name, URL string
 	}
 	if err := ghx.RunList(w.branch, &runs); err != nil {
@@ -134,10 +145,18 @@ func (w *baseWatcher) poll() ([]string, error) {
 	if len(f) == 0 {
 		return nil, fmt.Errorf("no branch %s on origin", w.branch)
 	}
-	if len(w.seen.fresh([]string{f[0]})) == 0 {
+	sha := f[0]
+	last := ""
+	for k := range w.seen.keys {
+		last = k
+	}
+	first := !w.seen.init
+	w.seen.keys = map[string]bool{}
+	w.seen.fresh([]string{sha})
+	if first || last == sha {
 		return nil, nil
 	}
-	return []string{fmt.Sprintf("base %s moved %s", w.branch, f[0][:7])}, nil
+	return []string{fmt.Sprintf("base %s moved %s", w.branch, sha[:7])}, nil
 }
 
 // alertsWatcher reports new open Dependabot alerts; without read access it says so once and
@@ -156,6 +175,10 @@ func (w *alertsWatcher) poll() ([]string, error) {
 		Severity, Package, URL string
 	}
 	if err := ghx.Alerts(&as); err != nil {
+		m := err.Error()
+		if !strings.Contains(m, "403") && !strings.Contains(m, "404") && !strings.Contains(m, "not accessible") && !strings.Contains(m, "Not Found") {
+			return nil, err
+		}
 		w.off = true
 		fmt.Fprintln(os.Stderr, "smithy wait: alerts not readable here, skipping them:", err)
 		return nil, nil

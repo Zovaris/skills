@@ -183,3 +183,11 @@ func TestSuccessResetsFailures(t *testing.T) {
 		t.Fatalf("disabled after non-consecutive failures: %v", err)
 	}
 }
+
+func TestRefusesPlainHTTPToARemoteHost(t *testing.T) {
+	setup(t, "http://example.com/v1/systemone?key=secret")
+	_, err := FromConfig()
+	if err == nil || strings.Contains(err.Error(), "secret") {
+		t.Fatalf("err = %v", err)
+	}
+}

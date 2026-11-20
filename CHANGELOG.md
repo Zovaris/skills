@@ -5,6 +5,9 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+- smelt VERIFY: an "it runs" check (start it once, hit the changed path) for changes to something
+  that starts. Trimmed always-loaded text in smelt, worker briefs and use-smithy (setup moves to
+  `references/SETUP.md`).
 - Optional `judge` model tier: the smartest model you have, used only by `smithy consult`
   (falls back to `strong`). ADR 0006 records why decision models and a watcher session stay out.
 - Fixes from the release/next audit and worker feedback: one definition of a blocking review

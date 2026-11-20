@@ -230,9 +230,7 @@ func Stack(dir string) []Line {
 	var over struct {
 		Stack map[string]string `json:"stack"`
 	}
-	if b, err := os.ReadFile(filepath.Join(dir, ".smithy", "config.json")); err == nil {
-		_ = json.Unmarshal(b, &over)
-	}
+	_ = json.Unmarshal(trustedConfig(dir), &over)
 	set := func(k string, v *string) {
 		if o := strings.TrimSpace(over.Stack[k]); o != "" {
 			*v = o
@@ -283,6 +281,23 @@ func Stack(dir string) []Line {
 		out("adrs", fmt.Sprint(n))
 	}
 	return lines
+}
+
+// trustedConfig is the repo config as the default branch has it, or, when no branch tracks it,
+// the main checkout's local file. A branch's own edits never set the commands smelt runs.
+func trustedConfig(dir string) []byte {
+	if b, err := exec.Command("git", "-C", dir, "show", "refs/remotes/origin/HEAD:.smithy/config.json").Output(); err == nil {
+		return b
+	}
+	if exec.Command("git", "-C", dir, "ls-files", "--error-unmatch", ".smithy/config.json").Run() == nil {
+		return nil
+	}
+	top := dir
+	if c, err := exec.Command("git", "-C", dir, "rev-parse", "--path-format=absolute", "--git-common-dir").Output(); err == nil && filepath.Base(strings.TrimSpace(string(c))) == ".git" {
+		top = filepath.Dir(strings.TrimSpace(string(c)))
+	}
+	b, _ := os.ReadFile(filepath.Join(top, ".smithy", "config.json"))
+	return b
 }
 
 // StackMain runs `smithy stack [repo-dir]` and returns the exit code.

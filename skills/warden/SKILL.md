@@ -94,7 +94,7 @@ read it once per batch).
    or the prereq's branch when `stack` is true). Write each brief from `references/worker-brief.md` to
    `<batch-dir>/<id>.brief.md` and **spawn** all at once on each item's model
    (`references/models.md`) with the brief's full text as the prompt, never a pointer to the
-   file. Record each session id or pid and bump `launches`. With tend installed and ship items whose
+   file (spawn refused: `references/harness.md`, Subagent workers). Record each session id or pid and bump `launches`. With tend installed and ship items whose
    merge is manual (their PRs stay open waiting for a person), spawn one tend session now too, on the cheap model: "Read <tend-skill> and follow it
    for `batch <batch>`; report through the cards (`--card <batch> <id>`)".
 3. **Watch.** Never end a turn while any worker is live without a running `smithy wait batch:<batch>`

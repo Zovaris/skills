@@ -12,7 +12,7 @@ its spec, and never commit an agent's file as is. The adversary's file is the ho
 untouched until its final run; cases you keep are copies written after that run. Then remove
 those worktrees and branches (`smithy cleanup`). Launch them together so they run in parallel. Without a subagent tool: write each prompt to a file and run
 `smithy agent --bg --cwd <worktree> --log <file> <prompt-file>` per agent, then read the logs.
-Where you may not create worktrees (a warden worker), an agent writes `zz_<agent>_test.*` files in
+Where your brief forbids worktrees, an agent writes `zz_<agent>_test.*` files in
 yours instead, which you delete after taking what you keep.
 Read-only agents (spec-check, standards, security, builder) run as any fresh subagent (no
 particular type needed), or with `smithy agent --readonly` without a subagent tool.

@@ -272,8 +272,8 @@ func Rows(batch string) ([]Row, error) {
 			PR: or(s(card, "pr")), CI: or(s(card, "ci")), Age: "-", Text: s(card, "question")}
 		if r.Text == "" {
 			r.Text = s(card, "note")
-			if len(r.Text) > 160 {
-				r.Text = r.Text[:157] + "..."
+			if rs := []rune(r.Text); len(rs) > 160 {
+				r.Text = string(rs[:157]) + "..."
 			}
 		}
 		if held(item) {

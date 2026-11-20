@@ -48,10 +48,10 @@ func suffix(w string) string {
 	return ""
 }
 
-var negated = regexp.MustCompile(`(?i)\b(no|not|without|never|zero)\s+(\w+\s+){0,2}$`)
+var negated = regexp.MustCompile(`(?i)\b(no|without|never|zero)\s+(\w+\s+){0,1}$`)
 
 // matches returns the words of the list found in low as they appear there, skipping any that a
-// "no", "not", "without", "never" or "zero" just before negates ("no secrets needed").
+// "no", "without", "never" or "zero" just before negates ("no secrets needed").
 func matches(low string, words []string) []string {
 	var out []string
 	for _, w := range words {

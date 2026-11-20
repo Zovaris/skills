@@ -21,10 +21,11 @@ Two JSON files, the repo's first: `<repo>/.smithy/config.json` (this repo only) 
 | `warden.merge` | unset (warden asks once per batch) | Unset: warden asks once per batch in its plan line (auto or manual); `auto`: workers merge green PRs; `manual`: they stop at ready. A value you save counts as your words. |
 | `warden.cleanup` | `auto` | End finished workers and remove their worktrees and branches without asking. |
 | `warden.max` / `warden.mode` | `3` / `smelt fast` | Parallel workers; how workers build: `smelt fast`, `smelt normal`, `smelt full` or `plain`. |
-| `tend.watch` / `tend.label` | `prs` / `agent` | What `/tend watch` follows; the issue label it may queue. |
+| `tend.watch` / `tend.label` | `prs` / `agent` | What `/tend watch` follows (comma list of `prs`, `issues`, `actions`, `base`, `alerts`, or `all`); the issue label it may queue. |
+| `decide.url` / `decide.model` | unset (off) | Optional decision model for `smithy decide`, on once both are set. A URL ending in `/scores` uses Respan's behavior format (`span-01-free` is free); anything else System One (Jev, Kev local, Clef, span-02). `decide.key_env` names the env var with the key (never the key), `decide.timeout` is in ms (3000). Three failed calls in a row set `decide.enabled` false; set it `true` to turn it back on. |
 | `git.branch` | `{type}/{key}-{slug}` | Branch names (`smithy names`); e.g. `agent/{key}-{slug}`. |
 | `git.worktree` | `{parent}/worktrees/{repo}-{branch}` | Where worktrees go. |
-| `watch.events` / `watch.every` / `watch.max` | `checks,merged,closed,conflict,review,comment,push,new,updated` / `30` / `50` | What wakes a waiting agent, seconds between polls, minutes before a heartbeat. |
+| `watch.events` / `watch.every` / `watch.max` | `checks,merged,closed,conflict,review,comment,push,new,updated` / `30` / `50` | What wakes a waiting agent on `pr:` and list targets (`actions`, `base` and `alerts` always report), seconds between polls, minutes before a heartbeat. |
 
 Coming from 0.7 (`~/.agents/`): the first run moves your settings, plans and batches to
 `~/.smithy/` (`smithy config migrate` does it by hand).

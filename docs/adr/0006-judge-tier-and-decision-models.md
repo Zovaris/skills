@@ -1,6 +1,6 @@
 # 0006 · Judge tier for consult; decision models and a session watcher stay out
 
-- Status: proposed
+- Status: proposed (decision-model part superseded by 0007)
 - Date: 2026-11-19
 
 ## Context and Problem Statement

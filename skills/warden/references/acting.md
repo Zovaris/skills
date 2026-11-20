@@ -7,7 +7,7 @@ do it on the user's yes.
 
 ## decide (`needs_decision`)
 
-By `impact` (you may raise it, never lower it):
+By `impact` (you may raise it, never lower it; `impact_by=decide` means the decision model raised it):
 - **low** (local, cheap to undo, restores or completes the intent): decide on the merits.
 - **medium** (shapes a module or internal contract): `smithy consult` with the worker's question and
   options verbatim, in neutral order. `NEED-INFO` goes back to the worker; `ESCALATE` makes it

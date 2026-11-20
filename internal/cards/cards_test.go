@@ -546,3 +546,28 @@ func TestMainLiveMissingBatch(t *testing.T) {
 		t.Fatalf("%d %q", code, se)
 	}
 }
+
+func TestRaiseImpactHookOnlyRaisesNewQuestions(t *testing.T) {
+	t.Setenv("WARDEN_HOME", t.TempDir())
+	calls := 0
+	RaiseImpact = func(q, imp string) (string, bool) { calls++; return "high", imp != "high" }
+	defer func() { RaiseImpact = nil }()
+	c, err := Set("b", "i", []string{"state=needs_decision", "decision_key=k", "question=drop the table?", "impact=low"})
+	if err != nil || c["impact"] != "high" || c["impact_by"] != "decide" {
+		t.Fatalf("card = %v err = %v", c, err)
+	}
+	if _, err := Set("b", "i", []string{"phase=x"}); err != nil || calls != 1 {
+		t.Fatalf("hook ran without a new question: calls=%d err=%v", calls, err)
+	}
+}
+
+func TestRaiseImpactRechecksALoweredImpact(t *testing.T) {
+	t.Setenv("WARDEN_HOME", t.TempDir())
+	RaiseImpact = func(q, imp string) (string, bool) { return "high", imp != "high" }
+	defer func() { RaiseImpact = nil }()
+	Set("b", "j", []string{"state=needs_decision", "decision_key=k", "question=q", "impact=high"})
+	c, _ := Set("b", "j", []string{"impact=low"})
+	if c["impact"] != "high" {
+		t.Fatalf("impact lowered: %v", c["impact"])
+	}
+}

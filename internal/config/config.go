@@ -38,8 +38,13 @@ var Known = []Setting{
 	{"watch.events", "checks,merged,closed,conflict,review,comment,push,new,updated", "smithy wait", "which events wake an agent waiting on GitHub"},
 	{"watch.every", "30", "smithy wait", "seconds between GitHub polls"},
 	{"watch.max", "50", "smithy wait", "minutes before a heartbeat exit (4) when nothing happened"},
-	{"tend.watch", "prs", "tend", "what /tend watch looks at: prs, issues or all"},
+	{"tend.watch", "prs", "tend", "what /tend watch follows: a comma list of prs, issues, actions, base, alerts, or all"},
 	{"tend.label", "agent", "tend", "label of issues tend may queue for warden"},
+	{"decide.url", "", "smithy decide", "decision model endpoint; set with decide.model to turn smithy decide on (a path ending in /scores uses the behavior format, else System One)"},
+	{"decide.model", "", "smithy decide", "decision model id, e.g. span-01-free, jev-latest, kev-latest"},
+	{"decide.key_env", "", "smithy decide", "name of the env var holding the key (never the key); empty for a local model"},
+	{"decide.enabled", "true", "smithy decide", "false after three failed calls in a row; set true to turn it back on"},
+	{"decide.timeout", "3000", "smithy decide", "milliseconds before a decide call is dropped"},
 }
 
 // ErrUnset means the key has no value and no default: ask the user once, then save it.

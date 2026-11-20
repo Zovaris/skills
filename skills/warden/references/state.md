@@ -21,7 +21,8 @@ feature slug). No secrets or client data in it.
 ## Cards (`<id>.json`, the worker's, through `smithy cards set`)
 
 Fields: `state`, `phase`, `progress` (`3/7`, the worker's own task list), `branch`, `pr`, `ci`,
-`decision_key`, `question`, `options`, `recommendation`, `impact`, `tests_run`, `risks`,
+`decision_key`, `question`, `options`, `recommendation`, `impact` (`impact_by=decide` when the
+decision model raised it), `tests_run`, `risks`,
 `review_rounds`, `note`.
 
 | State | Meaning |

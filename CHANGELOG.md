@@ -5,6 +5,8 @@ One version for the whole repo, tagged `vX.Y.Z` (semver). Every change to a skil
 
 ## Unreleased
 
+- Optional `judge` model tier: the smartest model you have, used only by `smithy consult`
+  (falls back to `strong`). ADR 0006 records why decision models and a watcher session stay out.
 - Fixes from the release/next audit and worker feedback: one definition of a blocking review
   finding (REVIEW.md), holdout tests stay untouched until their final run, `smithy scan` prints
   binaries as warnings and counts a bare `=======` only next to a conflict start, the attempt cap
